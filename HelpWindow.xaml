@@ -1,0 +1,125 @@
+<Window x:Class="DesktopPet.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="苏无度使用说明书"
+        Width="570" Height="720"
+        MinWidth="480" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="#FFF7F2DF"
+        FontFamily="Microsoft YaHei UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="26">
+                <TextBlock Text="苏无度使用说明书"
+                           FontSize="27"
+                           FontWeight="Bold"
+                           Foreground="#FF17131B"/>
+                <TextBlock Text="她平时的小动作主要是陪伴动画，不是在偷偷读取你的屏幕。"
+                           Margin="0,5,0,20"
+                           FontSize="13"
+                           Foreground="#FF5B5660"
+                           TextWrapping="Wrap"/>
+
+                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="一分钟上手" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
+                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
+                            <Run FontWeight="Bold">拖动：</Run><Run>按住苏无度并移动鼠标。&#x0a;</Run>
+                            <Run FontWeight="Bold">聊天：</Run><Run>双击苏无度。&#x0a;</Run>
+                            <Run FontWeight="Bold">功能菜单：</Run><Run>右键苏无度。&#x0a;</Run>
+                            <Run FontWeight="Bold">暂时隐藏：</Run><Run>右键选择“收起来”，双击托盘图标或再次启动即可叫回。&#x0a;</Run>
+                            <Run FontWeight="Bold">紧急恢复鼠标：</Run><Run>按 Ctrl + Alt + P，可关闭鼠标穿透并叫回她。</Run>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="她为什么会做这些动作？" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" FontWeight="Bold" Text="眨眼"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="随机的自然待机动作，没有特殊提醒。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="1" Margin="0,8,0,0" FontWeight="Bold" Text="比心"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,8,0,0" Text="随机表达陪伴；鼓励、聊天或完成任务时也可能出现。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="2" Margin="0,8,0,0" FontWeight="Bold" Text="挥手"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,8,0,0" Text="打招呼、被叫回来，或随机和你互动。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="3" Margin="0,8,0,0" FontWeight="Bold" Text="工作"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,8,0,0" Text="工作模式、专注计时、AI 正在回复，或外部工具发来 working 状态。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="4" Margin="0,8,0,0" FontWeight="Bold" Text="睡觉"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Margin="0,8,0,0" Text="电脑大约五分钟没有操作，她会休息；你回来后会醒来。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="5" Margin="0,8,0,0" FontWeight="Bold" Text="铃铛"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Margin="0,8,0,0" Text="喝水提醒或需要你注意的消息。" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="6" Margin="0,8,0,0" FontWeight="Bold" Text="成功/疑惑"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Margin="0,8,0,0" Text="专注完成、AI 回复情绪，或 Codex/脚本明确发送的任务状态。" TextWrapping="Wrap"/>
+                        </Grid>
+                        <TextBlock Margin="0,13,0,0"
+                                   Padding="10"
+                                   Background="#FFF0E8D1"
+                                   Text="重点：平时随机眨眼、比心和挥手只是装饰动画，不代表有新通知。真正的提醒通常会同时出现文字气泡或托盘通知。"
+                                   TextWrapping="Wrap"
+                                   FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="右键菜单功能" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
+                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
+                            <Run FontWeight="Bold">和我聊聊：</Run><Run>打开聊天窗口；没有 API key 也有离线回复。&#x0a;</Run>
+                            <Run FontWeight="Bold">给我一点鼓励：</Run><Run>显示一句鼓励并播放比心动画。&#x0a;</Run>
+                            <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度保持工作状态，直到你关闭它。&#x0a;</Run>
+                            <Run FontWeight="Bold">开始专注计时：</Run><Run>按设置中的分钟数计时，结束后提醒。&#x0a;</Run>
+                            <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在附近轻轻移动。&#x0a;</Run>
+                            <Run FontWeight="Bold">始终置顶：</Run><Run>保持在其它普通窗口上方。&#x0a;</Run>
+                            <Run FontWeight="Bold">鼠标穿透：</Run><Run>鼠标会点到她后面的窗口；用 Ctrl + Alt + P 恢复。&#x0a;</Run>
+                            <Run FontWeight="Bold">设置：</Run><Run>修改名字、大小、提醒、开机启动和可选 AI。&#x0a;</Run>
+                            <Run FontWeight="Bold">收起来：</Run><Run>隐藏到系统托盘，不会退出程序。</Run>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="AI、隐私与 Codex 联动" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="苏无度不会自动读取屏幕内容。未配置 OpenAI API key 时，聊天使用内置离线回复；配置后，只有你在聊天框发送的文字会提交给 API。Codex 或其它脚本只有主动发送状态命令时，才会让她显示工作、成功、疑惑或错误动作。"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1"
+                Background="#FFF0E8D1"
+                BorderBrush="#FFD5CCB6"
+                BorderThickness="0,1,0,0"
+                Padding="14">
+            <Button Content="看懂了"
+                    Width="105"
+                    HorizontalAlignment="Right"
+                    IsDefault="True"
+                    Click="Close_Click"/>
+        </Border>
+    </Grid>
+</Window>

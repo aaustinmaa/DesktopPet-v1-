@@ -1,0 +1,80 @@
+<Window x:Class="DesktopPet.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="苏无度桌宠设置"
+        Width="470" Height="650"
+        MinWidth="430" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="#FFF7F2DF"
+        FontFamily="Microsoft YaHei UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="22">
+                <TextBlock Text="桌宠设置" FontSize="24" FontWeight="Bold" Foreground="#FF17131B"/>
+                <TextBlock Text="外观、提醒和可选 AI 都保存在这台电脑上。" Margin="0,4,0,18" Foreground="#FF5B5660"/>
+
+                <TextBlock Text="名字" FontWeight="Bold"/>
+                <TextBox x:Name="PetNameBox"/>
+
+                <TextBlock Text="大小" FontWeight="Bold"/>
+                <Grid Margin="0,4,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="52"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="ScaleSlider" Minimum="0.55" Maximum="1.5" TickFrequency="0.05"
+                            IsSnapToTickEnabled="True" ValueChanged="ScaleSlider_ValueChanged"/>
+                    <TextBlock x:Name="ScaleLabel" Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+
+                <CheckBox x:Name="TopmostBox" Content="始终置顶"/>
+                <CheckBox x:Name="WanderBox" Content="偶尔在屏幕附近漫游"/>
+                <CheckBox x:Name="StartupBox" Content="登录 Windows 时自动启动"/>
+
+                <Separator Margin="0,16"/>
+                <TextBlock Text="专注与提醒" FontSize="17" FontWeight="Bold"/>
+                <CheckBox x:Name="HydrationBox" Content="启用喝水提醒"/>
+                <Grid Margin="0,4,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="喝水提醒间隔（分钟）" VerticalAlignment="Center"/>
+                    <TextBox x:Name="HydrationBoxMinutes" Grid.Column="1" Margin="6,0,0,0"/>
+                </Grid>
+                <Grid Margin="0,4,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="默认专注时长（分钟）" VerticalAlignment="Center"/>
+                    <TextBox x:Name="FocusBoxMinutes" Grid.Column="1" Margin="6,0,0,0"/>
+                </Grid>
+
+                <Separator Margin="0,16"/>
+                <TextBlock Text="OpenAI（可选）" FontSize="17" FontWeight="Bold"/>
+                <TextBlock Text="不填也能使用离线陪伴模式。API key 会用 Windows DPAPI 加密，仅当前 Windows 用户可解密。"
+                           TextWrapping="Wrap" Foreground="#FF5B5660" Margin="0,4,0,8"/>
+                <TextBlock Text="模型"/>
+                <TextBox x:Name="ModelBox"/>
+                <TextBlock Text="新的 API key（留空表示保持不变）"/>
+                <PasswordBox x:Name="ApiKeyBox" Padding="8,6" Margin="0,4,0,4"/>
+                <TextBlock x:Name="ApiStatusText" FontSize="11" Foreground="#FF047A42"/>
+                <Button Content="清除已保存的 API key" HorizontalAlignment="Left" Background="#FF6B626D"
+                        Click="ClearApiKey_Click" Margin="0,8,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Background="#FFF0E8D1" BorderBrush="#FFD5CCB6" BorderThickness="0,1,0,0" Padding="14">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="取消" Width="84" Background="#FF6B626D" Click="Cancel_Click"/>
+                <Button Content="保存" Width="96" Click="Save_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
