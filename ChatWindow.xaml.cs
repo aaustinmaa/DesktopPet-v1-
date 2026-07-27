@@ -14,6 +14,7 @@ namespace DesktopPet
         private readonly AppSettings _settings;
         private readonly SecretService _secrets;
         private readonly MainWindow _petWindow;
+        private readonly MemoryService _memoryService;
         private readonly AiService _aiService;
         private bool _isSending;
 
@@ -23,13 +24,49 @@ namespace DesktopPet
             _settings = settings;
             _secrets = secrets;
             _petWindow = petWindow;
-            _aiService = new AiService(_secrets, _settings);
+            _memoryService = new MemoryService();
+            _aiService = new AiService(_secrets, _settings, _memoryService);
             TitleText.Text = "和 " + _settings.PetName + " 聊聊";
-            ModeText.Text = _secrets.HasApiKey
-                ? "AI 模式 · " + _settings.AiModel
-                : "离线陪伴模式 · 在设置中添加 API key 可启用 AI";
-            AddMessage(_settings.PetName, "我在这里。今天想聊点什么？", false);
+            ModeText.Text = GetModeText();
+            LoadHistory();
+            Closed += (s, e) => _aiService.Dispose();
             Loaded += (s, e) => MessageBox.Focus();
+        }
+
+        private string GetModeText()
+        {
+            switch ((_settings.AiProvider ?? string.Empty).ToLowerInvariant())
+            {
+                case "openai":
+                    return _secrets.HasApiKey
+                        ? "OpenAI API · " + _settings.AiModel
+                        : "OpenAI API · 需要在设置中添加 API key";
+                case "offline":
+                    return "离线陪伴 · 不联网";
+                default:
+                    return "ChatGPT · Codex · 使用你的订阅登录";
+            }
+        }
+
+        private void LoadHistory()
+        {
+            if (_settings.MemoryEnabled)
+            {
+                var history = _memoryService.GetRecentHistory(20);
+                foreach (var item in history)
+                {
+                    var fromUser = item.Role == "user";
+                    AddMessage(fromUser ? "你" : _settings.PetName,
+                        item.Content, fromUser);
+                }
+                if (history.Count > 0)
+                {
+                    StatusText.Text = "已恢复最近聊天";
+                    return;
+                }
+            }
+            AddMessage(_settings.PetName, "我在这里。今天想聊点什么？", false);
+            StatusText.Text = _settings.MemoryEnabled ? "聊天记忆已开启" : "聊天记忆已关闭";
         }
 
         private async void SendButton_Click(object sender, RoutedEventArgs e)
@@ -39,7 +76,8 @@ namespace DesktopPet
 
         private async void MessageBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+            if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+                (Keyboard.Modifiers & ModifierKeys.Shift) == 0)
             {
                 e.Handled = true;
                 await SendCurrentMessageAsync();
@@ -67,11 +105,12 @@ namespace DesktopPet
                 _petWindow.SetPetState(reply.Emotion, 6);
                 if (string.Equals(reply.Action, "bounce", StringComparison.OrdinalIgnoreCase))
                     _petWindow.Bounce();
-                StatusText.Text = reply.IsOffline ? "离线回复" : "AI 回复";
+                StatusText.Text = reply.ProviderLabel +
+                    (_settings.MemoryEnabled ? " · 已保存聊天" : string.Empty);
             }
             catch (Exception ex)
             {
-                AddMessage("系统", ex.Message + "\n可以在设置中检查 API key 和模型名称。", false, true);
+                AddMessage("系统", ex.Message + "\n可以在苏无度的“设置 → AI 与记忆”中检查连接。", false, true);
                 _petWindow.SetPetState(PetState.Error, 6);
                 StatusText.Text = "请求失败";
             }

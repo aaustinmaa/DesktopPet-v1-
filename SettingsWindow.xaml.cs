@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using DesktopPet.Models;
 using DesktopPet.Services;
 
@@ -9,6 +13,10 @@ namespace DesktopPet
     public partial class SettingsWindow : Window
     {
         private readonly SecretService _secretService;
+        private readonly MemoryService _memoryService = new MemoryService();
+        private string _selectedProvider;
+        private string _savedCodexModel;
+        private bool _isUpdatingCodexModels;
         public AppSettings ResultSettings { get; private set; }
 
         public SettingsWindow(AppSettings settings, SecretService secretService)
@@ -26,7 +34,13 @@ namespace DesktopPet
             HydrationBoxMinutes.Text = settings.HydrationMinutes.ToString(CultureInfo.InvariantCulture);
             FocusBoxMinutes.Text = settings.FocusMinutes.ToString(CultureInfo.InvariantCulture);
             ModelBox.Text = settings.AiModel;
+            _savedCodexModel = settings.CodexModel ?? string.Empty;
+            ResetCodexModelList("登录后会自动读取此账号可用的模型。");
+            MemoryBox.IsChecked = settings.MemoryEnabled;
+            _selectedProvider = settings.AiProvider;
+            UpdateProviderPanels();
             UpdateApiStatus();
+            Loaded += async (sender, args) => await RefreshCodexStatusAsync();
         }
 
         private void ScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -39,6 +53,258 @@ namespace DesktopPet
             _secretService.ClearApiKey();
             ApiKeyBox.Clear();
             UpdateApiStatus();
+        }
+
+        private void Provider_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button == null) return;
+            _selectedProvider = Convert.ToString(button.Tag);
+            UpdateProviderPanels();
+        }
+
+        private void UpdateProviderPanels()
+        {
+            if (CodexPanel == null) return;
+            CodexPanel.Visibility = _selectedProvider == "codex"
+                ? Visibility.Visible : Visibility.Collapsed;
+            OpenAiPanel.Visibility = _selectedProvider == "openai"
+                ? Visibility.Visible : Visibility.Collapsed;
+            OfflinePanel.Visibility = _selectedProvider == "offline"
+                ? Visibility.Visible : Visibility.Collapsed;
+
+            StyleProviderButton(CodexProviderButton, _selectedProvider == "codex");
+            StyleProviderButton(OpenAiProviderButton, _selectedProvider == "openai");
+            StyleProviderButton(OfflineProviderButton, _selectedProvider == "offline");
+        }
+
+        private void StyleProviderButton(Button button, bool selected)
+        {
+            if (button == null) return;
+            if (selected)
+            {
+                button.SetResourceReference(Control.BackgroundProperty, "AccentBrush");
+                button.Foreground = Brushes.White;
+                button.BorderBrush = Brushes.Transparent;
+            }
+            else
+            {
+                button.SetResourceReference(Control.BackgroundProperty, "SurfaceElevatedBrush");
+                button.SetResourceReference(Control.ForegroundProperty, "InkBrush");
+                button.SetResourceReference(Control.BorderBrushProperty, "BorderBrush");
+            }
+        }
+
+        private async System.Threading.Tasks.Task RefreshCodexStatusAsync()
+        {
+            CodexStatusText.Text = "正在检查 ChatGPT 连接…";
+            CodexConnectButton.IsEnabled = false;
+            try
+            {
+                var status = await CodexService.GetAccountStatusAsync();
+                ShowCodexStatus(status);
+                if (status.IsSignedIn)
+                    await RefreshCodexModelsAsync();
+                else
+                    ResetCodexModelList("连接 ChatGPT 后会显示当前账号可用的模型。");
+            }
+            finally
+            {
+                CodexConnectButton.IsEnabled = true;
+            }
+        }
+
+        private void ShowCodexStatus(CodexAccountStatus status)
+        {
+            if (!status.IsAvailable)
+            {
+                CodexStatusText.Text = "Codex 组件缺失，请重新下载完整版本。";
+                CodexConnectButton.Visibility = Visibility.Collapsed;
+                CodexLogoutButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+            if (status.IsSignedIn)
+            {
+                var account = string.IsNullOrWhiteSpace(status.Email)
+                    ? "ChatGPT"
+                    : status.Email;
+                var plan = string.IsNullOrWhiteSpace(status.PlanType)
+                    ? string.Empty
+                    : " · " + status.PlanType;
+                CodexStatusText.Text = "已连接：" + account + plan;
+                CodexConnectButton.Content = "重新连接";
+                CodexConnectButton.Visibility = Visibility.Visible;
+                CodexLogoutButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                CodexStatusText.Text = string.IsNullOrWhiteSpace(status.Error)
+                    ? "尚未连接 ChatGPT。"
+                    : "连接检查失败：" + status.Error;
+                CodexConnectButton.Content = "连接我的 ChatGPT";
+                CodexConnectButton.Visibility = Visibility.Visible;
+                CodexLogoutButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async System.Threading.Tasks.Task RefreshCodexModelsAsync()
+        {
+            CodexModelBox.IsEnabled = false;
+            CodexModelHintText.Text = "正在读取当前账号可用的模型…";
+            try
+            {
+                var models = await CodexService.GetAvailableModelsAsync();
+                var options = new List<CodexModelOption>
+                {
+                    new CodexModelOption
+                    {
+                        ModelId = string.Empty,
+                        DisplayName = "自动选择",
+                        Description = "由 Codex 选择当前账号的默认模型。",
+                        IsDefault = true
+                    }
+                };
+                options.AddRange(models);
+
+                _isUpdatingCodexModels = true;
+                CodexModelBox.ItemsSource = options;
+                var selected = options.FirstOrDefault(item =>
+                    !string.IsNullOrWhiteSpace(_savedCodexModel) &&
+                    string.Equals(item.ModelId, _savedCodexModel,
+                        StringComparison.OrdinalIgnoreCase));
+                CodexModelBox.SelectedItem = selected ?? options[0];
+                _isUpdatingCodexModels = false;
+
+                if (selected == null && !string.IsNullOrWhiteSpace(_savedCodexModel))
+                {
+                    CodexModelHintText.Text =
+                        "原来的模型“" + _savedCodexModel +
+                        "”不在账号可用列表中，已安全切换为自动选择。";
+                    _savedCodexModel = string.Empty;
+                }
+                else
+                {
+                    UpdateCodexModelHint();
+                }
+            }
+            catch (Exception ex)
+            {
+                ResetCodexModelList("模型列表读取失败，将使用自动选择。 " + ex.Message);
+            }
+            finally
+            {
+                CodexModelBox.IsEnabled = true;
+            }
+        }
+
+        private void ResetCodexModelList(string hint)
+        {
+            if (CodexModelBox == null) return;
+            _isUpdatingCodexModels = true;
+            CodexModelBox.ItemsSource = new[]
+            {
+                new CodexModelOption
+                {
+                    ModelId = string.Empty,
+                    DisplayName = "自动选择",
+                    Description = "由 Codex 选择当前账号的默认模型。",
+                    IsDefault = true
+                }
+            };
+            CodexModelBox.SelectedIndex = 0;
+            _isUpdatingCodexModels = false;
+            if (CodexModelHintText != null)
+                CodexModelHintText.Text = hint;
+        }
+
+        private void CodexModelBox_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (_isUpdatingCodexModels) return;
+            var selected = CodexModelBox.SelectedItem as CodexModelOption;
+            _savedCodexModel = selected == null ? string.Empty : selected.ModelId;
+            UpdateCodexModelHint();
+        }
+
+        private void UpdateCodexModelHint()
+        {
+            var selected = CodexModelBox.SelectedItem as CodexModelOption;
+            if (selected == null)
+            {
+                CodexModelHintText.Text = string.Empty;
+                return;
+            }
+            CodexModelHintText.Text = string.IsNullOrWhiteSpace(selected.ModelId)
+                ? "由 Codex 自动选择，推荐大多数用户使用。"
+                : selected.Description + "\n模型 ID：" + selected.ModelId;
+        }
+
+        private async void CodexConnect_Click(object sender, RoutedEventArgs e)
+        {
+            _selectedProvider = "codex";
+            UpdateProviderPanels();
+            CodexConnectButton.IsEnabled = false;
+            CodexLogoutButton.IsEnabled = false;
+            CodexStatusText.Text = "浏览器即将打开。登录后请回到这里，苏无度会自动确认。";
+            try
+            {
+                var status = await CodexService.LoginAsync();
+                ShowCodexStatus(status);
+                if (status.IsSignedIn)
+                    await RefreshCodexModelsAsync();
+                if (!status.IsSignedIn)
+                    MessageBox.Show("登录流程已结束，但没有检测到 ChatGPT 账号，请再试一次。",
+                        "ChatGPT 连接", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                CodexStatusText.Text = "连接失败：" + ex.Message;
+                MessageBox.Show(ex.Message, "ChatGPT 连接",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                CodexConnectButton.IsEnabled = true;
+                CodexLogoutButton.IsEnabled = true;
+            }
+        }
+
+        private async void CodexLogout_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(
+                    "确定要让 Codex 退出当前 ChatGPT 账号吗？这也可能影响同一 Windows 用户下的其他 Codex 客户端。",
+                    "退出 ChatGPT", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                MessageBoxResult.Yes)
+                return;
+
+            CodexLogoutButton.IsEnabled = false;
+            try
+            {
+                await CodexService.LogoutAsync();
+                await RefreshCodexStatusAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "退出 ChatGPT",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                CodexLogoutButton.IsEnabled = true;
+            }
+        }
+
+        private void ClearMemory_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(
+                    "确定清除苏无度保存的最近聊天和所有明确记住的内容吗？此操作无法撤销。",
+                    "清除聊天与记忆", MessageBoxButton.YesNo, MessageBoxImage.Warning) !=
+                MessageBoxResult.Yes)
+                return;
+            _memoryService.ClearAll();
+            MessageBox.Show("苏无度的本地聊天与记忆已经清除。",
+                "清除完成", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void UpdateApiStatus()
@@ -76,7 +342,13 @@ namespace DesktopPet
             ResultSettings.HydrationEnabled = HydrationBox.IsChecked == true;
             ResultSettings.HydrationMinutes = hydrationMinutes;
             ResultSettings.FocusMinutes = focusMinutes;
+            ResultSettings.AiProvider = _selectedProvider;
             ResultSettings.AiModel = ModelBox.Text.Trim();
+            var selectedCodexModel = CodexModelBox.SelectedItem as CodexModelOption;
+            ResultSettings.CodexModel = selectedCodexModel == null
+                ? string.Empty
+                : selectedCodexModel.ModelId;
+            ResultSettings.MemoryEnabled = MemoryBox.IsChecked == true;
             ResultSettings.Normalize();
 
             if (!string.IsNullOrWhiteSpace(ApiKeyBox.Password))

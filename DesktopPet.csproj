@@ -89,10 +89,15 @@
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\AppSettings.cs" />
+    <Compile Include="Models\ChatMemoryData.cs" />
     <Compile Include="Models\PetCommand.cs" />
     <Compile Include="Models\PetState.cs" />
     <Compile Include="Services\AiService.cs" />
+    <Compile Include="Services\CodexAppServerClient.cs" />
+    <Compile Include="Services\CodexLocator.cs" />
+    <Compile Include="Services\CodexService.cs" />
     <Compile Include="Services\CommandService.cs" />
+    <Compile Include="Services\MemoryService.cs" />
     <Compile Include="Services\NativeMethods.cs" />
     <Compile Include="Services\SecretService.cs" />
     <Compile Include="Services\SettingsService.cs" />
@@ -108,6 +113,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\PetControl.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tools\Codex\package\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="THIRD-PARTY-NOTICES.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="OPENAI-CODEX-LICENSE.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

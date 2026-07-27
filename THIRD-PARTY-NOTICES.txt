@@ -1,0 +1,11 @@
+Su Wudu Desktop Pet includes the official OpenAI Codex CLI binary distribution.
+
+Component: OpenAI Codex CLI
+Version: 0.144.4
+Source: https://github.com/openai/codex
+License: Apache License 2.0
+License text: https://github.com/openai/codex/blob/main/LICENSE
+
+The Codex component is used locally as an app-server bridge so users can sign in
+with ChatGPT through OpenAI's OAuth flow. Su Wudu Desktop Pet never asks for or
+stores the user's ChatGPT password.

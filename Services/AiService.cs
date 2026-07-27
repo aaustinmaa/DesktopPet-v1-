@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,52 +10,115 @@ using DesktopPet.Models;
 
 namespace DesktopPet.Services
 {
-    public class AiService
+    public class AiService : IDisposable
     {
         private readonly SecretService _secrets;
         private readonly AppSettings _settings;
+        private readonly MemoryService _memory;
         private readonly JavaScriptSerializer _json = new JavaScriptSerializer();
+        private CodexAppServerClient _codexClient;
+        private bool _codexHasContext;
 
-        public AiService(SecretService secrets, AppSettings settings)
+        public AiService(SecretService secrets, AppSettings settings, MemoryService memory)
         {
             _secrets = secrets;
             _settings = settings;
+            _memory = memory;
         }
 
         public async Task<PetReply> GetReplyAsync(string userMessage)
         {
+            var memoryUpdate = _memory.ProcessMemoryInstruction(
+                userMessage, _settings.MemoryEnabled);
+            var context = _memory.BuildContext(_settings.MemoryEnabled, 16);
+            if (_settings.MemoryEnabled)
+                _memory.RecordUserMessage(userMessage);
+
+            PetReply reply;
+            switch ((_settings.AiProvider ?? string.Empty).ToLowerInvariant())
+            {
+                case "openai":
+                    reply = await GetOpenAiReplyAsync(userMessage, context);
+                    reply.ProviderLabel = "OpenAI API";
+                    break;
+                case "offline":
+                    reply = OfflineReply(userMessage, memoryUpdate);
+                    reply.ProviderLabel = "离线陪伴";
+                    break;
+                default:
+                    reply = await GetCodexReplyAsync(userMessage, context);
+                    reply.ProviderLabel = "ChatGPT · Codex";
+                    break;
+            }
+
+            if (_settings.MemoryEnabled)
+                _memory.RecordAssistantMessage(reply.Reply);
+            return reply;
+        }
+
+        private async Task<PetReply> GetCodexReplyAsync(string userMessage, string context)
+        {
+            if (!CodexService.IsAvailable)
+                throw new InvalidOperationException(
+                    "未找到 Codex 运行组件，请重新下载完整的苏无度桌宠文件夹。");
+
+            if (_codexClient == null)
+                _codexClient = new CodexAppServerClient();
+            var account = await _codexClient.GetAccountStatusAsync();
+            if (!account.IsSignedIn)
+                throw new InvalidOperationException(
+                    "还没有连接 ChatGPT。请打开设置，点击“连接我的 ChatGPT”。");
+
+            var raw = await _codexClient.SendCompanionMessageAsync(
+                userMessage,
+                _settings.PetName,
+                _settings.CodexModel,
+                _codexHasContext ? string.Empty : context);
+            _codexHasContext = true;
+            return ParsePetReply(raw);
+        }
+
+        private async Task<PetReply> GetOpenAiReplyAsync(string userMessage, string context)
+        {
             var apiKey = _secrets.GetApiKey();
             if (string.IsNullOrWhiteSpace(apiKey))
-                return OfflineReply(userMessage);
+                throw new InvalidOperationException(
+                    "当前选择了 OpenAI API，但还没有填写 API key。请在设置中添加。");
 
-            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(60) })
+            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(90) })
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", apiKey);
                 var instructions =
-                    "You are " + _settings.PetName + ", a tiny warm pixel-art desktop companion. " +
-                    "Reply in the user's language, in one or two short sentences. Be supportive, playful, and practical. " +
-                    "Return only compact JSON with keys reply, emotion, action. " +
-                    "emotion must be one of idle,happy,working,question,success,error,sleeping,reminder,waving,heart. " +
-                    "action must be one of none,bounce,wave,heart.";
+                    "You are " + _settings.PetName + ", a warm pixel-art desktop companion for " +
+                    "general conversation. Reply in the user's language. Be supportive, playful, " +
+                    "practical, and concise. Return only compact JSON with keys reply, emotion, action. " +
+                    "emotion must be one of idle,happy,working,question,success,error,sleeping,reminder," +
+                    "waving,heart. action must be one of none,bounce,wave,heart.";
+                var input = string.IsNullOrWhiteSpace(context)
+                    ? userMessage
+                    : "[本地记忆与最近聊天]\n" + context + "\n\n[当前消息]\n" + userMessage;
 
                 var request = new
                 {
                     model = _settings.AiModel,
                     instructions,
-                    input = userMessage,
-                    max_output_tokens = 220,
+                    input,
+                    max_output_tokens = 300,
                     reasoning = new { effort = "low" },
                     text = new { verbosity = "low" }
                 };
 
-                var body = new StringContent(_json.Serialize(request), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("https://api.openai.com/v1/responses", body);
+                var body = new StringContent(
+                    _json.Serialize(request), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync(
+                    "https://api.openai.com/v1/responses", body);
                 var jsonText = await response.Content.ReadAsStringAsync();
                 if (!response.IsSuccessStatusCode)
-                    throw new InvalidOperationException(ReadApiError(jsonText, (int)response.StatusCode));
+                    throw new InvalidOperationException(
+                        ReadApiError(jsonText, (int)response.StatusCode));
 
-                var outputText = ExtractOutputText(jsonText);
-                return ParsePetReply(outputText);
+                return ParsePetReply(ExtractOutputText(jsonText));
             }
         }
 
@@ -71,7 +133,11 @@ namespace DesktopPet.Services
 
             object outputObject;
             if (!root.TryGetValue("output", out outputObject)) return string.Empty;
-            var outputItems = outputObject as ArrayList ?? new ArrayList((object[])outputObject);
+            var outputItems = outputObject as ArrayList;
+            if (outputItems == null && outputObject is object[])
+                outputItems = new ArrayList((object[])outputObject);
+            if (outputItems == null) return string.Empty;
+
             foreach (var item in outputItems)
             {
                 var itemDictionary = item as Dictionary<string, object>;
@@ -99,12 +165,13 @@ namespace DesktopPet.Services
                 return new PetReply { Reply = "我在这里。", Emotion = PetState.Idle };
 
             var clean = text.Trim();
-            if (clean.StartsWith("```"))
+            if (clean.StartsWith("```", StringComparison.Ordinal))
             {
                 var firstNewLine = clean.IndexOf('\n');
                 var lastFence = clean.LastIndexOf("```", StringComparison.Ordinal);
                 if (firstNewLine >= 0 && lastFence > firstNewLine)
-                    clean = clean.Substring(firstNewLine + 1, lastFence - firstNewLine - 1).Trim();
+                    clean = clean.Substring(
+                        firstNewLine + 1, lastFence - firstNewLine - 1).Trim();
             }
 
             try
@@ -112,10 +179,21 @@ namespace DesktopPet.Services
                 var data = _json.DeserializeObject(clean) as Dictionary<string, object>;
                 if (data != null)
                 {
-                    var reply = data.ContainsKey("reply") ? Convert.ToString(data["reply"]) : clean;
-                    var emotion = data.ContainsKey("emotion") ? Convert.ToString(data["emotion"]) : "idle";
-                    var action = data.ContainsKey("action") ? Convert.ToString(data["action"]) : "none";
-                    return new PetReply { Reply = reply, Emotion = ParseState(emotion), Action = action };
+                    var reply = data.ContainsKey("reply")
+                        ? Convert.ToString(data["reply"])
+                        : clean;
+                    var emotion = data.ContainsKey("emotion")
+                        ? Convert.ToString(data["emotion"])
+                        : "idle";
+                    var action = data.ContainsKey("action")
+                        ? Convert.ToString(data["action"])
+                        : "none";
+                    return new PetReply
+                    {
+                        Reply = reply,
+                        Emotion = ParseState(emotion),
+                        Action = action
+                    };
                 }
             }
             catch
@@ -141,8 +219,29 @@ namespace DesktopPet.Services
             return "OpenAI API 请求失败（HTTP " + statusCode + "）。";
         }
 
-        private static PetReply OfflineReply(string message)
+        private static PetReply OfflineReply(string message, MemoryUpdate memoryUpdate)
         {
+            if (!string.IsNullOrWhiteSpace(memoryUpdate.RememberedFact))
+            {
+                return new PetReply
+                {
+                    Reply = "好，我记住了：" + memoryUpdate.RememberedFact,
+                    Emotion = PetState.Happy,
+                    Action = "heart",
+                    IsOffline = true
+                };
+            }
+            if (memoryUpdate.ForgottenCount > 0)
+            {
+                return new PetReply
+                {
+                    Reply = "好，我已经把那条记忆忘掉了。",
+                    Emotion = PetState.Idle,
+                    Action = "none",
+                    IsOffline = true
+                };
+            }
+
             var lower = (message ?? string.Empty).ToLowerInvariant();
             if (lower.Contains("bug") || lower.Contains("错误") || lower.Contains("失败"))
                 return new PetReply { Reply = "先别慌，我们把问题缩小到下一步就好。你已经在前进了。", Emotion = PetState.Question, Action = "bounce", IsOffline = true };
@@ -152,7 +251,7 @@ namespace DesktopPet.Services
                 return new PetReply { Reply = "做到了！这颗心今天为你跳得特别响。", Emotion = PetState.Success, Action = "heart", IsOffline = true };
             if (lower.Contains("你好") || lower.Contains("hello") || lower.Contains("hi"))
                 return new PetReply { Reply = "你好呀，我一直在桌面这里陪着你。", Emotion = PetState.Waving, Action = "wave", IsOffline = true };
-            return new PetReply { Reply = "我听见啦。没有配置 API key 时，我也会一直陪着你。", Emotion = PetState.HeartPulse, Action = "heart", IsOffline = true };
+            return new PetReply { Reply = "我听见啦。离线时我只能做简单回应；连接 ChatGPT 后就能认真陪你聊任何话题。", Emotion = PetState.HeartPulse, Action = "heart", IsOffline = true };
         }
 
         public static PetState ParseState(string state)
@@ -174,6 +273,15 @@ namespace DesktopPet.Services
                 case "waving": return PetState.Waving;
                 case "heart": return PetState.HeartPulse;
                 default: return PetState.Idle;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_codexClient != null)
+            {
+                _codexClient.Dispose();
+                _codexClient = null;
             }
         }
     }

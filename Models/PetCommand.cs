@@ -12,5 +12,6 @@ namespace DesktopPet.Models
         public PetState Emotion { get; set; }
         public string Action { get; set; }
         public bool IsOffline { get; set; }
+        public string ProviderLabel { get; set; }
     }
 }

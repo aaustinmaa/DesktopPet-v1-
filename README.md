@@ -29,8 +29,10 @@ dist\DesktopPet\DesktopPet.exe
 - 登录 Windows 时自动启动。
 - 保存上次位置、大小和所有偏好；恢复时会检查位置是否仍在屏幕上。
 - 内置专注计时器和喝水提醒。
-- 双击打开聊天窗口；没有 API key 时使用离线陪伴回复。
-- 可选 OpenAI Responses API；API key 使用 Windows DPAPI 加密保存在当前用户目录。
+- 双击打开通用聊天窗口；默认可用官方 ChatGPT OAuth 登录，无需 API key。
+- 三种聊天方式：ChatGPT/Codex、OpenAI 开发者 API、完全离线。
+- 保存最近聊天，并持久记住用户明确要求“记住”的信息；可以随时关闭或清除。
+- OpenAI API key 使用 Windows DPAPI 加密保存在当前用户目录。
 - 可由 Codex、脚本或其它程序发送状态命令，实现“工作中 / 完成 / 出错 / 等待输入”等联动。
 
 ## 操作
@@ -42,15 +44,35 @@ dist\DesktopPet\DesktopPet.exe
 - 双击托盘图标：叫醒桌宠。
 - 再次双击启动程序：不会创建第二只桌宠，而是直接叫回并置前现有桌宠。
 
-## 可选 AI
+## AI 聊天与登录
 
 右键桌宠 → **设置**：
 
-1. 填入 OpenAI API key。
-2. 模型默认是 `gpt-5.6-sol`，也可以自行修改。
-3. 保存后重新打开聊天窗口。
+1. 选择 **ChatGPT 登录**（推荐）。
+2. 点击 **连接我的 ChatGPT**，在浏览器中完成 OpenAI 官方 OAuth 登录。
+3. 回到设置，看到“已连接”后保存。
+4. 双击苏无度即可进行通用聊天。
 
-没有 key 时应用完全正常工作，并自动使用离线模式。API key 不会写进项目文件或普通 JSON 设置。
+这条路径使用账号中可用的 Codex 订阅额度，不会把 ChatGPT 密码交给桌宠，也不需要 API key。模型下拉框会读取当前账号真正可用的选项；推荐保留“自动选择”，由 Codex 使用账号的默认模型。旧版本保存的无效模型名会自动回退，不再导致聊天 400 错误。
+
+另外两种方式：
+
+- **API key**：使用 OpenAI 开发者 API，和 ChatGPT 订阅分开计费；可自行填写模型名。
+- **离线**：完全不联网，只提供简单的陪伴式固定回复。
+
+苏无度随附经过官方 Release SHA-256 校验的 OpenAI Codex 0.144.4 Windows 组件，不修改 PATH，也不要求用户安装命令行工具。第三方组件信息见 `THIRD-PARTY-NOTICES.txt`。
+
+## 聊天记忆
+
+开启设置中的“聊天记忆”后：
+
+- 聊天窗口会恢复最近 20 条消息；
+- 本地最多保留最近 100 条消息；
+- 对苏无度说“请记住……”或“记住：……”会保存一条长期事实；
+- 对她说“请忘记……”可删除匹配的长期事实；
+- 设置中的“清除苏无度的聊天与记忆”会删除全部本地聊天记忆。
+
+这些内容只保存在本机，不与 ChatGPT 网页版的 Memory 同步。关闭聊天记忆后，新消息不会写入本地历史。
 
 ## 和 Codex / 脚本联动
 
@@ -96,17 +118,26 @@ idle blink happy working question success error sleeping reminder waving heart
 .\build.ps1
 ```
 
-项目不使用 NuGet 包或其它第三方运行时依赖。
+项目不使用 NuGet 包。便携版包含官方 Codex 运行组件，用于 ChatGPT OAuth 与 app-server 通信。
 
 ## 本地数据
 
-设置、加密 key、命令文件和错误日志都位于：
+设置、加密 key、聊天记忆、命令文件和错误日志都位于：
 
 ```text
 %LocalAppData%\PixelHeartDesktopPet
 ```
 
 删除该文件夹即可重置桌宠。开机启动项位于当前用户的 Windows `Run` 注册表项，可在设置中随时关闭。
+
+主要文件：
+
+```text
+settings.json       普通设置（聊天方式、模型、提醒、窗口位置等）
+secret.dat          DPAPI 加密的 OpenAI API key
+chat-memory.json    最近聊天和明确记住的内容
+error.log           崩溃诊断日志
+```
 
 ## 素材
 

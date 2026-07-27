@@ -85,14 +85,14 @@
                     <StackPanel>
                         <TextBlock Text="右键菜单功能" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run FontWeight="Bold">和我聊聊：</Run><Run>打开聊天窗口；没有 API key 也有离线回复。&#x0a;</Run>
+                            <Run FontWeight="Bold">和我聊聊：</Run><Run>打开通用聊天；推荐在设置中直接连接自己的 ChatGPT。&#x0a;</Run>
                             <Run FontWeight="Bold">给我一点鼓励：</Run><Run>显示一句鼓励并播放比心动画。&#x0a;</Run>
                             <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度保持工作状态，直到你关闭它。&#x0a;</Run>
                             <Run FontWeight="Bold">开始专注计时：</Run><Run>按设置中的分钟数计时，结束后提醒。&#x0a;</Run>
                             <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在附近轻轻移动。&#x0a;</Run>
                             <Run FontWeight="Bold">始终置顶：</Run><Run>保持在其它普通窗口上方。&#x0a;</Run>
                             <Run FontWeight="Bold">鼠标穿透：</Run><Run>鼠标会点到她后面的窗口；用 Ctrl + Alt + P 恢复。&#x0a;</Run>
-                            <Run FontWeight="Bold">设置：</Run><Run>修改名字、大小、提醒、开机启动和可选 AI。&#x0a;</Run>
+                            <Run FontWeight="Bold">设置：</Run><Run>修改名字、大小、提醒、开机启动、聊天方式和本地记忆。&#x0a;</Run>
                             <Run FontWeight="Bold">收起来：</Run><Run>隐藏到系统托盘，不会退出程序。</Run>
                         </TextBlock>
                     </StackPanel>
@@ -102,7 +102,12 @@
                     <StackPanel>
                         <TextBlock Text="AI、隐私与 Codex 联动" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0"
-                                   Text="苏无度不会自动读取屏幕内容。未配置 OpenAI API key 时，聊天使用内置离线回复；配置后，只有你在聊天框发送的文字会提交给 API。Codex 或其它脚本只有主动发送状态命令时，才会让她显示工作、成功、疑惑或错误动作。"
+                                   Text="苏无度不会自动读取屏幕或项目文件。ChatGPT 模式通过官方 Codex OAuth 登录，只把你发送的聊天文字和已启用的本地聊天上下文交给模型；她不会询问或保存你的 ChatGPT 密码。API key 模式只在本机用 Windows DPAPI 加密 key。离线模式完全不联网。"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="开启“聊天记忆”后，最近聊天和你明确说“记住……”的内容保存在本机 LocalAppData，不与 ChatGPT 网页记忆同步。可以随时在设置里一键清除。Codex 或其它脚本只有主动发送状态命令时，才会改变她的任务动作。"
+                                   Foreground="{StaticResource MutedBrush}"
                                    TextWrapping="Wrap"
                                    LineHeight="22"/>
                     </StackPanel>
