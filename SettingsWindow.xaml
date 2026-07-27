@@ -2,78 +2,167 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="苏无度桌宠设置"
-        Width="470" Height="650"
-        MinWidth="430" MinHeight="560"
+        Width="510" Height="710"
+        MinWidth="460" MinHeight="600"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="#FFF7F2DF"
-        FontFamily="Microsoft YaHei UI">
+        Background="{StaticResource SurfaceBrush}"
+        FontFamily="Microsoft YaHei UI"
+        Foreground="{StaticResource InkBrush}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="22">
-                <TextBlock Text="桌宠设置" FontSize="24" FontWeight="Bold" Foreground="#FF17131B"/>
-                <TextBlock Text="外观、提醒和可选 AI 都保存在这台电脑上。" Margin="0,4,0,18" Foreground="#FF5B5660"/>
+            <StackPanel Margin="25,23,25,25">
+                <TextBlock Text="桌宠设置"
+                           FontSize="27"
+                           FontWeight="Bold"/>
+                <TextBlock Text="调整苏无度的外观、陪伴方式和可选 AI。"
+                           Margin="0,5,0,20"
+                           Foreground="{StaticResource MutedBrush}"/>
 
-                <TextBlock Text="名字" FontWeight="Bold"/>
-                <TextBox x:Name="PetNameBox"/>
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="外观与行为"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"/>
 
-                <TextBlock Text="大小" FontWeight="Bold"/>
-                <Grid Margin="0,4,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="52"/>
-                    </Grid.ColumnDefinitions>
-                    <Slider x:Name="ScaleSlider" Minimum="0.55" Maximum="1.5" TickFrequency="0.05"
-                            IsSnapToTickEnabled="True" ValueChanged="ScaleSlider_ValueChanged"/>
-                    <TextBlock x:Name="ScaleLabel" Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
+                        <TextBlock Text="名字" FontWeight="SemiBold" Margin="0,15,0,0"/>
+                        <TextBox x:Name="PetNameBox"/>
 
-                <CheckBox x:Name="TopmostBox" Content="始终置顶"/>
-                <CheckBox x:Name="WanderBox" Content="偶尔在屏幕附近漫游"/>
-                <CheckBox x:Name="StartupBox" Content="登录 Windows 时自动启动"/>
+                        <Grid Margin="0,2,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="58"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="桌宠大小" FontWeight="SemiBold"/>
+                                <Slider x:Name="ScaleSlider"
+                                        Margin="0,7,12,0"
+                                        Minimum="0.55"
+                                        Maximum="1.5"
+                                        TickFrequency="0.05"
+                                        IsSnapToTickEnabled="True"
+                                        ValueChanged="ScaleSlider_ValueChanged"/>
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Background="#FFE7F7ED"
+                                    CornerRadius="9"
+                                    Padding="7,5"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,1">
+                                <TextBlock x:Name="ScaleLabel"
+                                           TextAlignment="Center"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           FontWeight="Bold"/>
+                            </Border>
+                        </Grid>
 
-                <Separator Margin="0,16"/>
-                <TextBlock Text="专注与提醒" FontSize="17" FontWeight="Bold"/>
-                <CheckBox x:Name="HydrationBox" Content="启用喝水提醒"/>
-                <Grid Margin="0,4,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="90"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="喝水提醒间隔（分钟）" VerticalAlignment="Center"/>
-                    <TextBox x:Name="HydrationBoxMinutes" Grid.Column="1" Margin="6,0,0,0"/>
-                </Grid>
-                <Grid Margin="0,4,0,6">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="90"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="默认专注时长（分钟）" VerticalAlignment="Center"/>
-                    <TextBox x:Name="FocusBoxMinutes" Grid.Column="1" Margin="6,0,0,0"/>
-                </Grid>
+                        <CheckBox x:Name="TopmostBox" Content="始终置顶"/>
+                        <CheckBox x:Name="WanderBox" Content="偶尔在屏幕附近漫游"/>
+                        <CheckBox x:Name="StartupBox" Content="登录 Windows 时自动启动"/>
+                    </StackPanel>
+                </Border>
 
-                <Separator Margin="0,16"/>
-                <TextBlock Text="OpenAI（可选）" FontSize="17" FontWeight="Bold"/>
-                <TextBlock Text="不填也能使用离线陪伴模式。API key 会用 Windows DPAPI 加密，仅当前 Windows 用户可解密。"
-                           TextWrapping="Wrap" Foreground="#FF5B5660" Margin="0,4,0,8"/>
-                <TextBlock Text="模型"/>
-                <TextBox x:Name="ModelBox"/>
-                <TextBlock Text="新的 API key（留空表示保持不变）"/>
-                <PasswordBox x:Name="ApiKeyBox" Padding="8,6" Margin="0,4,0,4"/>
-                <TextBlock x:Name="ApiStatusText" FontSize="11" Foreground="#FF047A42"/>
-                <Button Content="清除已保存的 API key" HorizontalAlignment="Left" Background="#FF6B626D"
-                        Click="ClearApiKey_Click" Margin="0,8,0,0"/>
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="专注与提醒"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"/>
+                        <CheckBox x:Name="HydrationBox"
+                                  Content="启用喝水提醒"
+                                  Margin="0,13,0,8"/>
+
+                        <Grid Margin="0,3,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="105"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="喝水提醒间隔" FontWeight="SemiBold"/>
+                                <TextBlock Text="10–240 分钟"
+                                           Margin="0,2,0,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"/>
+                            </StackPanel>
+                            <TextBox x:Name="HydrationBoxMinutes"
+                                     Grid.Column="1"
+                                     Margin="10,0,0,0"
+                                     HorizontalContentAlignment="Center"/>
+                        </Grid>
+
+                        <Grid Margin="0,3,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="105"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="默认专注时长" FontWeight="SemiBold"/>
+                                <TextBlock Text="1–120 分钟"
+                                           Margin="0,2,0,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"/>
+                            </StackPanel>
+                            <TextBox x:Name="FocusBoxMinutes"
+                                     Grid.Column="1"
+                                     Margin="10,0,0,0"
+                                     HorizontalContentAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModernCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="OpenAI（可选）"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"/>
+                        <TextBlock Text="不填写也能使用离线陪伴模式。API key 使用 Windows DPAPI 加密，仅当前 Windows 用户可以解密。"
+                                   Margin="0,6,0,13"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="20"/>
+
+                        <TextBlock Text="模型" FontWeight="SemiBold"/>
+                        <TextBox x:Name="ModelBox"/>
+
+                        <TextBlock Text="新的 API key" FontWeight="SemiBold"/>
+                        <TextBlock Text="留空表示保持当前设置"
+                                   Margin="0,2,0,3"
+                                   FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                        <PasswordBox x:Name="ApiKeyBox" Margin="0,4,0,6"/>
+                        <TextBlock x:Name="ApiStatusText"
+                                   FontSize="11"
+                                   Foreground="{StaticResource AccentBrush}"/>
+                        <Button Content="清除已保存的 API key"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Click="ClearApiKey_Click"
+                                Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="1" Background="#FFF0E8D1" BorderBrush="#FFD5CCB6" BorderThickness="0,1,0,0" Padding="14">
+        <Border Grid.Row="1"
+                Background="#FFF0ECE2"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="取消" Width="84" Background="#FF6B626D" Click="Cancel_Click"/>
-                <Button Content="保存" Width="96" Click="Save_Click"/>
+                <Button Content="取消"
+                        Width="90"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="Cancel_Click"/>
+                <Button Content="保存"
+                        Width="102"
+                        Click="Save_Click"/>
             </StackPanel>
         </Border>
     </Grid>

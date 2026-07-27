@@ -6,7 +6,7 @@
         MinWidth="480" MinHeight="560"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="#FFF7F2DF"
+        Background="{StaticResource SurfaceBrush}"
         FontFamily="Microsoft YaHei UI">
     <Grid>
         <Grid.RowDefinitions>
@@ -26,7 +26,7 @@
                            Foreground="#FF5B5660"
                            TextWrapping="Wrap"/>
 
-                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="一分钟上手" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
@@ -39,7 +39,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="她为什么会做这些动作？" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <Grid Margin="0,12,0,0">
@@ -81,7 +81,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="右键菜单功能" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
@@ -98,7 +98,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="#FFFFFFFF" CornerRadius="12" Padding="18">
+                <Border Style="{StaticResource ModernCardStyle}">
                     <StackPanel>
                         <TextBlock Text="AI、隐私与 Codex 联动" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0"
@@ -111,8 +111,8 @@
         </ScrollViewer>
 
         <Border Grid.Row="1"
-                Background="#FFF0E8D1"
-                BorderBrush="#FFD5CCB6"
+                Background="#FFF0ECE2"
+                BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="14">
             <Button Content="看懂了"

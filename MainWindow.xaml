@@ -21,12 +21,15 @@
                 Grid.Row="0"
                 MaxWidth="184"
                 Margin="3,0,3,4"
-                Padding="10,7"
-                CornerRadius="9"
+                Padding="11,8"
+                CornerRadius="14"
                 BorderBrush="#FF16131A"
-                BorderThickness="3"
+                BorderThickness="2"
                 Background="#FFF8F2DC"
                 Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="13" ShadowDepth="4" Opacity="0.24"/>
+            </Border.Effect>
             <TextBlock x:Name="SpeechText"
                        Foreground="#FF16131A"
                        FontFamily="Microsoft YaHei UI"
