@@ -73,6 +73,38 @@ try {
             }
         }
 
+        $smallZSource = $zzz.Clone(
+            [System.Drawing.Rectangle]::new(268, 49, 26, 31),
+            [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        try {
+            $graphics = [System.Drawing.Graphics]::FromImage($zzz)
+            try {
+                $graphics.CompositingMode =
+                    [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
+                $graphics.InterpolationMode =
+                    [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
+                $graphics.PixelOffsetMode =
+                    [System.Drawing.Drawing2D.PixelOffsetMode]::Half
+                $graphics.SmoothingMode =
+                    [System.Drawing.Drawing2D.SmoothingMode]::None
+                $graphics.DrawImage(
+                    $smallZSource,
+                    [System.Drawing.Rectangle]::new(252, 72, 14, 17),
+                    [System.Drawing.Rectangle]::new(
+                        0,
+                        0,
+                        $smallZSource.Width,
+                        $smallZSource.Height),
+                    [System.Drawing.GraphicsUnit]::Pixel)
+            }
+            finally {
+                $graphics.Dispose()
+            }
+        }
+        finally {
+            $smallZSource.Dispose()
+        }
+
         $base.Save($basePath, [System.Drawing.Imaging.ImageFormat]::Png)
         $zzz.Save($zzzPath, [System.Drawing.Imaging.ImageFormat]::Png)
     }

@@ -210,8 +210,8 @@ namespace DesktopPet.Services
             var rise = new DoubleAnimation
             {
                 From = 5,
-                To = -9,
-                Duration = TimeSpan.FromSeconds(2.8),
+                To = -12,
+                Duration = TimeSpan.FromSeconds(5.2),
                 RepeatBehavior = RepeatBehavior.Forever,
                 EasingFunction = new SineEase
                 {
@@ -220,7 +220,7 @@ namespace DesktopPet.Services
             };
             var fade = new DoubleAnimationUsingKeyFrames
             {
-                Duration = TimeSpan.FromSeconds(2.8),
+                Duration = TimeSpan.FromSeconds(5.2),
                 RepeatBehavior = RepeatBehavior.Forever
             };
             fade.KeyFrames.Add(new LinearDoubleKeyFrame(
@@ -228,10 +228,10 @@ namespace DesktopPet.Services
                 KeyTime.FromPercent(0)));
             fade.KeyFrames.Add(new LinearDoubleKeyFrame(
                 1,
-                KeyTime.FromPercent(0.22)));
+                KeyTime.FromPercent(0.18)));
             fade.KeyFrames.Add(new LinearDoubleKeyFrame(
-                0.9,
-                KeyTime.FromPercent(0.62)));
+                1,
+                KeyTime.FromPercent(0.68)));
             fade.KeyFrames.Add(new LinearDoubleKeyFrame(
                 0,
                 KeyTime.FromPercent(1)));
