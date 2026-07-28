@@ -425,18 +425,11 @@ namespace DesktopPet
                 ApplyBasePetState();
             }
 
-            var resumedBreakRemaining = _pausedRandomCueBreakRemaining;
             _pausedNextRandomCueRemaining = null;
             _pausedRandomCueBreakRemaining = null;
             _focusTimer.Start();
             UpdateFocusMenuState();
-            ShowBubble(
-                resumedBreakRemaining.HasValue
-                    ? "继续微休息，还剩 " +
-                      FormatFocusRemaining(resumedBreakRemaining.Value) + "。"
-                    : "番茄钟继续。还剩 " +
-                      FormatFocusRemaining(_pausedFocusRemaining) + "。",
-                4);
+            ShowFocusCountdown();
         }
 
         private void StopFocus_Click(object sender, RoutedEventArgs e)
