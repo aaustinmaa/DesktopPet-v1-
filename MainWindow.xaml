@@ -31,6 +31,7 @@
                     <MenuItem Header="💚 给我一点鼓励" Click="Cheer_Click"/>
                     <Separator/>
                     <MenuItem x:Name="WorkModeItem" Header="💻 工作模式" IsCheckable="True" Click="WorkMode_Click"/>
+                    <MenuItem x:Name="RestModeItem" Header="😴 手动休息" IsCheckable="True" Click="RestMode_Click"/>
                     <MenuItem x:Name="StartFocusItem" Header="⏱ 开始专注计时" Click="StartFocus_Click"/>
                     <MenuItem x:Name="PauseFocusItem" Header="⏸ 暂停专注计时" IsEnabled="False" Click="PauseFocus_Click"/>
                     <MenuItem x:Name="StopFocusItem" Header="■ 停止专注计时" IsEnabled="False" Click="StopFocus_Click"/>

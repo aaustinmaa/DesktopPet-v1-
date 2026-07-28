@@ -42,6 +42,7 @@ namespace DesktopPet
         private TimeSpan? _pausedNextRandomCueRemaining;
         private TimeSpan? _pausedRandomCueBreakRemaining;
         private bool _workingMode;
+        private bool _manualRestMode;
         private bool _clickThrough;
         private bool _allowExit;
         private IntPtr _windowHandle;
@@ -190,6 +191,13 @@ namespace DesktopPet
 
         private void BehaviorTimer_Tick(object sender, EventArgs e)
         {
+            if (_manualRestMode)
+            {
+                if (_animator.CurrentState != PetState.Sleeping)
+                    _animator.SetState(PetState.Sleeping);
+                return;
+            }
+
             if (_workingMode || _focusEnds.HasValue) return;
             if (NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
             {
@@ -818,6 +826,22 @@ namespace DesktopPet
             _workingMode = WorkModeItem.IsChecked;
             _animator.SetState(_workingMode ? PetState.Working : PetState.Idle);
             ShowBubble(_workingMode ? "工作模式启动。我会安静陪你。" : "工作完成了吗？辛苦啦。", 4);
+        }
+
+        private void RestMode_Click(object sender, RoutedEventArgs e)
+        {
+            _manualRestMode = RestModeItem.IsChecked;
+            if (_manualRestMode)
+            {
+                _animator.SetState(PetState.Sleeping);
+                ShowBubble("我先休息一会儿。右键再点一次就能叫醒我。", 4);
+                return;
+            }
+
+            _animator.SetState(_workingMode || _focusEnds.HasValue
+                ? PetState.Working
+                : PetState.Idle);
+            ShowBubble("我醒啦。", 3);
         }
 
         private void Wander_Click(object sender, RoutedEventArgs e)

@@ -43,18 +43,6 @@ namespace DesktopPet.Services
             "wave-v2-08.png"
         };
 
-        private static readonly string[] HeartFrames =
-        {
-            "heart-v2-01.png",
-            "heart-v2-02.png",
-            "heart-v2-03.png",
-            "heart-v2-04.png",
-            "heart-v2-05.png",
-            "heart-v2-06.png",
-            "heart-v2-07.png",
-            "heart-v2-08.png"
-        };
-
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
         public SpriteAnimator(Image image)
@@ -131,8 +119,8 @@ namespace DesktopPet.Services
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(105);
                     break;
                 case PetState.HeartPulse:
-                    _frames = HeartFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(120);
+                    _frames = new[] { "heart.png" };
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 default:
                     _frames = IdleFrames;
