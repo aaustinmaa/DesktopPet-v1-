@@ -477,6 +477,129 @@ function Align-IdleOpenCloseFrames {
         $true)
 }
 
+function Lift-IdleOpenCloseHeart {
+    $offsetsY = @(0, -1, -2, -3, -4, -5, -6, -7,
+        -8, -7, -6, -5, -4, -3, -2, 0)
+    $heartRegion = [System.Drawing.Rectangle]::new(160, 240, 140, 90)
+
+    for ($frame = 1; $frame -le 16; $frame++) {
+        $filename = 'idle-open-close-v5-{0:D2}.png' -f $frame
+        $path = Join-Path $spriteDirectory $filename
+        $input = [System.Drawing.Bitmap]::FromFile($path)
+        try {
+            $mask = [bool[]]::new(
+                $heartRegion.Width * $heartRegion.Height)
+            for ($localY = 0; $localY -lt $heartRegion.Height; $localY++) {
+                for ($localX = 0; $localX -lt $heartRegion.Width; $localX++) {
+                    $pixel = $input.GetPixel(
+                        $heartRegion.X + $localX,
+                        $heartRegion.Y + $localY)
+                    $mask[$localY * $heartRegion.Width + $localX] =
+                        $pixel.R -gt 150 -and
+                        $pixel.G -lt 90 -and
+                        $pixel.B -lt 90 -and
+                        $pixel.A -gt 0
+                }
+            }
+
+            $expandedMask = [bool[]]::new($mask.Length)
+            for ($localY = 0; $localY -lt $heartRegion.Height; $localY++) {
+                for ($localX = 0; $localX -lt $heartRegion.Width; $localX++) {
+                    if (-not $mask[
+                        $localY * $heartRegion.Width + $localX]) {
+                        continue
+                    }
+                    for ($offsetY = -2; $offsetY -le 2; $offsetY++) {
+                        for ($offsetX = -2; $offsetX -le 2; $offsetX++) {
+                            $targetX = $localX + $offsetX
+                            $targetY = $localY + $offsetY
+                            if ($targetX -ge 0 -and
+                                $targetX -lt $heartRegion.Width -and
+                                $targetY -ge 0 -and
+                                $targetY -lt $heartRegion.Height) {
+                                $expandedMask[
+                                    $targetY * $heartRegion.Width +
+                                    $targetX] = $true
+                            }
+                        }
+                    }
+                }
+            }
+
+            $output = $input.Clone(
+                [System.Drawing.Rectangle]::new(
+                    0,
+                    0,
+                    $input.Width,
+                    $input.Height),
+                [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+            $temporaryPath = "$path.tmp.png"
+            try {
+                for ($localY = 0;
+                    $localY -lt $heartRegion.Height;
+                    $localY++) {
+                    for ($localX = 0;
+                        $localX -lt $heartRegion.Width;
+                        $localX++) {
+                        if (-not $expandedMask[
+                            $localY * $heartRegion.Width + $localX]) {
+                            continue
+                        }
+
+                        $sourceX = $heartRegion.X + $localX
+                        $sourceY = $heartRegion.Y + $localY
+                        $output.SetPixel(
+                            $sourceX,
+                            $sourceY,
+                            [System.Drawing.Color]::Black)
+                    }
+                }
+
+                $heartOffsetY = $offsetsY[$frame - 1]
+                for ($localY = 0;
+                    $localY -lt $heartRegion.Height;
+                    $localY++) {
+                    for ($localX = 0;
+                        $localX -lt $heartRegion.Width;
+                        $localX++) {
+                        if (-not $expandedMask[
+                            $localY * $heartRegion.Width + $localX]) {
+                            continue
+                        }
+
+                        $sourceX = $heartRegion.X + $localX
+                        $sourceY = $heartRegion.Y + $localY
+                        $targetY = $sourceY + $heartOffsetY
+                        if ($targetY -ge 0 -and
+                            $targetY -lt $output.Height) {
+                            $output.SetPixel(
+                                $sourceX,
+                                $targetY,
+                                $input.GetPixel($sourceX, $sourceY))
+                        }
+                    }
+                }
+
+                $input.Dispose()
+                $input = $null
+                $output.Save(
+                    $temporaryPath,
+                    [System.Drawing.Imaging.ImageFormat]::Png)
+            }
+            finally {
+                $output.Dispose()
+            }
+            [System.IO.File]::Copy($temporaryPath, $path, $true)
+            [System.IO.File]::Delete($temporaryPath)
+        }
+        finally {
+            if ($null -ne $input) {
+                $input.Dispose()
+            }
+        }
+    }
+}
+
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     0 8 'idle-v2'
@@ -485,6 +608,7 @@ Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-open-close-v5.png') `
     0 16 'idle-open-close-v5'
 Align-IdleOpenCloseFrames
+Lift-IdleOpenCloseHeart
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     8 8 'blink-v2' `
