@@ -419,10 +419,72 @@ function Build-IdleHandFrames {
     }
 }
 
+function Align-IdleOpenCloseFrames {
+    for ($frame = 1; $frame -le 16; $frame++) {
+        $filename = 'idle-open-close-v5-{0:D2}.png' -f $frame
+        $path = Join-Path $spriteDirectory $filename
+        $input = [System.Drawing.Bitmap]::FromFile($path)
+        try {
+            $minimumX = $input.Width
+            $minimumY = $input.Height
+            for ($y = 0; $y -lt 240; $y++) {
+                for ($x = 0; $x -lt $input.Width; $x++) {
+                    if ($input.GetPixel($x, $y).A -lt 12) {
+                        continue
+                    }
+                    if ($x -lt $minimumX) { $minimumX = $x }
+                    if ($y -lt $minimumY) { $minimumY = $y }
+                }
+            }
+
+            $offsetX = 25 - $minimumX
+            $offsetY = 26 - $minimumY
+            $output = New-TransparentBitmap $input.Width $input.Height
+            try {
+                $graphics = [System.Drawing.Graphics]::FromImage($output)
+                try {
+                    $graphics.CompositingMode =
+                        [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
+                    $graphics.DrawImageUnscaled(
+                        $input,
+                        $offsetX,
+                        $offsetY)
+                }
+                finally {
+                    $graphics.Dispose()
+                }
+
+                $input.Dispose()
+                $input = $null
+                $output.Save(
+                    $path,
+                    [System.Drawing.Imaging.ImageFormat]::Png)
+            }
+            finally {
+                $output.Dispose()
+            }
+        }
+        finally {
+            if ($null -ne $input) {
+                $input.Dispose()
+            }
+        }
+    }
+
+    [System.IO.File]::Copy(
+        (Join-Path $spriteDirectory 'idle-open-close-v5-01.png'),
+        (Join-Path $spriteDirectory 'idle-open-close-v5-16.png'),
+        $true)
+}
+
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     0 8 'idle-v2'
 Build-IdleHandFrames
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'idle-open-close-v5.png') `
+    0 16 'idle-open-close-v5'
+Align-IdleOpenCloseFrames
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     8 8 'blink-v2' `
