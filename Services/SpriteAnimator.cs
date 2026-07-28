@@ -43,6 +43,18 @@ namespace DesktopPet.Services
             "wave-v2-08.png"
         };
 
+        private static readonly string[] BlinkFrames =
+        {
+            "blink-v2-01.png",
+            "blink-v2-02.png",
+            "blink-v2-03.png",
+            "blink-v2-04.png",
+            "blink-v2-05.png",
+            "blink-v2-06.png",
+            "blink-v2-07.png",
+            "blink-v2-08.png"
+        };
+
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
         public SpriteAnimator(Image image)
@@ -72,19 +84,8 @@ namespace DesktopPet.Services
             switch (state)
             {
                 case PetState.Blinking:
-                    _frames = new[]
-                    {
-                        "idle-v2-01.png",
-                        "idle-v2-02.png",
-                        "blink-v2.png",
-                        "blink-v2.png",
-                        "blink-v2.png",
-                        "blink-v2.png",
-                        "idle-v2-02.png",
-                        "idle-v2-01.png",
-                        "idle-v2-01.png"
-                    };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(145);
+                    _frames = BlinkFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(165);
                     _loopFrames = false;
                     _returnToIdleWhenFinished = true;
                     revertAfter = null;

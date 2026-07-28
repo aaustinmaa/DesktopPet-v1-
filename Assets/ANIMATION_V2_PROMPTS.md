@@ -15,8 +15,8 @@ solid #ff00ff chroma-key background with no labels, grid lines, shadows,
 gradients, antialiasing, text, or watermark.
 ```
 
-Runtime uses frames 1–8. Blinking combines the stable V2 idle poses with the
-existing full-height closed-eye sprite so that the character never crouches.
+Runtime uses frames 1–8 for calm idle and frames 9–16 for the complete
+crouch-and-blink animation.
 
 ## Wave and heart atlas
 

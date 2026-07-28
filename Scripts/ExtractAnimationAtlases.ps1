@@ -295,6 +295,9 @@ Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     0 8 'idle-v2'
 Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'idle-blink-v2.png') `
+    8 8 'blink-v2'
+Save-CharacterFrames `
     (Join-Path $atlasDirectory 'social-v2.png') `
     0 8 'wave-v2'
 Save-CharacterFrames `
