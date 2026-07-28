@@ -28,6 +28,7 @@ namespace DesktopPet.Services
         private TaskCompletionSource<string> _activeTurnCompletion;
         private TaskCompletionSource<bool> _loginCompletion;
         private string _activeLoginId;
+        private string _activeReasoningEffort;
 
         public async Task StartAsync()
         {
@@ -177,12 +178,31 @@ namespace DesktopPet.Services
                     if (string.IsNullOrWhiteSpace(modelId))
                         modelId = GetString(data, "id");
                     if (string.IsNullOrWhiteSpace(modelId)) continue;
+                    var defaultEffort = GetString(data, "defaultReasoningEffort") ??
+                        string.Empty;
+                    var supportedEfforts = new List<CodexReasoningEffortOption>();
+                    foreach (var effortItem in GetObjectList(data, "supportedReasoningEfforts"))
+                    {
+                        var effortData = effortItem as Dictionary<string, object>;
+                        var effort = GetString(effortData, "reasoningEffort");
+                        if (string.IsNullOrWhiteSpace(effort)) continue;
+                        supportedEfforts.Add(new CodexReasoningEffortOption
+                        {
+                            Effort = effort,
+                            Description = GetString(effortData, "description") ??
+                                string.Empty,
+                            IsModelDefault = string.Equals(
+                                effort, defaultEffort, StringComparison.OrdinalIgnoreCase)
+                        });
+                    }
                     models.Add(new CodexModelOption
                     {
                         ModelId = modelId,
                         DisplayName = GetString(data, "displayName") ?? modelId,
                         Description = GetString(data, "description") ?? string.Empty,
-                        IsDefault = GetBoolean(data, "isDefault")
+                        IsDefault = GetBoolean(data, "isDefault"),
+                        DefaultReasoningEffort = defaultEffort,
+                        SupportedReasoningEfforts = supportedEfforts
                     });
                 }
                 cursor = GetString(result, "nextCursor");
@@ -201,11 +221,12 @@ namespace DesktopPet.Services
             string userMessage,
             string petName,
             string model,
+            string reasoningEffort,
             string initialMemoryContext)
         {
             await StartAsync();
             if (string.IsNullOrWhiteSpace(_threadId))
-                await StartCompanionThreadAsync(petName, model);
+                await StartCompanionThreadAsync(petName, model, reasoningEffort);
 
             var text = userMessage;
             if (!string.IsNullOrWhiteSpace(initialMemoryContext))
@@ -272,6 +293,8 @@ namespace DesktopPet.Services
                 },
                 { "outputSchema", outputSchema }
             };
+            if (!string.IsNullOrWhiteSpace(_activeReasoningEffort))
+                parameters["effort"] = _activeReasoningEffort;
 
             await SendRequestAsync("turn/start", parameters, TimeSpan.FromSeconds(30));
             var completedText = await WaitWithTimeout(_activeTurnCompletion.Task,
@@ -285,7 +308,10 @@ namespace DesktopPet.Services
             return completedText;
         }
 
-        private async Task StartCompanionThreadAsync(string petName, string model)
+        private async Task StartCompanionThreadAsync(
+            string petName,
+            string model,
+            string reasoningEffort)
         {
             var workspace = Path.Combine(SettingsService.DataDirectory, "CompanionWorkspace");
             Directory.CreateDirectory(workspace);
@@ -308,9 +334,10 @@ namespace DesktopPet.Services
                 { "developerInstructions", developerInstructions },
                 { "serviceName", "su-wu-du-companion" }
             };
-            var validatedModel = await ResolveAvailableModelAsync(model);
-            if (!string.IsNullOrWhiteSpace(validatedModel))
-                parameters["model"] = validatedModel;
+            var selection = await ResolveModelSelectionAsync(model, reasoningEffort);
+            if (!string.IsNullOrWhiteSpace(selection.ExplicitModelId))
+                parameters["model"] = selection.ExplicitModelId;
+            _activeReasoningEffort = selection.ReasoningEffort;
 
             var result = await SendRequestAsync("thread/start", parameters,
                 TimeSpan.FromSeconds(45));
@@ -320,24 +347,50 @@ namespace DesktopPet.Services
                 throw new InvalidOperationException("Codex 没有返回聊天线程编号。");
         }
 
-        private async Task<string> ResolveAvailableModelAsync(string requestedModel)
+        private async Task<CodexSelection> ResolveModelSelectionAsync(
+            string requestedModel,
+            string requestedEffort)
         {
-            if (string.IsNullOrWhiteSpace(requestedModel))
-                return string.Empty;
             try
             {
                 var models = await GetAvailableModelsAsync();
-                var match = models.FirstOrDefault(item =>
-                    string.Equals(item.ModelId, requestedModel.Trim(),
-                        StringComparison.OrdinalIgnoreCase));
-                return match == null ? string.Empty : match.ModelId;
+                var explicitModel = string.IsNullOrWhiteSpace(requestedModel)
+                    ? null
+                    : models.FirstOrDefault(item =>
+                        string.Equals(item.ModelId, requestedModel.Trim(),
+                            StringComparison.OrdinalIgnoreCase));
+                var effectiveModel = explicitModel ??
+                    models.FirstOrDefault(item => item.IsDefault) ??
+                    models.FirstOrDefault();
+                var validatedEffort = string.Empty;
+                if (effectiveModel != null && !string.IsNullOrWhiteSpace(requestedEffort))
+                {
+                    var match = effectiveModel.SupportedReasoningEfforts.FirstOrDefault(item =>
+                        string.Equals(item.Effort, requestedEffort.Trim(),
+                            StringComparison.OrdinalIgnoreCase));
+                    if (match != null)
+                        validatedEffort = match.Effort;
+                }
+                return new CodexSelection
+                {
+                    ExplicitModelId = explicitModel == null
+                        ? string.Empty
+                        : explicitModel.ModelId,
+                    ReasoningEffort = validatedEffort
+                };
             }
             catch
             {
-                // A stale or unavailable custom model must never break chat.
-                // Omitting the model lets Codex choose the account default.
-                return string.Empty;
+                // Stale or unavailable selections must never break chat.
+                // Omitting both values lets Codex choose compatible defaults.
+                return new CodexSelection();
             }
+        }
+
+        private sealed class CodexSelection
+        {
+            public string ExplicitModelId { get; set; }
+            public string ReasoningEffort { get; set; }
         }
 
         private async Task<Dictionary<string, object>> SendRequestAsync(

@@ -49,7 +49,13 @@ namespace DesktopPet
                 case "offline":
                     return "离线陪伴 · 不联网";
                 default:
-                    return "ChatGPT · Codex · 使用你的订阅登录";
+                    var model = string.IsNullOrWhiteSpace(_settings.CodexModel)
+                        ? "自动模型"
+                        : _settings.CodexModel;
+                    var effort = string.IsNullOrWhiteSpace(_settings.CodexReasoningEffort)
+                        ? "模型默认推理"
+                        : _settings.CodexReasoningEffort + " 推理";
+                    return "ChatGPT · " + model + " · " + effort;
             }
         }
 

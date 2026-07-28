@@ -73,6 +73,7 @@ namespace DesktopPet.Services
                 userMessage,
                 _settings.PetName,
                 _settings.CodexModel,
+                _settings.CodexReasoningEffort,
                 _codexHasContext ? string.Empty : context);
             _codexHasContext = true;
             return ParsePetReply(raw);

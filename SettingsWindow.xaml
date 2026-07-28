@@ -194,6 +194,24 @@
                                            Foreground="{StaticResource MutedBrush}"
                                            TextWrapping="Wrap"
                                            Margin="1,0,0,0"/>
+                                <TextBlock Text="推理强度"
+                                           FontWeight="SemiBold"
+                                           Margin="0,11,0,0"/>
+                                <TextBlock Text="选项会随模型变化；越高通常越慢，也会使用更多推理 token。"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           Margin="0,2,0,0"/>
+                                <ComboBox x:Name="CodexReasoningBox"
+                                          Style="{StaticResource ModernComboBoxStyle}"
+                                          DisplayMemberPath="DisplayLabel"
+                                          SelectedValuePath="Effort"
+                                          IsEditable="False"
+                                          SelectionChanged="CodexReasoningBox_SelectionChanged"/>
+                                <TextBlock x:Name="CodexReasoningHintText"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="1,0,0,0"/>
                             </StackPanel>
                         </Border>
 

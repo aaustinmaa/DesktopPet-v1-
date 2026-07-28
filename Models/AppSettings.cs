@@ -5,7 +5,7 @@ namespace DesktopPet.Models
     [DataContract]
     public class AppSettings
     {
-        [DataMember] public int SettingsVersion { get; set; } = 2;
+        [DataMember] public int SettingsVersion { get; set; } = 3;
         [DataMember] public double WindowLeft { get; set; } = double.NaN;
         [DataMember] public double WindowTop { get; set; } = double.NaN;
         [DataMember] public double PetScale { get; set; } = 0.82;
@@ -19,6 +19,7 @@ namespace DesktopPet.Models
         [DataMember] public string AiProvider { get; set; } = "codex";
         [DataMember] public string AiModel { get; set; } = "gpt-5.6-sol";
         [DataMember] public string CodexModel { get; set; } = "";
+        [DataMember] public string CodexReasoningEffort { get; set; } = "";
         [DataMember] public bool MemoryEnabled { get; set; } = true;
         [DataMember] public bool FirstRunComplete { get; set; } = false;
 
@@ -33,8 +34,10 @@ namespace DesktopPet.Models
             {
                 AiProvider = "codex";
                 MemoryEnabled = true;
-                SettingsVersion = 2;
             }
+            if (SettingsVersion < 3)
+                CodexReasoningEffort = string.Empty;
+            SettingsVersion = 3;
             if (PetScale < 0.55) PetScale = 0.55;
             if (PetScale > 1.5) PetScale = 1.5;
             if (HydrationMinutes < 10) HydrationMinutes = 10;
@@ -48,6 +51,7 @@ namespace DesktopPet.Models
                 AiProvider = "codex";
             if (string.IsNullOrWhiteSpace(AiModel)) AiModel = "gpt-5.6-sol";
             if (CodexModel == null) CodexModel = string.Empty;
+            if (CodexReasoningEffort == null) CodexReasoningEffort = string.Empty;
         }
     }
 }

@@ -110,6 +110,11 @@
                                    Foreground="{StaticResource MutedBrush}"
                                    TextWrapping="Wrap"
                                    LineHeight="22"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="ChatGPT 模式的模型和推理强度都是下拉选项，由当前账号实时提供。建议使用“自动选择”；若手动调整，较高的推理强度通常回答更慢，也会使用更多推理 token。"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

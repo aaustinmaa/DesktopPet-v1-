@@ -16,7 +16,9 @@ namespace DesktopPet
         private readonly MemoryService _memoryService = new MemoryService();
         private string _selectedProvider;
         private string _savedCodexModel;
+        private string _savedCodexReasoningEffort;
         private bool _isUpdatingCodexModels;
+        private bool _isUpdatingCodexReasoning;
         public AppSettings ResultSettings { get; private set; }
 
         public SettingsWindow(AppSettings settings, SecretService secretService)
@@ -35,6 +37,7 @@ namespace DesktopPet
             FocusBoxMinutes.Text = settings.FocusMinutes.ToString(CultureInfo.InvariantCulture);
             ModelBox.Text = settings.AiModel;
             _savedCodexModel = settings.CodexModel ?? string.Empty;
+            _savedCodexReasoningEffort = settings.CodexReasoningEffort ?? string.Empty;
             ResetCodexModelList("登录后会自动读取此账号可用的模型。");
             MemoryBox.IsChecked = settings.MemoryEnabled;
             _selectedProvider = settings.AiProvider;
@@ -154,6 +157,8 @@ namespace DesktopPet
             try
             {
                 var models = await CodexService.GetAvailableModelsAsync();
+                var accountDefaultModel = models.FirstOrDefault(item => item.IsDefault) ??
+                    models.FirstOrDefault();
                 var options = new List<CodexModelOption>
                 {
                     new CodexModelOption
@@ -161,7 +166,13 @@ namespace DesktopPet
                         ModelId = string.Empty,
                         DisplayName = "自动选择",
                         Description = "由 Codex 选择当前账号的默认模型。",
-                        IsDefault = true
+                        IsDefault = true,
+                        DefaultReasoningEffort = accountDefaultModel == null
+                            ? string.Empty
+                            : accountDefaultModel.DefaultReasoningEffort,
+                        SupportedReasoningEfforts = accountDefaultModel == null
+                            ? new List<CodexReasoningEffortOption>()
+                            : accountDefaultModel.SupportedReasoningEfforts
                     }
                 };
                 options.AddRange(models);
@@ -186,6 +197,7 @@ namespace DesktopPet
                 {
                     UpdateCodexModelHint();
                 }
+                RefreshCodexReasoningOptions();
             }
             catch (Exception ex)
             {
@@ -208,11 +220,15 @@ namespace DesktopPet
                     ModelId = string.Empty,
                     DisplayName = "自动选择",
                     Description = "由 Codex 选择当前账号的默认模型。",
-                    IsDefault = true
+                    IsDefault = true,
+                    DefaultReasoningEffort = string.Empty,
+                    SupportedReasoningEfforts =
+                        new List<CodexReasoningEffortOption>()
                 }
             };
             CodexModelBox.SelectedIndex = 0;
             _isUpdatingCodexModels = false;
+            ResetCodexReasoningList("读取模型后会显示可用的推理强度。");
             if (CodexModelHintText != null)
                 CodexModelHintText.Text = hint;
         }
@@ -225,6 +241,7 @@ namespace DesktopPet
             var selected = CodexModelBox.SelectedItem as CodexModelOption;
             _savedCodexModel = selected == null ? string.Empty : selected.ModelId;
             UpdateCodexModelHint();
+            RefreshCodexReasoningOptions();
         }
 
         private void UpdateCodexModelHint()
@@ -238,6 +255,105 @@ namespace DesktopPet
             CodexModelHintText.Text = string.IsNullOrWhiteSpace(selected.ModelId)
                 ? "由 Codex 自动选择，推荐大多数用户使用。"
                 : selected.Description + "\n模型 ID：" + selected.ModelId;
+        }
+
+        private void RefreshCodexReasoningOptions()
+        {
+            if (CodexReasoningBox == null) return;
+            var model = CodexModelBox.SelectedItem as CodexModelOption;
+            var options = new List<CodexReasoningEffortOption>
+            {
+                new CodexReasoningEffortOption
+                {
+                    Effort = string.Empty,
+                    Description = "使用所选模型公布的默认推理强度。"
+                }
+            };
+            if (model != null && model.SupportedReasoningEfforts != null)
+            {
+                options.AddRange(model.SupportedReasoningEfforts.Select(item =>
+                    new CodexReasoningEffortOption
+                    {
+                        Effort = item.Effort,
+                        Description = item.Description,
+                        IsModelDefault = item.IsModelDefault
+                    }));
+            }
+
+            _isUpdatingCodexReasoning = true;
+            CodexReasoningBox.ItemsSource = options;
+            var selected = options.FirstOrDefault(item =>
+                !string.IsNullOrWhiteSpace(_savedCodexReasoningEffort) &&
+                string.Equals(item.Effort, _savedCodexReasoningEffort,
+                    StringComparison.OrdinalIgnoreCase));
+            CodexReasoningBox.SelectedItem = selected ?? options[0];
+            _isUpdatingCodexReasoning = false;
+
+            if (selected == null && !string.IsNullOrWhiteSpace(_savedCodexReasoningEffort))
+            {
+                CodexReasoningHintText.Text =
+                    "原来的推理强度“" + _savedCodexReasoningEffort +
+                    "”不适用于这个模型，已切换为模型默认值。";
+                _savedCodexReasoningEffort = string.Empty;
+            }
+            else
+            {
+                UpdateCodexReasoningHint();
+            }
+        }
+
+        private void ResetCodexReasoningList(string hint)
+        {
+            if (CodexReasoningBox == null) return;
+            _isUpdatingCodexReasoning = true;
+            CodexReasoningBox.ItemsSource = new[]
+            {
+                new CodexReasoningEffortOption
+                {
+                    Effort = string.Empty,
+                    Description = "使用所选模型公布的默认推理强度。"
+                }
+            };
+            CodexReasoningBox.SelectedIndex = 0;
+            _isUpdatingCodexReasoning = false;
+            if (CodexReasoningHintText != null)
+                CodexReasoningHintText.Text = hint;
+        }
+
+        private void CodexReasoningBox_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (_isUpdatingCodexReasoning) return;
+            var selected = CodexReasoningBox.SelectedItem as CodexReasoningEffortOption;
+            _savedCodexReasoningEffort = selected == null
+                ? string.Empty
+                : selected.Effort;
+            UpdateCodexReasoningHint();
+        }
+
+        private void UpdateCodexReasoningHint()
+        {
+            var selected = CodexReasoningBox.SelectedItem as CodexReasoningEffortOption;
+            var model = CodexModelBox.SelectedItem as CodexModelOption;
+            if (selected == null)
+            {
+                CodexReasoningHintText.Text = string.Empty;
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(selected.Effort))
+            {
+                var modelDefault = model == null
+                    ? string.Empty
+                    : model.DefaultReasoningEffort;
+                CodexReasoningHintText.Text = string.IsNullOrWhiteSpace(modelDefault)
+                    ? "由 Codex 使用所选模型的默认推理强度。"
+                    : "模型默认推理强度：" + modelDefault + "。";
+                return;
+            }
+            CodexReasoningHintText.Text = string.IsNullOrWhiteSpace(selected.Description)
+                ? "将明确使用 " + selected.Effort + " 推理强度。"
+                : selected.Description;
         }
 
         private async void CodexConnect_Click(object sender, RoutedEventArgs e)
@@ -348,6 +464,11 @@ namespace DesktopPet
             ResultSettings.CodexModel = selectedCodexModel == null
                 ? string.Empty
                 : selectedCodexModel.ModelId;
+            var selectedCodexReasoning =
+                CodexReasoningBox.SelectedItem as CodexReasoningEffortOption;
+            ResultSettings.CodexReasoningEffort = selectedCodexReasoning == null
+                ? string.Empty
+                : selectedCodexReasoning.Effort;
             ResultSettings.MemoryEnabled = MemoryBox.IsChecked == true;
             ResultSettings.Normalize();
 

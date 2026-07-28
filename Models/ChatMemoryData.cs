@@ -47,6 +47,9 @@ namespace DesktopPet.Models
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public bool IsDefault { get; set; }
+        public string DefaultReasoningEffort { get; set; }
+        public List<CodexReasoningEffortOption> SupportedReasoningEfforts { get; set; } =
+            new List<CodexReasoningEffortOption>();
 
         public string DisplayLabel
         {
@@ -55,6 +58,39 @@ namespace DesktopPet.Models
                 if (string.IsNullOrWhiteSpace(ModelId))
                     return "自动选择（推荐）";
                 return DisplayName + (IsDefault ? " · 默认" : string.Empty);
+            }
+        }
+    }
+
+    public class CodexReasoningEffortOption
+    {
+        public string Effort { get; set; }
+        public string Description { get; set; }
+        public bool IsModelDefault { get; set; }
+
+        public string DisplayLabel
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Effort))
+                    return "自动选择（模型默认）";
+                return GetLocalizedName(Effort) +
+                    (IsModelDefault ? " · 默认" : string.Empty);
+            }
+        }
+
+        private static string GetLocalizedName(string effort)
+        {
+            switch ((effort ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "minimal": return "极简 · Minimal";
+                case "low": return "较快 · Low";
+                case "medium": return "均衡 · Medium";
+                case "high": return "深入 · High";
+                case "xhigh": return "更深入 · XHigh";
+                case "max": return "最大 · Max";
+                case "ultra": return "极致 · Ultra";
+                default: return effort;
             }
         }
     }
