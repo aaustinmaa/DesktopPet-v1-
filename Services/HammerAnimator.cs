@@ -29,6 +29,8 @@ namespace DesktopPet.Services
             new Dictionary<string, BitmapImage>();
         private int _frameIndex;
 
+        public event EventHandler Completed;
+
         public HammerAnimator(Image image)
         {
             _image = image;
@@ -56,6 +58,7 @@ namespace DesktopPet.Services
             {
                 _frameTimer.Stop();
                 _image.Visibility = Visibility.Collapsed;
+                Completed?.Invoke(this, EventArgs.Empty);
                 return;
             }
             ShowFrame(Frames[_frameIndex]);

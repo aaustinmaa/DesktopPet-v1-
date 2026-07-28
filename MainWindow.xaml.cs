@@ -40,12 +40,14 @@ namespace DesktopPet
         private DateTime? _randomCueBreakEndsAt;
         private DateTime? _focusCountdownVisibleUntil;
         private DateTime? _firstSleepingHammerHitAt;
+        private PetState _focusPauseBaseState = PetState.Idle;
         private bool _focusPaused;
         private TimeSpan _pausedFocusRemaining;
         private TimeSpan? _pausedNextRandomCueRemaining;
         private TimeSpan? _pausedRandomCueBreakRemaining;
         private bool _workingMode;
         private bool _manualRestMode;
+        private bool _sleepWakePending;
         private bool _clickThrough;
         private bool _allowExit;
         private IntPtr _windowHandle;
@@ -109,6 +111,7 @@ namespace DesktopPet
                 },
                 GetBasePetState);
             _hammerAnimator = new HammerAnimator(HammerImage);
+            _hammerAnimator.Completed += HammerAnimator_Completed;
             CreateSpeechBubbleWindow();
             CreateTrayIcon();
             ConfigureHydrationTimer();
@@ -217,6 +220,7 @@ namespace DesktopPet
                 if (_animator.CurrentState == PetState.Idle)
                 {
                     _firstSleepingHammerHitAt = null;
+                    _sleepWakePending = false;
                     _animator.SetState(PetState.Sleeping);
                 }
                 return;
@@ -227,6 +231,7 @@ namespace DesktopPet
                 if (_animator.CurrentState == PetState.Idle)
                 {
                     _firstSleepingHammerHitAt = null;
+                    _sleepWakePending = false;
                     _animator.SetState(PetState.Sleeping);
                 }
                 return;
@@ -235,6 +240,7 @@ namespace DesktopPet
             if (_animator.CurrentState == PetState.Sleeping)
             {
                 _firstSleepingHammerHitAt = null;
+                _sleepWakePending = false;
                 _animator.SetState(PetState.Idle);
                 ShowBubble("欢迎回来。", 3);
             }
@@ -249,15 +255,33 @@ namespace DesktopPet
         {
             if (_focusEnds.HasValue)
             {
-                if (_focusPaused) return PetState.Idle;
+                if (_focusPaused) return _focusPauseBaseState;
                 if (_randomCueBreakEndsAt.HasValue) return PetState.Reminder;
                 return PetState.Working;
             }
+            return GetNonFocusBasePetState();
+        }
+
+        private PetState GetNonFocusBasePetState()
+        {
             if (_workingMode) return PetState.Working;
             if (_manualRestMode ||
                 NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
                 return PetState.Sleeping;
             return PetState.Idle;
+        }
+
+        private PetState CaptureFocusPauseBaseState()
+        {
+            if (_workingMode) return PetState.Working;
+            if (_manualRestMode) return PetState.Sleeping;
+            if (_animator != null &&
+                (_animator.CurrentState == PetState.Working ||
+                 _animator.CurrentState == PetState.Sleeping))
+                return _animator.CurrentState;
+            return NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5)
+                ? PetState.Sleeping
+                : PetState.Idle;
         }
 
         private void ApplyBasePetState()
@@ -335,6 +359,8 @@ namespace DesktopPet
 
         private void StartFocus_Click(object sender, RoutedEventArgs e)
         {
+            if (!_focusEnds.HasValue)
+                _focusPauseBaseState = CaptureFocusPauseBaseState();
             var now = DateTime.Now;
             ResetFocusPauseState();
             _focusEnds = now.AddMinutes(_settings.FocusMinutes);
@@ -605,11 +631,8 @@ namespace DesktopPet
             {
                 var wasSleeping = _animator.CurrentState == PetState.Sleeping;
                 var shouldPlayIdleHitReaction =
-                    !_workingMode &&
-                    !_focusEnds.HasValue &&
-                    !_manualRestMode &&
-                    _animator.CurrentState != PetState.Working &&
-                    _animator.CurrentState != PetState.Sleeping;
+                    _animator.CurrentState == PetState.Idle &&
+                    GetBasePetState() == PetState.Idle;
                 if (shouldPlayIdleHitReaction)
                     _animator.SetState(PetState.Hit);
                 PlayHammerStrike();
@@ -631,10 +654,50 @@ namespace DesktopPet
             }
 
             _firstSleepingHammerHitAt = null;
-            _manualRestMode = false;
-            RestModeItem.IsChecked = false;
-            ApplyBasePetState();
-            ShowBubble("好啦好啦，我醒了！", 3);
+            _sleepWakePending = true;
+        }
+
+        private void HammerAnimator_Completed(object sender, EventArgs e)
+        {
+            if (!_sleepWakePending) return;
+            _sleepWakePending = false;
+            if (_animator == null ||
+                _animator.CurrentState != PetState.Sleeping)
+                return;
+
+            var fadeOut = new DoubleAnimation(
+                1,
+                0.35,
+                TimeSpan.FromMilliseconds(240))
+            {
+                BeginTime = TimeSpan.FromMilliseconds(120),
+                FillBehavior = FillBehavior.HoldEnd
+            };
+            fadeOut.Completed += (completedSender, completedArgs) =>
+            {
+                _manualRestMode = false;
+                RestModeItem.IsChecked = false;
+                if (_focusEnds.HasValue &&
+                    _focusPauseBaseState == PetState.Sleeping)
+                    _focusPauseBaseState = PetState.Idle;
+                ApplyBasePetState();
+
+                var fadeIn = new DoubleAnimation(
+                    0.35,
+                    1,
+                    TimeSpan.FromMilliseconds(480))
+                {
+                    FillBehavior = FillBehavior.Stop
+                };
+                fadeIn.Completed += (fadeSender, fadeArgs) =>
+                {
+                    PetImage.BeginAnimation(UIElement.OpacityProperty, null);
+                    PetImage.Opacity = 1;
+                    ShowBubble("好啦好啦，我醒了！", 3);
+                };
+                PetImage.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+            };
+            PetImage.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
 
         private void DoubleClickTimer_Tick(object sender, EventArgs e)
@@ -981,6 +1044,9 @@ namespace DesktopPet
                 _manualRestMode = false;
                 RestModeItem.IsChecked = false;
             }
+            if (_focusEnds.HasValue)
+                _focusPauseBaseState =
+                    _workingMode ? PetState.Working : PetState.Idle;
             ApplyBasePetState();
             ShowBubble(_workingMode ? "工作模式启动。我会安静陪你。" : "工作完成了吗？辛苦啦。", 4);
         }
@@ -988,12 +1054,16 @@ namespace DesktopPet
         private void RestMode_Click(object sender, RoutedEventArgs e)
         {
             _firstSleepingHammerHitAt = null;
+            _sleepWakePending = false;
             _manualRestMode = RestModeItem.IsChecked;
             if (_manualRestMode)
             {
                 _workingMode = false;
                 WorkModeItem.IsChecked = false;
             }
+            if (_focusEnds.HasValue)
+                _focusPauseBaseState =
+                    _manualRestMode ? PetState.Sleeping : PetState.Idle;
             if (_manualRestMode)
             {
                 ApplyBasePetState();
