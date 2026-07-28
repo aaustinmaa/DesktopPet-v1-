@@ -59,18 +59,57 @@
             </Image.ContextMenu>
         </Image>
 
-        <Image x:Name="SleepZzzImage"
-               Stretch="Uniform"
-               Visibility="Collapsed"
-               Opacity="0"
-               IsHitTestVisible="False"
-               Panel.ZIndex="1"
-               RenderOptions.BitmapScalingMode="NearestNeighbor"
-               SnapsToDevicePixels="True">
-            <Image.RenderTransform>
-                <TranslateTransform x:Name="SleepZzzTranslate"/>
-            </Image.RenderTransform>
-        </Image>
+        <Viewbox x:Name="SleepZzzLayer"
+                 Stretch="Uniform"
+                 Visibility="Collapsed"
+                 IsHitTestVisible="False"
+                 Panel.ZIndex="1"
+                 SnapsToDevicePixels="True">
+            <Canvas Width="362" Height="362">
+                <Image x:Name="SleepZSmallImage"
+                       Canvas.Left="252" Canvas.Top="72"
+                       Width="14" Height="17"
+                       Opacity="0"
+                       Stretch="Fill"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="SleepZSmallScale"/>
+                            <TranslateTransform x:Name="SleepZSmallTranslate"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+                <Image x:Name="SleepZMediumImage"
+                       Canvas.Left="268" Canvas.Top="49"
+                       Width="26" Height="31"
+                       Opacity="0"
+                       Stretch="Fill"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="SleepZMediumScale"/>
+                            <TranslateTransform x:Name="SleepZMediumTranslate"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+                <Image x:Name="SleepZLargeImage"
+                       Canvas.Left="294" Canvas.Top="4"
+                       Width="32" Height="40"
+                       Opacity="0"
+                       Stretch="Fill"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="SleepZLargeScale"/>
+                            <TranslateTransform x:Name="SleepZLargeTranslate"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+            </Canvas>
+        </Viewbox>
 
         <Image x:Name="HammerImage"
                Width="74"

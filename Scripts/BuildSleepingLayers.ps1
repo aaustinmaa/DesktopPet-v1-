@@ -9,6 +9,9 @@ $spriteDirectory = Join-Path $ProjectRoot 'Assets\Sprites'
 $sourcePath = Join-Path $spriteDirectory 'sleeping.png'
 $basePath = Join-Path $spriteDirectory 'sleeping-base.png'
 $zzzPath = Join-Path $spriteDirectory 'sleeping-zzz.png'
+$smallZPath = Join-Path $spriteDirectory 'sleeping-z-small.png'
+$mediumZPath = Join-Path $spriteDirectory 'sleeping-z-medium.png'
+$largeZPath = Join-Path $spriteDirectory 'sleeping-z-large.png'
 
 $source = [System.Drawing.Bitmap]::FromFile($sourcePath)
 try {
@@ -73,11 +76,18 @@ try {
             }
         }
 
-        $smallZSource = $zzz.Clone(
+        $mediumZ = $zzz.Clone(
             [System.Drawing.Rectangle]::new(268, 49, 26, 31),
             [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $largeZ = $zzz.Clone(
+            [System.Drawing.Rectangle]::new(294, 4, 32, 40),
+            [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $smallZ = [System.Drawing.Bitmap]::new(
+            14,
+            17,
+            [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
         try {
-            $graphics = [System.Drawing.Graphics]::FromImage($zzz)
+            $graphics = [System.Drawing.Graphics]::FromImage($smallZ)
             try {
                 $graphics.CompositingMode =
                     [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
@@ -88,21 +98,43 @@ try {
                 $graphics.SmoothingMode =
                     [System.Drawing.Drawing2D.SmoothingMode]::None
                 $graphics.DrawImage(
-                    $smallZSource,
-                    [System.Drawing.Rectangle]::new(252, 72, 14, 17),
+                    $mediumZ,
+                    [System.Drawing.Rectangle]::new(0, 0, 14, 17),
                     [System.Drawing.Rectangle]::new(
                         0,
                         0,
-                        $smallZSource.Width,
-                        $smallZSource.Height),
+                        $mediumZ.Width,
+                        $mediumZ.Height),
                     [System.Drawing.GraphicsUnit]::Pixel)
             }
             finally {
                 $graphics.Dispose()
             }
+
+            $compositeGraphics = [System.Drawing.Graphics]::FromImage($zzz)
+            try {
+                $compositeGraphics.CompositingMode =
+                    [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
+                $compositeGraphics.DrawImageUnscaled($smallZ, 252, 72)
+            }
+            finally {
+                $compositeGraphics.Dispose()
+            }
+
+            $smallZ.Save(
+                $smallZPath,
+                [System.Drawing.Imaging.ImageFormat]::Png)
+            $mediumZ.Save(
+                $mediumZPath,
+                [System.Drawing.Imaging.ImageFormat]::Png)
+            $largeZ.Save(
+                $largeZPath,
+                [System.Drawing.Imaging.ImageFormat]::Png)
         }
         finally {
-            $smallZSource.Dispose()
+            $smallZ.Dispose()
+            $mediumZ.Dispose()
+            $largeZ.Dispose()
         }
 
         $base.Save($basePath, [System.Drawing.Imaging.ImageFormat]::Png)

@@ -94,8 +94,15 @@ namespace DesktopPet
             RestoreWindowPosition();
             _animator = new SpriteAnimator(
                 PetImage,
-                SleepZzzImage,
-                SleepZzzTranslate);
+                SleepZzzLayer,
+                new[] { SleepZSmallImage, SleepZMediumImage, SleepZLargeImage },
+                new[] { SleepZSmallScale, SleepZMediumScale, SleepZLargeScale },
+                new[]
+                {
+                    SleepZSmallTranslate,
+                    SleepZMediumTranslate,
+                    SleepZLargeTranslate
+                });
             _hammerAnimator = new HammerAnimator(HammerImage);
             CreateSpeechBubbleWindow();
             CreateTrayIcon();
@@ -207,7 +214,8 @@ namespace DesktopPet
             if (_workingMode || _focusEnds.HasValue) return;
             if (NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
             {
-                _animator.SetState(PetState.Sleeping);
+                if (_animator.CurrentState != PetState.Sleeping)
+                    _animator.SetState(PetState.Sleeping);
                 return;
             }
 

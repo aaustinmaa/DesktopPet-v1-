@@ -14,8 +14,10 @@ namespace DesktopPet.Services
     public sealed class SpriteAnimator : IDisposable
     {
         private readonly Image _image;
-        private readonly Image _sleepZzzImage;
-        private readonly TranslateTransform _sleepZzzTranslate;
+        private readonly FrameworkElement _sleepZzzLayer;
+        private readonly Image[] _sleepZzzImages;
+        private readonly ScaleTransform[] _sleepZzzScales;
+        private readonly TranslateTransform[] _sleepZzzTranslations;
         private readonly DispatcherTimer _frameTimer;
         private readonly DispatcherTimer _revertTimer;
         private readonly Dictionary<string, BitmapImage> _cache = new Dictionary<string, BitmapImage>();
@@ -64,13 +66,19 @@ namespace DesktopPet.Services
 
         public SpriteAnimator(
             Image image,
-            Image sleepZzzImage,
-            TranslateTransform sleepZzzTranslate)
+            FrameworkElement sleepZzzLayer,
+            Image[] sleepZzzImages,
+            ScaleTransform[] sleepZzzScales,
+            TranslateTransform[] sleepZzzTranslations)
         {
             _image = image;
-            _sleepZzzImage = sleepZzzImage;
-            _sleepZzzTranslate = sleepZzzTranslate;
-            _sleepZzzImage.Source = LoadImage("sleeping-zzz.png");
+            _sleepZzzLayer = sleepZzzLayer;
+            _sleepZzzImages = sleepZzzImages;
+            _sleepZzzScales = sleepZzzScales;
+            _sleepZzzTranslations = sleepZzzTranslations;
+            _sleepZzzImages[0].Source = LoadImage("sleeping-z-small.png");
+            _sleepZzzImages[1].Source = LoadImage("sleeping-z-medium.png");
+            _sleepZzzImages[2].Source = LoadImage("sleeping-z-large.png");
             _frameTimer = new DispatcherTimer();
             _frameTimer.Tick += (s, e) => ShowNextFrame();
             _revertTimer = new DispatcherTimer();
@@ -205,52 +213,157 @@ namespace DesktopPet.Services
 
         private void StartSleepZzzAnimation()
         {
-            _sleepZzzImage.Visibility = Visibility.Visible;
+            _sleepZzzLayer.Visibility = Visibility.Visible;
+            StartSleepZAnimation(
+                2, 0, 0.08, 0.34, 0.34, 0.43,
+                0.43, 1, -51, 56.5, 0, 0);
+            StartSleepZAnimation(
+                1, 0.20, 0.28, 0.54, 0.54, 0.63,
+                0.54, 1.23, -22, 16, 29, -40.5);
+            StartSleepZAnimation(
+                0, 0.40, 0.48, 0.76, 0.76, 0.86,
+                1, 2.29, 0, 0, 51, -56.5);
+        }
 
-            var rise = new DoubleAnimation
+        private void StartSleepZAnimation(
+            int index,
+            double appearAt,
+            double fullyVisibleAt,
+            double arriveAt,
+            double fadeAt,
+            double goneAt,
+            double startScale,
+            double endScale,
+            double startX,
+            double startY,
+            double endX,
+            double endY)
+        {
+            var duration = TimeSpan.FromSeconds(8);
+            var opacity = new DoubleAnimationUsingKeyFrames
             {
-                From = 5,
-                To = -12,
-                Duration = TimeSpan.FromSeconds(5.2),
-                RepeatBehavior = RepeatBehavior.Forever,
-                EasingFunction = new SineEase
-                {
-                    EasingMode = EasingMode.EaseInOut
-                }
-            };
-            var fade = new DoubleAnimationUsingKeyFrames
-            {
-                Duration = TimeSpan.FromSeconds(5.2),
+                Duration = duration,
                 RepeatBehavior = RepeatBehavior.Forever
             };
-            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+            opacity.KeyFrames.Add(new LinearDoubleKeyFrame(
                 0,
                 KeyTime.FromPercent(0)));
-            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+            if (appearAt > 0)
+            {
+                opacity.KeyFrames.Add(new LinearDoubleKeyFrame(
+                    0,
+                    KeyTime.FromPercent(appearAt)));
+            }
+            opacity.KeyFrames.Add(new LinearDoubleKeyFrame(
                 1,
-                KeyTime.FromPercent(0.18)));
-            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                KeyTime.FromPercent(fullyVisibleAt)));
+            opacity.KeyFrames.Add(new LinearDoubleKeyFrame(
                 1,
-                KeyTime.FromPercent(0.68)));
-            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                KeyTime.FromPercent(fadeAt)));
+            opacity.KeyFrames.Add(new LinearDoubleKeyFrame(
+                0,
+                KeyTime.FromPercent(goneAt)));
+            opacity.KeyFrames.Add(new DiscreteDoubleKeyFrame(
                 0,
                 KeyTime.FromPercent(1)));
 
-            _sleepZzzTranslate.BeginAnimation(
+            var scale = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = duration,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            scale.KeyFrames.Add(new LinearDoubleKeyFrame(
+                startScale,
+                KeyTime.FromPercent(0)));
+            if (appearAt > 0)
+            {
+                scale.KeyFrames.Add(new LinearDoubleKeyFrame(
+                    startScale,
+                    KeyTime.FromPercent(appearAt)));
+            }
+            scale.KeyFrames.Add(new LinearDoubleKeyFrame(
+                endScale,
+                KeyTime.FromPercent(arriveAt)));
+
+            var horizontalMotion = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = duration,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            horizontalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                startX,
+                KeyTime.FromPercent(0)));
+            if (appearAt > 0)
+            {
+                horizontalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                    startX,
+                    KeyTime.FromPercent(appearAt)));
+            }
+            horizontalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                endX,
+                KeyTime.FromPercent(arriveAt)));
+
+            var verticalMotion = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = duration,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            verticalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                startY,
+                KeyTime.FromPercent(0)));
+            if (appearAt > 0)
+            {
+                verticalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                    startY,
+                    KeyTime.FromPercent(appearAt)));
+            }
+            verticalMotion.KeyFrames.Add(new LinearDoubleKeyFrame(
+                endY,
+                KeyTime.FromPercent(arriveAt)));
+
+            _sleepZzzImages[index].BeginAnimation(
+                UIElement.OpacityProperty,
+                opacity);
+            _sleepZzzScales[index].BeginAnimation(
+                ScaleTransform.ScaleXProperty,
+                scale);
+            _sleepZzzScales[index].BeginAnimation(
+                ScaleTransform.ScaleYProperty,
+                scale.Clone());
+            _sleepZzzTranslations[index].BeginAnimation(
+                TranslateTransform.XProperty,
+                horizontalMotion);
+            _sleepZzzTranslations[index].BeginAnimation(
                 TranslateTransform.YProperty,
-                rise);
-            _sleepZzzImage.BeginAnimation(UIElement.OpacityProperty, fade);
+                verticalMotion);
         }
 
         private void StopSleepZzzAnimation()
         {
-            _sleepZzzTranslate.BeginAnimation(
-                TranslateTransform.YProperty,
-                null);
-            _sleepZzzImage.BeginAnimation(UIElement.OpacityProperty, null);
-            _sleepZzzTranslate.Y = 0;
-            _sleepZzzImage.Opacity = 0;
-            _sleepZzzImage.Visibility = Visibility.Collapsed;
+            for (var index = 0; index < _sleepZzzImages.Length; index++)
+            {
+                _sleepZzzImages[index].BeginAnimation(
+                    UIElement.OpacityProperty,
+                    null);
+                _sleepZzzScales[index].BeginAnimation(
+                    ScaleTransform.ScaleXProperty,
+                    null);
+                _sleepZzzScales[index].BeginAnimation(
+                    ScaleTransform.ScaleYProperty,
+                    null);
+                _sleepZzzTranslations[index].BeginAnimation(
+                    TranslateTransform.XProperty,
+                    null);
+                _sleepZzzTranslations[index].BeginAnimation(
+                    TranslateTransform.YProperty,
+                    null);
+                _sleepZzzImages[index].Opacity = 0;
+                _sleepZzzScales[index].ScaleX = 1;
+                _sleepZzzScales[index].ScaleY = 1;
+                _sleepZzzTranslations[index].X = 0;
+                _sleepZzzTranslations[index].Y = 0;
+            }
+            _sleepZzzLayer.Visibility = Visibility.Collapsed;
         }
 
         public void Dispose()
