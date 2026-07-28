@@ -408,10 +408,15 @@ namespace DesktopPet
 
         private void Settings_Click(object sender, RoutedEventArgs e)
         {
+            OpenSettings(this);
+        }
+
+        internal AppSettings OpenSettings(Window owner)
+        {
             ToggleClickThrough(false);
             var dialog = new SettingsWindow(_settings.Clone(), _secretService)
             {
-                Owner = this,
+                Owner = owner ?? this,
                 Topmost = Topmost
             };
             if (dialog.ShowDialog() == true)
@@ -421,7 +426,9 @@ namespace DesktopPet
                 ApplySettings();
                 KeepOnScreen();
                 ShowBubble("设置保存好了。", 3);
+                return _settings.Clone();
             }
+            return null;
         }
 
         private void Help_Click(object sender, RoutedEventArgs e)

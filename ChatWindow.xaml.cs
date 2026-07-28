@@ -11,11 +11,11 @@ namespace DesktopPet
 {
     public partial class ChatWindow : Window
     {
-        private readonly AppSettings _settings;
+        private AppSettings _settings;
         private readonly SecretService _secrets;
         private readonly MainWindow _petWindow;
         private readonly MemoryService _memoryService;
-        private readonly AiService _aiService;
+        private AiService _aiService;
         private bool _isSending;
 
         public ChatWindow(AppSettings settings, SecretService secrets, MainWindow petWindow)
@@ -85,6 +85,20 @@ namespace DesktopPet
             await SendCurrentMessageAsync();
         }
 
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var updatedSettings = _petWindow.OpenSettings(this);
+            if (updatedSettings == null) return;
+
+            _aiService.Dispose();
+            _settings = updatedSettings;
+            _aiService = new AiService(_secrets, _settings, _memoryService);
+            TitleText.Text = "和 " + _settings.PetName + " 聊聊";
+            ModeText.Text = GetModeText();
+            StatusText.Text = "设置已更新；下一条消息会使用新的聊天设置";
+            MessageBox.Focus();
+        }
+
         private async void MessageBox_KeyDown(object sender, KeyEventArgs e)
         {
             if ((e.Key == Key.Enter || e.Key == Key.Return) &&
@@ -104,6 +118,7 @@ namespace DesktopPet
             _isSending = true;
             MessageBox.Clear();
             SendButton.IsEnabled = false;
+            SettingsButton.IsEnabled = false;
             AddMessage("你", message, true);
             StatusText.Text = _settings.PetName + " 正在想…";
             _petWindow.SetPetState(PetState.Working, 0);
@@ -129,6 +144,7 @@ namespace DesktopPet
             {
                 _isSending = false;
                 SendButton.IsEnabled = true;
+                SettingsButton.IsEnabled = true;
                 MessageBox.Focus();
             }
         }

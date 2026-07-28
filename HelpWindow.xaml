@@ -115,6 +115,11 @@
                                    Foreground="{StaticResource MutedBrush}"
                                    TextWrapping="Wrap"
                                    LineHeight="22"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="聊天窗口右上角的齿轮可以直接打开设置。保存后，下一条消息会立即使用新的聊天方式、模型和推理强度。"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

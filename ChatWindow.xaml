@@ -144,17 +144,20 @@
                 <TextBlock x:Name="TitleText" Foreground="#FFF8F2DC" FontSize="20" FontWeight="Bold"/>
                 <TextBlock x:Name="ModeText" Foreground="#FF77DA91" FontSize="11" Margin="0,3,0,0"/>
             </StackPanel>
-            <Border Grid.Column="1"
+            <Button x:Name="SettingsButton"
+                    Grid.Column="1"
                     Width="44"
                     Height="44"
+                    Margin="0"
+                    Padding="0"
                     Background="#3328D16F"
-                    CornerRadius="13">
-                <TextBlock Text="♥"
-                           Foreground="#FFFF4350"
-                           FontSize="25"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-            </Border>
+                    BorderBrush="#5577DA91"
+                    Foreground="#FF9AEEAD"
+                    FontSize="21"
+                    Content="⚙"
+                    ToolTip="打开设置"
+                    AutomationProperties.Name="打开设置"
+                    Click="SettingsButton_Click"/>
         </Grid>
 
         <Border Grid.Row="1"
