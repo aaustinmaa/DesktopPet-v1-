@@ -33,6 +33,7 @@ namespace DesktopPet
         private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
+        private readonly DispatcherTimer _petActionTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
@@ -43,6 +44,7 @@ namespace DesktopPet
         private TimeSpan? _pausedRandomCueBreakRemaining;
         private bool _workingMode;
         private bool _manualRestMode;
+        private PetState? _activeCommandState;
         private bool _clickThrough;
         private bool _allowExit;
         private IntPtr _windowHandle;
@@ -78,6 +80,7 @@ namespace DesktopPet
             _focusCountdownTimer.Tick += FocusCountdownTimer_Tick;
             _commandTimer.Interval = TimeSpan.FromSeconds(1);
             _commandTimer.Tick += CommandTimer_Tick;
+            _petActionTimer.Tick += PetActionTimer_Tick;
             _bubbleTimer.Tick += (s, e) =>
             {
                 _bubbleTimer.Stop();
@@ -805,6 +808,55 @@ namespace DesktopPet
             };
             ShowBubble(cheers[_random.Next(cheers.Length)], 6);
             _animator.SetState(PetState.HeartPulse, TimeSpan.FromSeconds(5));
+        }
+
+        private void PetAction_Click(object sender, RoutedEventArgs e)
+        {
+            var item = sender as MenuItem;
+            if (item == null) return;
+
+            PetState state;
+            TimeSpan duration;
+            switch (item.Tag as string)
+            {
+                case "Heart":
+                    state = PetState.HeartPulse;
+                    duration = TimeSpan.FromSeconds(3);
+                    break;
+                case "Blink":
+                    state = PetState.Blinking;
+                    duration = TimeSpan.FromMilliseconds(650);
+                    break;
+                case "Wave":
+                    state = PetState.Waving;
+                    duration = TimeSpan.FromSeconds(3);
+                    break;
+                default:
+                    return;
+            }
+
+            _petActionTimer.Stop();
+            _activeCommandState = state;
+            _animator.SetState(state);
+            _petActionTimer.Interval = duration;
+            _petActionTimer.Start();
+        }
+
+        private void PetActionTimer_Tick(object sender, EventArgs e)
+        {
+            _petActionTimer.Stop();
+            var commandedState = _activeCommandState;
+            _activeCommandState = null;
+            if (!commandedState.HasValue || _animator == null) return;
+
+            var actionStillVisible = _animator.CurrentState == commandedState.Value;
+            var blinkAlreadyFinished = commandedState.Value == PetState.Blinking
+                && _animator.CurrentState == PetState.Idle;
+            if (!actionStillVisible && !blinkAlreadyFinished) return;
+
+            _animator.SetState(_manualRestMode
+                ? PetState.Sleeping
+                : (_workingMode || _focusEnds.HasValue ? PetState.Working : PetState.Idle));
         }
 
         private void Chat_Click(object sender, RoutedEventArgs e) => OpenChat();
