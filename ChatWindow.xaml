@@ -150,17 +150,17 @@
                                            Foreground="#FFD1CBD4"
                                            VerticalAlignment="Center"/>
                                 <Border x:Name="SwitchTrack"
-                                        Width="44"
-                                        Height="24"
+                                        Width="29"
+                                        Height="16"
                                         Margin="9,0,0,0"
                                         Background="#FF3C3840"
                                         BorderBrush="#FF5B5560"
                                         BorderThickness="1"
-                                        CornerRadius="12">
+                                        CornerRadius="6">
                                     <Grid>
                                         <Ellipse x:Name="SwitchThumb"
-                                                 Width="18"
-                                                 Height="18"
+                                                 Width="12"
+                                                 Height="14"
                                                  Margin="2"
                                                  HorizontalAlignment="Left"
                                                  VerticalAlignment="Center"
@@ -200,7 +200,7 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetName="ThumbTranslate"
                                                              Storyboard.TargetProperty="X"
-                                                             To="20"
+                                                             To="12"
                                                              Duration="0:0:0.16">
                                                 <DoubleAnimation.EasingFunction>
                                                     <QuadraticEase EasingMode="EaseOut"/>
