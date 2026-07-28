@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -37,8 +40,11 @@ namespace DesktopPet
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
         private readonly DispatcherTimer _doubleClickTimer = new DispatcherTimer();
+        private readonly List<FocusTimeSegment> _activeFocusSegments =
+            new List<FocusTimeSegment>();
         private DateTime? _focusEnds;
         private DateTime? _activeFocusStartedAt;
+        private DateTime? _activeFocusSegmentStartedAt;
         private int _activeFocusPlannedMinutes;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
@@ -364,12 +370,17 @@ namespace DesktopPet
 
         private void StartFocus_Click(object sender, RoutedEventArgs e)
         {
-            if (!_focusEnds.HasValue)
+            var hadActiveFocus = _focusEnds.HasValue;
+            if (!hadActiveFocus)
                 _focusPauseBaseState = CaptureFocusPauseBaseState();
             var now = DateTime.Now;
+            var interruptedMessage = hadActiveFocus
+                ? RecordInterruptedFocus(now)
+                : string.Empty;
+            _focusTimer.Stop();
             ResetFocusPauseState();
-            _activeFocusStartedAt = now;
-            _activeFocusPlannedMinutes = _settings.FocusMinutes;
+            ResetFocusTracking();
+            BeginFocusTracking(now, _settings.FocusMinutes);
             _focusEnds = now.AddMinutes(_settings.FocusMinutes);
             ResetRandomCues();
             ScheduleNextRandomCue(now);
@@ -377,7 +388,13 @@ namespace DesktopPet
             UpdateFocusMenuState();
             ApplyBasePetState();
             _soundService.PlayFocusStart(_settings.FocusStartSound);
-            ShowBubble("专注 " + _settings.FocusMinutes + " 分钟，开始！我陪你一起。", 5);
+            ShowBubble(
+                (string.IsNullOrWhiteSpace(interruptedMessage)
+                    ? string.Empty
+                    : "上一个番茄钟：" + interruptedMessage + " ") +
+                "专注 " + _settings.FocusMinutes +
+                " 分钟，开始！我陪你一起。",
+                string.IsNullOrWhiteSpace(interruptedMessage) ? 5 : 8);
         }
 
         private void FocusTimer_Tick(object sender, EventArgs e)
@@ -413,6 +430,7 @@ namespace DesktopPet
                 return;
             }
 
+            CloseActiveFocusSegment(now);
             _pausedNextRandomCueRemaining =
                 GetRemainingUntil(_nextRandomCueAt, now);
             _pausedRandomCueBreakRemaining =
@@ -435,6 +453,7 @@ namespace DesktopPet
 
             var now = DateTime.Now;
             _focusEnds = now.Add(_pausedFocusRemaining);
+            _activeFocusSegmentStartedAt = now;
             _focusPaused = false;
 
             if (_settings.RandomCueEnabled &&
@@ -476,25 +495,33 @@ namespace DesktopPet
 
         private void StopFocus_Click(object sender, RoutedEventArgs e)
         {
+            if (!_focusEnds.HasValue) return;
+            var settlementMessage = RecordInterruptedFocus(DateTime.Now);
             _focusTimer.Stop();
             _focusEnds = null;
-            _activeFocusStartedAt = null;
-            _activeFocusPlannedMinutes = 0;
+            ResetFocusTracking();
             ResetFocusPauseState();
             ResetRandomCues();
             UpdateFocusMenuState();
             ApplyBasePetState();
-            ShowBubble("计时已停止。随时都可以重新开始。", 4);
+            ShowBubble(
+                "计时已停止。" + settlementMessage +
+                " 随时都可以重新开始。",
+                7);
         }
 
         private void CompleteFocus()
         {
             var completedAt = DateTime.Now;
+            var accountingEnd = _focusEnds.HasValue &&
+                _focusEnds.Value < completedAt
+                ? _focusEnds.Value
+                : completedAt;
+            CloseActiveFocusSegment(accountingEnd);
             var recordMessage = RecordCompletedFocus(completedAt);
             _focusTimer.Stop();
             _focusEnds = null;
-            _activeFocusStartedAt = null;
-            _activeFocusPlannedMinutes = 0;
+            ResetFocusTracking();
             ResetFocusPauseState();
             ResetRandomCues();
             UpdateFocusMenuState();
@@ -515,6 +542,9 @@ namespace DesktopPet
                     : _settings.FocusMinutes);
             var startedAt = _activeFocusStartedAt ??
                 completedAt.AddMinutes(-plannedMinutes);
+            var minuteAllocations = AllocateActiveFocusMinutes(
+                plannedMinutes,
+                completedAt);
 
             try
             {
@@ -523,19 +553,187 @@ namespace DesktopPet
                 _focusJournalService.RecordCompletedSession(
                     startedAt,
                     completedAt,
-                    plannedMinutes);
-                var day = _focusJournalService.GetDay(completedAt);
+                    plannedMinutes,
+                    minuteAllocations);
+                var journalDate =
+                    FocusTimeAccounting.GetJournalDate(completedAt);
+                var day = _focusJournalService.GetDay(journalDate);
                 if (_focusJournalWindow != null)
                     _focusJournalWindow.RefreshFromStore();
-                return day.TargetCount > 0
+                var countMessage = day.TargetCount > 0
                     ? "今天已自动记录第 " + day.CompletedCount +
                       " / " + day.TargetCount + " 个番茄钟。"
                     : "今天已自动记录第 " + day.CompletedCount + " 个番茄钟。";
+                return countMessage +
+                    FormatCrossDayAllocation(minuteAllocations);
             }
             catch
             {
                 return "自动记录暂时保存失败，请稍后手动补记。";
             }
+        }
+
+        private string RecordInterruptedFocus(DateTime stoppedAt)
+        {
+            var plannedMinutes = Math.Max(
+                1,
+                _activeFocusPlannedMinutes > 0
+                    ? _activeFocusPlannedMinutes
+                    : _settings.FocusMinutes);
+            var accountingEnd = !_focusPaused &&
+                _focusEnds.HasValue &&
+                _focusEnds.Value < stoppedAt
+                ? _focusEnds.Value
+                : stoppedAt;
+            CloseActiveFocusSegment(accountingEnd);
+            var completedMinutes =
+                FocusTimeAccounting.GetCompletedWholeMinutes(
+                    _activeFocusSegments,
+                    plannedMinutes);
+            if (completedMinutes <= 0)
+                return "尚未完成 1 分钟，没有写入专注记录。";
+
+            var minuteAllocations = AllocateActiveFocusMinutes(
+                completedMinutes,
+                accountingEnd);
+            var startedAt = _activeFocusStartedAt ??
+                accountingEnd.AddMinutes(-completedMinutes);
+
+            try
+            {
+                if (_focusJournalWindow != null)
+                    _focusJournalWindow.SavePendingChanges();
+
+                string result;
+                if (completedMinutes >= plannedMinutes)
+                {
+                    _focusJournalService.RecordCompletedSession(
+                        startedAt,
+                        accountingEnd,
+                        plannedMinutes,
+                        minuteAllocations);
+                    result = "已凑齐完整番茄钟并自动记录。" +
+                        FormatCrossDayAllocation(minuteAllocations);
+                }
+                else
+                {
+                    _focusJournalService.AddMinuteAdjustments(
+                        minuteAllocations);
+                    result = "已完成 " + completedMinutes +
+                        " 分钟，" +
+                        FormatMinuteAdjustmentResult(minuteAllocations);
+                }
+
+                if (_focusJournalWindow != null)
+                    _focusJournalWindow.RefreshFromStore();
+                return result;
+            }
+            catch
+            {
+                return "本次已完成 " + completedMinutes +
+                    " 分钟，但自动保存失败，请手动补记。";
+            }
+        }
+
+        private void BeginFocusTracking(
+            DateTime startedAt,
+            int plannedMinutes)
+        {
+            _activeFocusSegments.Clear();
+            _activeFocusStartedAt = startedAt;
+            _activeFocusSegmentStartedAt = startedAt;
+            _activeFocusPlannedMinutes = Math.Max(1, plannedMinutes);
+        }
+
+        private void CloseActiveFocusSegment(DateTime endedAt)
+        {
+            if (!_activeFocusSegmentStartedAt.HasValue)
+                return;
+
+            var startedAt = _activeFocusSegmentStartedAt.Value;
+            if (endedAt > startedAt)
+            {
+                _activeFocusSegments.Add(
+                    new FocusTimeSegment(startedAt, endedAt));
+            }
+            _activeFocusSegmentStartedAt = null;
+        }
+
+        private void ResetFocusTracking()
+        {
+            _activeFocusSegments.Clear();
+            _activeFocusStartedAt = null;
+            _activeFocusSegmentStartedAt = null;
+            _activeFocusPlannedMinutes = 0;
+        }
+
+        private IDictionary<string, int> AllocateActiveFocusMinutes(
+            int minutes,
+            DateTime fallbackInstant)
+        {
+            var allocations = FocusTimeAccounting.AllocateMinutes(
+                _activeFocusSegments,
+                minutes);
+            if (allocations.Values.Sum() == minutes)
+                return allocations;
+
+            return new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                {
+                    FocusTimeAccounting.GetJournalDateKey(fallbackInstant),
+                    minutes
+                }
+            };
+        }
+
+        private static string FormatCrossDayAllocation(
+            IDictionary<string, int> allocations)
+        {
+            if (allocations == null || allocations.Count <= 1)
+                return string.Empty;
+
+            return " 分钟已按晚上 9 点拆分：" +
+                FormatAllocationList(allocations) + "。";
+        }
+
+        private static string FormatMinuteAdjustmentResult(
+            IDictionary<string, int> allocations)
+        {
+            if (allocations.Count == 1)
+            {
+                var allocation = allocations.First();
+                return FormatJournalDate(allocation.Key) +
+                    "的“今日分钟调整”已增加 " +
+                    allocation.Value + " 分钟。";
+            }
+
+            return "已按晚上 9 点拆分并加入对应日期的“今日分钟调整”：" +
+                FormatAllocationList(allocations) + "。";
+        }
+
+        private static string FormatAllocationList(
+            IDictionary<string, int> allocations)
+        {
+            return string.Join(
+                "、",
+                allocations
+                    .OrderBy(item => item.Key, StringComparer.Ordinal)
+                    .Select(item =>
+                        FormatJournalDate(item.Key) + " " +
+                        item.Value + " 分钟"));
+        }
+
+        private static string FormatJournalDate(string dateKey)
+        {
+            DateTime date;
+            return DateTime.TryParseExact(
+                dateKey,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out date)
+                ? date.ToString("M月d日", CultureInfo.GetCultureInfo("zh-CN"))
+                : dateKey;
         }
 
         private void ResetFocusPauseState()

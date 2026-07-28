@@ -106,9 +106,9 @@
                             <Run FontWeight="Bold">和我聊聊：</Run><Run>打开通用聊天；推荐在设置中直接连接自己的 ChatGPT。&#x0a;</Run>
                             <Run FontWeight="Bold">给我一点鼓励：</Run><Run>显示一句鼓励并播放比心动画。&#x0a;</Run>
                             <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度保持工作状态，直到你关闭它。&#x0a;</Run>
-                            <Run FontWeight="Bold">专注计时：</Run><Run>一个番茄钟就是一个专注 block。可以暂停、继续或停止；暂停时番茄钟和随机微休息都会冻结。单击苏无度可查看 4 秒动态剩余时间。&#x0a;</Run>
+                            <Run FontWeight="Bold">专注计时：</Run><Run>一个番茄钟就是一个专注 block。可以暂停、继续或停止；暂停时间不会计入已完成分钟。手动停止时，凑齐完整番茄钟就自动记录，否则把已完成的整分钟加入“今日分钟调整”。单击苏无度可查看 4 秒动态剩余时间。&#x0a;</Run>
                             <Run FontWeight="Bold">随机提示音：</Run><Run>只在番茄钟内运行。系统每轮在最短/最长间隔内重新随机抽取时间；第一声开始微休息，休息指定秒数后第二声继续工作。&#x0a;</Run>
-                            <Run FontWeight="Bold">今日专注记录：</Run><Run>完成番茄钟时自动记录。窗口中可以设置每日目标和分钟调整、补记或删除番茄钟、填写每日及单次 Notes、复制当天纯文本，并按日期范围导出 Markdown。&#x0a;</Run>
+                            <Run FontWeight="Bold">今日专注记录：</Run><Run>记录日以晚上 9 点为分界；跨过 9 点的专注分钟会自动拆到前后两个记录日。窗口中可以设置每日目标和分钟调整、补记或删除番茄钟、填写每日及单次 Notes、复制当天纯文本，并按日期范围导出 Markdown。&#x0a;</Run>
                             <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在附近轻轻移动。&#x0a;</Run>
                             <Run FontWeight="Bold">始终置顶：</Run><Run>保持在其它普通窗口上方。&#x0a;</Run>
                             <Run FontWeight="Bold">鼠标穿透：</Run><Run>鼠标会点到她后面的窗口；用 Ctrl + Alt + P 恢复。&#x0a;</Run>

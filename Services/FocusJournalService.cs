@@ -79,23 +79,27 @@ namespace DesktopPet.Services
             int plannedMinutes,
             string notes = null)
         {
-            if (plannedMinutes < 0)
-                throw new ArgumentOutOfRangeException(nameof(plannedMinutes));
+            return RecordCompletedSession(CreateAutomaticSession(
+                startedAt,
+                completedAt,
+                plannedMinutes,
+                notes));
+        }
 
-            var localStart = AsLocalTime(startedAt);
-            var localCompletion = AsLocalTime(completedAt);
-            var session = new FocusSessionRecord
-            {
-                Id = Guid.NewGuid().ToString("D"),
-                Source = FocusSessionRecord.AutomaticSource,
-                StartedAt = localStart.ToString("o", CultureInfo.InvariantCulture),
-                CompletedAt = localCompletion.ToString("o", CultureInfo.InvariantCulture),
-                PlannedMinutes = plannedMinutes,
-                CountsTowardGoal = true,
-                Notes = notes ?? string.Empty
-            };
-
-            return RecordCompletedSession(session);
+        public FocusSessionRecord RecordCompletedSession(
+            DateTime startedAt,
+            DateTime completedAt,
+            int plannedMinutes,
+            IDictionary<string, int> minuteAllocations,
+            string notes = null)
+        {
+            return RecordCompletedSession(
+                CreateAutomaticSession(
+                    startedAt,
+                    completedAt,
+                    plannedMinutes,
+                    notes),
+                minuteAllocations);
         }
 
         public FocusSessionRecord RecordCompletedSession(FocusSessionRecord session)
@@ -107,18 +111,12 @@ namespace DesktopPet.Services
             NormalizeSession(savedSession);
             var completedAt = ParseRequiredTimestamp(
                 savedSession.CompletedAt, nameof(session.CompletedAt));
-            var dateKey = completedAt.LocalDateTime.ToString(DateFormat, CultureInfo.InvariantCulture);
+            var dateKey = FocusTimeAccounting.GetJournalDateKey(
+                completedAt.LocalDateTime);
 
             lock (_sync)
             {
-                var day = _data.Days.FirstOrDefault(item =>
-                    string.Equals(item.Date, dateKey, StringComparison.Ordinal));
-                if (day == null)
-                {
-                    day = CreateEmptyDay(dateKey);
-                    _data.Days.Add(day);
-                }
-
+                var day = GetOrCreateDayUnsafe(dateKey);
                 var existingIndex = day.Sessions.FindIndex(item =>
                     string.Equals(item.Id, savedSession.Id, StringComparison.Ordinal));
                 if (existingIndex >= 0)
@@ -132,6 +130,82 @@ namespace DesktopPet.Services
 
             RaiseJournalChanged();
             return CloneSession(savedSession);
+        }
+
+        public FocusSessionRecord RecordCompletedSession(
+            FocusSessionRecord session,
+            IDictionary<string, int> minuteAllocations)
+        {
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+
+            var savedSession = CloneSession(session);
+            NormalizeSession(savedSession);
+            var completedAt = ParseRequiredTimestamp(
+                savedSession.CompletedAt,
+                nameof(session.CompletedAt));
+            var completionDateKey = FocusTimeAccounting.GetJournalDateKey(
+                completedAt.LocalDateTime);
+            var allocations = NormalizeMinuteAllocations(minuteAllocations);
+            if (allocations.Values.Sum() != savedSession.PlannedMinutes)
+            {
+                throw new ArgumentException(
+                    "跨日分钟分配之和必须等于完整番茄钟分钟数。",
+                    nameof(minuteAllocations));
+            }
+
+            lock (_sync)
+            {
+                var completionDay =
+                    GetOrCreateDayUnsafe(completionDateKey);
+                var existingIndex = completionDay.Sessions.FindIndex(item =>
+                    string.Equals(
+                        item.Id,
+                        savedSession.Id,
+                        StringComparison.Ordinal));
+                if (existingIndex >= 0)
+                    completionDay.Sessions[existingIndex] = savedSession;
+                else
+                    completionDay.Sessions.Add(savedSession);
+
+                foreach (var allocation in allocations)
+                {
+                    var day = GetOrCreateDayUnsafe(allocation.Key);
+                    day.MinuteAdjustment = checked(
+                        day.MinuteAdjustment + allocation.Value);
+                }
+                completionDay.MinuteAdjustment = checked(
+                    completionDay.MinuteAdjustment -
+                    savedSession.PlannedMinutes);
+
+                SortDaysUnsafe();
+                SaveUnsafe();
+            }
+
+            RaiseJournalChanged();
+            return CloneSession(savedSession);
+        }
+
+        public void AddMinuteAdjustments(
+            IDictionary<string, int> minuteAllocations)
+        {
+            var allocations = NormalizeMinuteAllocations(minuteAllocations);
+            if (allocations.Count == 0)
+                return;
+
+            lock (_sync)
+            {
+                foreach (var allocation in allocations)
+                {
+                    var day = GetOrCreateDayUnsafe(allocation.Key);
+                    day.MinuteAdjustment = checked(
+                        day.MinuteAdjustment + allocation.Value);
+                }
+                SortDaysUnsafe();
+                SaveUnsafe();
+            }
+
+            RaiseJournalChanged();
         }
 
         public IList<DailyFocusRecord> GetRange(DateTime startDate, DateTime endDate)
@@ -223,6 +297,18 @@ namespace DesktopPet.Services
         {
             _data.Days.Sort((left, right) =>
                 string.CompareOrdinal(left.Date, right.Date));
+        }
+
+        private DailyFocusRecord GetOrCreateDayUnsafe(string dateKey)
+        {
+            var day = _data.Days.FirstOrDefault(item =>
+                string.Equals(item.Date, dateKey, StringComparison.Ordinal));
+            if (day != null)
+                return day;
+
+            day = CreateEmptyDay(dateKey);
+            _data.Days.Add(day);
+            return day;
         }
 
         private void RaiseJournalChanged()
@@ -341,6 +427,61 @@ namespace DesktopPet.Services
             if (value.Kind == DateTimeKind.Unspecified)
                 return DateTime.SpecifyKind(value, DateTimeKind.Local);
             return value;
+        }
+
+        private static FocusSessionRecord CreateAutomaticSession(
+            DateTime startedAt,
+            DateTime completedAt,
+            int plannedMinutes,
+            string notes)
+        {
+            if (plannedMinutes < 0)
+                throw new ArgumentOutOfRangeException(nameof(plannedMinutes));
+
+            var localStart = AsLocalTime(startedAt);
+            var localCompletion = AsLocalTime(completedAt);
+            return new FocusSessionRecord
+            {
+                Id = Guid.NewGuid().ToString("D"),
+                Source = FocusSessionRecord.AutomaticSource,
+                StartedAt = localStart.ToString(
+                    "o",
+                    CultureInfo.InvariantCulture),
+                CompletedAt = localCompletion.ToString(
+                    "o",
+                    CultureInfo.InvariantCulture),
+                PlannedMinutes = plannedMinutes,
+                CountsTowardGoal = true,
+                Notes = notes ?? string.Empty
+            };
+        }
+
+        private static Dictionary<string, int> NormalizeMinuteAllocations(
+            IDictionary<string, int> minuteAllocations)
+        {
+            if (minuteAllocations == null)
+                throw new ArgumentNullException(nameof(minuteAllocations));
+
+            var normalized = new Dictionary<string, int>(
+                StringComparer.Ordinal);
+            foreach (var allocation in minuteAllocations)
+            {
+                var dateKey = ValidateDateKey(allocation.Key);
+                if (allocation.Value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(minuteAllocations),
+                        "分配分钟数不能为负数。");
+                }
+                if (allocation.Value == 0)
+                    continue;
+
+                int existing;
+                normalized.TryGetValue(dateKey, out existing);
+                normalized[dateKey] =
+                    checked(existing + allocation.Value);
+            }
+            return normalized;
         }
 
         private static string ToDateKey(DateTime value)

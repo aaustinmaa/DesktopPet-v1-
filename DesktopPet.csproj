@@ -130,6 +130,7 @@
     <Compile Include="Services\DisplayService.cs" />
     <Compile Include="Services\FocusJournalFormatter.cs" />
     <Compile Include="Services\FocusJournalService.cs" />
+    <Compile Include="Services\FocusTimeAccounting.cs" />
     <Compile Include="Services\HammerAnimator.cs" />
     <Compile Include="Services\MemoryService.cs" />
     <Compile Include="Services\NativeMethods.cs" />

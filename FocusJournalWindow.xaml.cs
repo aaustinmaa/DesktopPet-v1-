@@ -23,6 +23,7 @@ namespace DesktopPet
         private ObservableCollection<FocusSessionViewModel> _sessions;
         private HashSet<string> _loadedSessionIds =
             new HashSet<string>(StringComparer.Ordinal);
+        private int _loadedMinuteAdjustment;
         private bool _loading;
         private bool _saving;
         private bool _dirty;
@@ -35,7 +36,8 @@ namespace DesktopPet
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _defaultFocusMinutes = Math.Max(1, defaultFocusMinutes);
             _service.JournalChanged += FocusJournalService_JournalChanged;
-            Loaded += (sender, args) => LoadDay(DateTime.Today);
+            Loaded += (sender, args) => LoadDay(
+                FocusTimeAccounting.GetJournalDate(DateTime.Now));
             Closed += (sender, args) =>
                 _service.JournalChanged -= FocusJournalService_JournalChanged;
         }
@@ -67,6 +69,8 @@ namespace DesktopPet
             {
                 _selectedDate = date.Date;
                 _currentDay = _service.GetDay(_selectedDate);
+                _loadedMinuteAdjustment =
+                    _currentDay.MinuteAdjustment;
                 _loadedSessionIds = new HashSet<string>(
                     (_currentDay.Sessions ?? new List<FocusSessionRecord>())
                         .Where(item => item != null)
@@ -88,8 +92,10 @@ namespace DesktopPet
                 Title = "苏无度 · " +
                     _selectedDate.ToString("yyyy年M月d日", _displayCulture) +
                     " 专注记录";
-                StatusText.Text = _selectedDate == DateTime.Today
-                    ? "正在查看今天。"
+                var journalToday =
+                    FocusTimeAccounting.GetJournalDate(DateTime.Now);
+                StatusText.Text = _selectedDate == journalToday
+                    ? "正在查看今天；记录日会在晚上 9 点切换。"
                     : "正在查看 " +
                       _selectedDate.ToString("yyyy年M月d日", _displayCulture) + "。";
                 _dirty = false;
@@ -130,7 +136,7 @@ namespace DesktopPet
 
         private void Today_Click(object sender, RoutedEventArgs e)
         {
-            NavigateTo(DateTime.Today);
+            NavigateTo(FocusTimeAccounting.GetJournalDate(DateTime.Now));
         }
 
         private void JournalDatePicker_SelectedDateChanged(
@@ -156,7 +162,8 @@ namespace DesktopPet
 
         private void AddManualSession_Click(object sender, RoutedEventArgs e)
         {
-            var completion = _selectedDate == DateTime.Today
+            var completion = _selectedDate ==
+                FocusTimeAccounting.GetJournalDate(DateTime.Now)
                 ? DateTime.Now
                 : _selectedDate.AddHours(12);
             completion = DateTime.SpecifyKind(completion, DateTimeKind.Local);
@@ -303,7 +310,10 @@ namespace DesktopPet
             }
 
             _currentDay.TargetCount = target;
-            _currentDay.MinuteAdjustment = adjustment;
+            _currentDay.MinuteAdjustment = checked(
+                adjustment +
+                latest.MinuteAdjustment -
+                _loadedMinuteAdjustment);
             _currentDay.DailyNotes = DailyNotesBox.Text ?? string.Empty;
             _currentDay.Sessions = records;
 
