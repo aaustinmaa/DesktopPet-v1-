@@ -341,9 +341,88 @@ function Save-HammerFrames {
     }
 }
 
+function Build-IdleHandFrames {
+    $basePath = Join-Path $spriteDirectory 'idle-v2-01.png'
+    $baseFrame = [System.Drawing.Bitmap]::FromFile($basePath)
+    try {
+        $leftHand = [System.Drawing.Rectangle]::new(176, 270, 32, 35)
+        $rightHand = [System.Drawing.Rectangle]::new(268, 270, 36, 35)
+        $motions = @(
+            [PSCustomObject]@{ LeftX = 0; LeftY = 0; RightX = 0; RightY = 0 },
+            [PSCustomObject]@{ LeftX = 1; LeftY = -1; RightX = -1; RightY = -1 },
+            [PSCustomObject]@{ LeftX = 2; LeftY = -2; RightX = -2; RightY = -2 },
+            [PSCustomObject]@{ LeftX = 1; LeftY = -1; RightX = -1; RightY = -1 },
+            [PSCustomObject]@{ LeftX = 0; LeftY = 0; RightX = 0; RightY = 0 },
+            [PSCustomObject]@{ LeftX = -1; LeftY = 1; RightX = 1; RightY = 1 },
+            [PSCustomObject]@{ LeftX = -2; LeftY = 2; RightX = 2; RightY = 2 },
+            [PSCustomObject]@{ LeftX = -1; LeftY = 1; RightX = 1; RightY = 1 }
+        )
+
+        for ($frame = 1; $frame -le 8; $frame++) {
+            $filename = 'idle-hands-v3-{0:D2}.png' -f $frame
+            $path = Join-Path $spriteDirectory $filename
+            $output = $baseFrame.Clone(
+                [System.Drawing.Rectangle]::new(
+                    0,
+                    0,
+                    $baseFrame.Width,
+                    $baseFrame.Height),
+                [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+            try {
+                $motion = $motions[$frame - 1]
+                if ($frame -ne 1 -and $frame -ne 5) {
+                    $graphics = [System.Drawing.Graphics]::FromImage($output)
+                    try {
+                        $graphics.CompositingMode =
+                            [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
+                        $graphics.FillRectangle(
+                            [System.Drawing.Brushes]::Black,
+                            $leftHand)
+                        $graphics.FillRectangle(
+                            [System.Drawing.Brushes]::Black,
+                            $rightHand)
+                        $graphics.DrawImage(
+                            $baseFrame,
+                            [System.Drawing.Rectangle]::new(
+                                $leftHand.X + $motion.LeftX,
+                                $leftHand.Y + $motion.LeftY,
+                                $leftHand.Width,
+                                $leftHand.Height),
+                            $leftHand,
+                            [System.Drawing.GraphicsUnit]::Pixel)
+                        $graphics.DrawImage(
+                            $baseFrame,
+                            [System.Drawing.Rectangle]::new(
+                                $rightHand.X + $motion.RightX,
+                                $rightHand.Y + $motion.RightY,
+                                $rightHand.Width,
+                                $rightHand.Height),
+                            $rightHand,
+                            [System.Drawing.GraphicsUnit]::Pixel)
+                    }
+                    finally {
+                        $graphics.Dispose()
+                    }
+                }
+
+                $output.Save(
+                    $path,
+                    [System.Drawing.Imaging.ImageFormat]::Png)
+            }
+            finally {
+                $output.Dispose()
+            }
+        }
+    }
+    finally {
+        $baseFrame.Dispose()
+    }
+}
+
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     0 8 'idle-v2'
+Build-IdleHandFrames
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     8 8 'blink-v2' `

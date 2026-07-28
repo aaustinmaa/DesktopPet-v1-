@@ -28,14 +28,14 @@ namespace DesktopPet.Services
 
         private static readonly string[] IdleFrames =
         {
-            "idle-v2-01.png",
-            "idle-v2-02.png",
-            "idle-v2-03.png",
-            "idle-v2-04.png",
-            "idle-v2-05.png",
-            "idle-v2-06.png",
-            "idle-v2-07.png",
-            "idle-v2-08.png"
+            "idle-hands-v3-01.png",
+            "idle-hands-v3-02.png",
+            "idle-hands-v3-03.png",
+            "idle-hands-v3-04.png",
+            "idle-hands-v3-05.png",
+            "idle-hands-v3-06.png",
+            "idle-hands-v3-07.png",
+            "idle-hands-v3-08.png"
         };
 
         private static readonly string[] WaveFrames =
@@ -170,7 +170,7 @@ namespace DesktopPet.Services
                     break;
                 default:
                     _frames = IdleFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(190);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(240);
                     break;
             }
 
