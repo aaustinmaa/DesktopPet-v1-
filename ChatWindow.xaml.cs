@@ -177,7 +177,7 @@ namespace DesktopPet
                 _petWindow.ShowBubble(reply.Reply, 6);
                 _petWindow.SetPetState(reply.Emotion, 6);
                 if (string.Equals(reply.Action, "bounce", StringComparison.OrdinalIgnoreCase))
-                    _petWindow.Bounce();
+                    _petWindow.SetPetState(PetState.HeartPulse, 3);
                 StatusText.Text = reply.ProviderLabel +
                     (includeScreen ? " · 已查看发送时截图" : string.Empty) +
                     (_settings.MemoryEnabled ? " · 已保存聊天" : string.Empty);

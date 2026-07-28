@@ -24,6 +24,7 @@ namespace DesktopPet
         private readonly SoundService _soundService = new SoundService();
         private AppSettings _settings;
         private SpriteAnimator _animator;
+        private HammerAnimator _hammerAnimator;
         private Forms.NotifyIcon _trayIcon;
         private readonly Random _random = new Random();
         private readonly DispatcherTimer _behaviorTimer = new DispatcherTimer();
@@ -88,6 +89,7 @@ namespace DesktopPet
             ApplySettings();
             RestoreWindowPosition();
             _animator = new SpriteAnimator(PetImage);
+            _hammerAnimator = new HammerAnimator(HammerImage);
             CreateSpeechBubbleWindow();
             CreateTrayIcon();
             ConfigureHydrationTimer();
@@ -145,6 +147,8 @@ namespace DesktopPet
         {
             Width = 210 * scale;
             Height = 238 * scale;
+            HammerImage.Width = 90 * scale;
+            HammerImage.Height = 90 * scale;
             PositionSpeechBubble();
         }
 
@@ -503,12 +507,15 @@ namespace DesktopPet
                 SaveWindowPosition();
             }
             catch (InvalidOperationException) { }
-            Bounce();
             var wasDragged =
                 Math.Abs(Left - startingLeft) > 2 ||
                 Math.Abs(Top - startingTop) > 2;
-            if (!wasDragged && _focusEnds.HasValue)
-                ShowFocusCountdown();
+            if (!wasDragged)
+            {
+                PlayHammerStrike();
+                if (_focusEnds.HasValue)
+                    ShowFocusCountdown();
+            }
         }
 
         private void PetImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -517,19 +524,145 @@ namespace DesktopPet
             e.Handled = true;
         }
 
-        public void Bounce()
+        private void PlayHammerStrike()
         {
-            var up = new DoubleAnimationUsingKeyFrames();
-            up.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-            up.KeyFrames.Add(new EasingDoubleKeyFrame(-12, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(130))));
-            up.KeyFrames.Add(new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(360))));
-            PetTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, up);
+            if (_hammerAnimator == null) return;
 
-            var squashX = new DoubleAnimationUsingKeyFrames();
-            squashX.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-            squashX.KeyFrames.Add(new EasingDoubleKeyFrame(1.08, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(100))));
-            squashX.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(360))));
-            PetBounceScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, squashX);
+            var scale = _settings == null ? 1 : _settings.PetScale;
+            HammerRotate.BeginAnimation(
+                System.Windows.Media.RotateTransform.AngleProperty,
+                CreateHammerRotationAnimation());
+            HammerTranslate.BeginAnimation(
+                System.Windows.Media.TranslateTransform.XProperty,
+                CreateHammerHorizontalAnimation(scale));
+            HammerTranslate.BeginAnimation(
+                System.Windows.Media.TranslateTransform.YProperty,
+                CreateHammerVerticalAnimation(scale));
+
+            var reactionY = new DoubleAnimationUsingKeyFrames();
+            reactionY.KeyFrames.Add(new EasingDoubleKeyFrame(
+                0,
+                KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            reactionY.KeyFrames.Add(new EasingDoubleKeyFrame(
+                0,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(360))));
+            reactionY.KeyFrames.Add(new EasingDoubleKeyFrame(
+                3 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(430)),
+                new QuadraticEase { EasingMode = EasingMode.EaseOut }));
+            reactionY.KeyFrames.Add(new EasingDoubleKeyFrame(
+                0,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(650)),
+                new BackEase
+                {
+                    Amplitude = 0.15,
+                    EasingMode = EasingMode.EaseOut
+                }));
+            PetTranslate.BeginAnimation(
+                System.Windows.Media.TranslateTransform.YProperty,
+                reactionY);
+
+            PetBounceScale.BeginAnimation(
+                System.Windows.Media.ScaleTransform.ScaleXProperty,
+                CreateReactionScaleAnimation(1.018));
+            PetBounceScale.BeginAnimation(
+                System.Windows.Media.ScaleTransform.ScaleYProperty,
+                CreateReactionScaleAnimation(0.975));
+            _hammerAnimator.Play();
+        }
+
+        private static DoubleAnimationUsingKeyFrames CreateHammerRotationAnimation()
+        {
+            var animation = new DoubleAnimationUsingKeyFrames();
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                -42,
+                KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                -28,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(120)),
+                new QuadraticEase { EasingMode = EasingMode.EaseInOut }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                4,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(260)),
+                new QuadraticEase { EasingMode = EasingMode.EaseIn }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                58,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(430)),
+                new CubicEase { EasingMode = EasingMode.EaseIn }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                43,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(620)),
+                new QuadraticEase { EasingMode = EasingMode.EaseOut }));
+            return animation;
+        }
+
+        private static DoubleAnimationUsingKeyFrames CreateHammerHorizontalAnimation(
+            double scale)
+        {
+            var animation = new DoubleAnimationUsingKeyFrames();
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                28 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                18 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(180)),
+                new QuadraticEase { EasingMode = EasingMode.EaseInOut }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                -4 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(430)),
+                new CubicEase { EasingMode = EasingMode.EaseIn }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                0,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(620)),
+                new QuadraticEase { EasingMode = EasingMode.EaseOut }));
+            return animation;
+        }
+
+        private static DoubleAnimationUsingKeyFrames CreateHammerVerticalAnimation(
+            double scale)
+        {
+            var animation = new DoubleAnimationUsingKeyFrames();
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                -34 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                -26 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(180)),
+                new QuadraticEase { EasingMode = EasingMode.EaseInOut }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                14 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(430)),
+                new CubicEase { EasingMode = EasingMode.EaseIn }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                7 * scale,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(620)),
+                new QuadraticEase { EasingMode = EasingMode.EaseOut }));
+            return animation;
+        }
+
+        private static DoubleAnimationUsingKeyFrames CreateReactionScaleAnimation(
+            double impactValue)
+        {
+            var animation = new DoubleAnimationUsingKeyFrames();
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                1,
+                KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                1,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(360))));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                impactValue,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(430)),
+                new QuadraticEase { EasingMode = EasingMode.EaseOut }));
+            animation.KeyFrames.Add(new EasingDoubleKeyFrame(
+                1,
+                KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(650)),
+                new BackEase
+                {
+                    Amplitude = 0.12,
+                    EasingMode = EasingMode.EaseOut
+                }));
+            return animation;
         }
 
         public void ShowBubble(string message, int seconds = 5)
@@ -664,7 +797,6 @@ namespace DesktopPet
             };
             ShowBubble(cheers[_random.Next(cheers.Length)], 6);
             _animator.SetState(PetState.HeartPulse, TimeSpan.FromSeconds(5));
-            Bounce();
         }
 
         private void Chat_Click(object sender, RoutedEventArgs e) => OpenChat();
@@ -996,6 +1128,7 @@ namespace DesktopPet
                 _speechBubbleWindow = null;
             }
             if (_animator != null) _animator.Dispose();
+            if (_hammerAnimator != null) _hammerAnimator.Dispose();
             _soundService.Dispose();
             if (_source != null) _source.RemoveHook(WindowMessageHook);
             if (_windowHandle != IntPtr.Zero)
