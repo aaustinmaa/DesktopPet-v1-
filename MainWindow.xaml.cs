@@ -29,11 +29,17 @@ namespace DesktopPet
         private readonly DispatcherTimer _behaviorTimer = new DispatcherTimer();
         private readonly DispatcherTimer _hydrationTimer = new DispatcherTimer();
         private readonly DispatcherTimer _focusTimer = new DispatcherTimer();
+        private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
+        private DateTime? _focusCountdownVisibleUntil;
+        private bool _focusPaused;
+        private TimeSpan _pausedFocusRemaining;
+        private TimeSpan? _pausedNextRandomCueRemaining;
+        private TimeSpan? _pausedRandomCueBreakRemaining;
         private bool _workingMode;
         private bool _clickThrough;
         private bool _allowExit;
@@ -41,6 +47,9 @@ namespace DesktopPet
         private HwndSource _source;
         private SpeechBubbleWindow _speechBubbleWindow;
         private LauncherWindow _launcherWindow;
+        private Forms.ToolStripMenuItem _trayStartFocusItem;
+        private Forms.ToolStripMenuItem _trayPauseFocusItem;
+        private Forms.ToolStripMenuItem _trayStopFocusItem;
 
         public MainWindow(SettingsService settingsService)
         {
@@ -63,6 +72,8 @@ namespace DesktopPet
             _hydrationTimer.Tick += HydrationTimer_Tick;
             _focusTimer.Interval = TimeSpan.FromSeconds(1);
             _focusTimer.Tick += FocusTimer_Tick;
+            _focusCountdownTimer.Interval = TimeSpan.FromMilliseconds(100);
+            _focusCountdownTimer.Tick += FocusCountdownTimer_Tick;
             _commandTimer.Interval = TimeSpan.FromSeconds(1);
             _commandTimer.Tick += CommandTimer_Tick;
             _bubbleTimer.Tick += (s, e) =>
@@ -236,11 +247,12 @@ namespace DesktopPet
         private void StartFocus_Click(object sender, RoutedEventArgs e)
         {
             var now = DateTime.Now;
+            ResetFocusPauseState();
             _focusEnds = now.AddMinutes(_settings.FocusMinutes);
             ResetRandomCues();
             ScheduleNextRandomCue(now);
-            StopFocusItem.IsEnabled = true;
             _focusTimer.Start();
+            UpdateFocusMenuState();
             _animator.SetState(PetState.Working);
             _soundService.PlayFocusStart(_settings.FocusStartSound);
             ShowBubble("专注 " + _settings.FocusMinutes + " 分钟，开始！我陪你一起。", 5);
@@ -253,33 +265,147 @@ namespace DesktopPet
             var remaining = _focusEnds.Value - now;
             if (remaining <= TimeSpan.Zero)
             {
-                _focusTimer.Stop();
-                _focusEnds = null;
-                ResetRandomCues();
-                StopFocusItem.IsEnabled = false;
-                _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
-                _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
-                Notify("专注完成", "做得好！起来活动一下吧。");
-                ShowBubble("专注完成！做得好，起来活动一下吧。", 8);
+                CompleteFocus();
                 return;
             }
 
             ProcessRandomCues(now);
         }
 
+        private void PauseFocus_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_focusEnds.HasValue) return;
+            if (_focusPaused)
+                ResumeFocus();
+            else
+                PauseFocus();
+        }
+
+        private void PauseFocus()
+        {
+            var now = DateTime.Now;
+            _pausedFocusRemaining = ClampRemaining(_focusEnds.Value - now);
+            if (_pausedFocusRemaining <= TimeSpan.Zero)
+            {
+                CompleteFocus();
+                return;
+            }
+
+            _pausedNextRandomCueRemaining =
+                GetRemainingUntil(_nextRandomCueAt, now);
+            _pausedRandomCueBreakRemaining =
+                GetRemainingUntil(_randomCueBreakEndsAt, now);
+            _nextRandomCueAt = null;
+            _randomCueBreakEndsAt = null;
+            _focusPaused = true;
+            _focusTimer.Stop();
+            UpdateFocusMenuState();
+            _animator.SetState(PetState.Idle);
+            ShowBubble(
+                "番茄钟已暂停。还剩 " +
+                FormatFocusRemaining(_pausedFocusRemaining) + "。",
+                4);
+        }
+
+        private void ResumeFocus()
+        {
+            if (!_focusPaused || !_focusEnds.HasValue) return;
+
+            var now = DateTime.Now;
+            _focusEnds = now.Add(_pausedFocusRemaining);
+            _focusPaused = false;
+
+            if (_settings.RandomCueEnabled &&
+                _pausedRandomCueBreakRemaining.HasValue)
+            {
+                _randomCueBreakEndsAt =
+                    now.Add(_pausedRandomCueBreakRemaining.Value);
+                _nextRandomCueAt = null;
+                _animator.SetState(PetState.Reminder);
+            }
+            else
+            {
+                _randomCueBreakEndsAt = null;
+                if (_settings.RandomCueEnabled &&
+                    _pausedNextRandomCueRemaining.HasValue)
+                {
+                    var candidate =
+                        now.Add(_pausedNextRandomCueRemaining.Value);
+                    if (candidate.AddSeconds(_settings.RandomCueBreakSeconds) <
+                        _focusEnds.Value)
+                        _nextRandomCueAt = candidate;
+                    else
+                        _nextRandomCueAt = null;
+                }
+                else
+                {
+                    ScheduleNextRandomCue(now);
+                }
+                _animator.SetState(PetState.Working);
+            }
+
+            var resumedBreakRemaining = _pausedRandomCueBreakRemaining;
+            _pausedNextRandomCueRemaining = null;
+            _pausedRandomCueBreakRemaining = null;
+            _focusTimer.Start();
+            UpdateFocusMenuState();
+            ShowBubble(
+                resumedBreakRemaining.HasValue
+                    ? "继续微休息，还剩 " +
+                      FormatFocusRemaining(resumedBreakRemaining.Value) + "。"
+                    : "番茄钟继续。还剩 " +
+                      FormatFocusRemaining(_pausedFocusRemaining) + "。",
+                4);
+        }
+
         private void StopFocus_Click(object sender, RoutedEventArgs e)
         {
             _focusTimer.Stop();
             _focusEnds = null;
+            ResetFocusPauseState();
             ResetRandomCues();
-            StopFocusItem.IsEnabled = false;
+            UpdateFocusMenuState();
             if (!_workingMode) _animator.SetState(PetState.Idle);
             ShowBubble("计时已停止。随时都可以重新开始。", 4);
+        }
+
+        private void CompleteFocus()
+        {
+            _focusTimer.Stop();
+            _focusEnds = null;
+            ResetFocusPauseState();
+            ResetRandomCues();
+            UpdateFocusMenuState();
+            _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
+            _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
+            Notify("专注完成", "做得好！起来活动一下吧。");
+            ShowBubble("专注完成！做得好，起来活动一下吧。", 8);
+        }
+
+        private void ResetFocusPauseState()
+        {
+            _focusPaused = false;
+            _pausedFocusRemaining = TimeSpan.Zero;
+            _pausedNextRandomCueRemaining = null;
+            _pausedRandomCueBreakRemaining = null;
+        }
+
+        private static TimeSpan? GetRemainingUntil(DateTime? target, DateTime now)
+        {
+            return target.HasValue
+                ? (TimeSpan?)ClampRemaining(target.Value - now)
+                : null;
+        }
+
+        private static TimeSpan ClampRemaining(TimeSpan remaining)
+        {
+            return remaining < TimeSpan.Zero ? TimeSpan.Zero : remaining;
         }
 
         private void ApplyRandomCueSettings()
         {
             if (!_focusEnds.HasValue) return;
+            if (_focusPaused) return;
 
             if (!_settings.RandomCueEnabled)
             {
@@ -361,11 +487,15 @@ namespace DesktopPet
         {
             if (e.ClickCount >= 2)
             {
+                StopFocusCountdownDisplay();
+                HideSpeechBubble();
                 OpenChat();
                 e.Handled = true;
                 return;
             }
 
+            var startingLeft = Left;
+            var startingTop = Top;
             try
             {
                 DragMove();
@@ -374,6 +504,11 @@ namespace DesktopPet
             }
             catch (InvalidOperationException) { }
             Bounce();
+            var wasDragged =
+                Math.Abs(Left - startingLeft) > 2 ||
+                Math.Abs(Top - startingTop) > 2;
+            if (!wasDragged && _focusEnds.HasValue)
+                ShowFocusCountdown();
         }
 
         private void PetImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -400,6 +535,7 @@ namespace DesktopPet
         public void ShowBubble(string message, int seconds = 5)
         {
             if (string.IsNullOrWhiteSpace(message)) return;
+            StopFocusCountdownDisplay();
             if (_speechBubbleWindow == null)
                 CreateSpeechBubbleWindow();
             _speechBubbleWindow.SetMessage(message);
@@ -409,6 +545,69 @@ namespace DesktopPet
             _bubbleTimer.Stop();
             _bubbleTimer.Interval = TimeSpan.FromSeconds(seconds);
             _bubbleTimer.Start();
+        }
+
+        private void ShowFocusCountdown()
+        {
+            if (!_focusEnds.HasValue) return;
+            if (_speechBubbleWindow == null)
+                CreateSpeechBubbleWindow();
+
+            _bubbleTimer.Stop();
+            _focusCountdownVisibleUntil = DateTime.Now.AddSeconds(4);
+            UpdateFocusCountdownBubble();
+            PositionSpeechBubble();
+            if (IsVisible && !_speechBubbleWindow.IsVisible)
+                _speechBubbleWindow.Show();
+            _focusCountdownTimer.Start();
+        }
+
+        private void FocusCountdownTimer_Tick(object sender, EventArgs e)
+        {
+            if (!_focusEnds.HasValue ||
+                !_focusCountdownVisibleUntil.HasValue ||
+                DateTime.Now >= _focusCountdownVisibleUntil.Value)
+            {
+                StopFocusCountdownDisplay();
+                HideSpeechBubble();
+                return;
+            }
+
+            UpdateFocusCountdownBubble();
+        }
+
+        private void UpdateFocusCountdownBubble()
+        {
+            var remaining = GetCurrentFocusRemaining();
+            if (!remaining.HasValue || _speechBubbleWindow == null) return;
+            _speechBubbleWindow.SetMessage(
+                _focusPaused
+                    ? "番茄钟已暂停：还剩 " +
+                      FormatFocusRemaining(remaining.Value)
+                    : "番茄钟剩余：" +
+                      FormatFocusRemaining(remaining.Value));
+        }
+
+        private TimeSpan? GetCurrentFocusRemaining()
+        {
+            if (!_focusEnds.HasValue) return null;
+            return _focusPaused
+                ? _pausedFocusRemaining
+                : ClampRemaining(_focusEnds.Value - DateTime.Now);
+        }
+
+        private static string FormatFocusRemaining(TimeSpan remaining)
+        {
+            var totalSeconds = Math.Max(0,
+                (int)Math.Ceiling(remaining.TotalSeconds));
+            return (totalSeconds / 60) + " 分 " +
+                   (totalSeconds % 60) + " 秒";
+        }
+
+        private void StopFocusCountdownDisplay()
+        {
+            _focusCountdownTimer.Stop();
+            _focusCountdownVisibleUntil = null;
         }
 
         private void CreateSpeechBubbleWindow()
@@ -667,12 +866,48 @@ namespace DesktopPet
             menu.Items.Add("聊聊天", null, (s, e) => Dispatcher.Invoke(OpenChat));
             menu.Items.Add("恢复鼠标交互 (Ctrl+Alt+P)", null,
                 (s, e) => Dispatcher.Invoke(() => ToggleClickThrough(false)));
-            menu.Items.Add("开始专注", null, (s, e) => Dispatcher.Invoke(() => StartFocus_Click(s, null)));
+            _trayStartFocusItem = menu.Items.Add(
+                "开始专注", null,
+                (s, e) => Dispatcher.Invoke(() => StartFocus_Click(s, null)))
+                as Forms.ToolStripMenuItem;
+            _trayPauseFocusItem = menu.Items.Add(
+                "暂停专注", null,
+                (s, e) => Dispatcher.Invoke(() => PauseFocus_Click(s, null)))
+                as Forms.ToolStripMenuItem;
+            _trayStopFocusItem = menu.Items.Add(
+                "停止专注", null,
+                (s, e) => Dispatcher.Invoke(() => StopFocus_Click(s, null)))
+                as Forms.ToolStripMenuItem;
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add("使用说明书", null, (s, e) => Dispatcher.Invoke(() => Help_Click(s, null)));
             menu.Items.Add("设置", null, (s, e) => Dispatcher.Invoke(() => Settings_Click(s, null)));
             menu.Items.Add("退出", null, (s, e) => Dispatcher.Invoke(ExitApplication));
             _trayIcon.ContextMenuStrip = menu;
+            UpdateFocusMenuState();
+        }
+
+        private void UpdateFocusMenuState()
+        {
+            var hasFocus = _focusEnds.HasValue;
+            StartFocusItem.Header = hasFocus
+                ? "↻ 重新开始专注计时"
+                : "⏱ 开始专注计时";
+            PauseFocusItem.IsEnabled = hasFocus;
+            PauseFocusItem.Header = _focusPaused
+                ? "▶ 继续专注计时"
+                : "⏸ 暂停专注计时";
+            StopFocusItem.IsEnabled = hasFocus;
+
+            if (_trayStartFocusItem != null)
+                _trayStartFocusItem.Text = hasFocus ? "重新开始专注" : "开始专注";
+            if (_trayPauseFocusItem != null)
+            {
+                _trayPauseFocusItem.Enabled = hasFocus;
+                _trayPauseFocusItem.Text =
+                    _focusPaused ? "继续专注" : "暂停专注";
+            }
+            if (_trayStopFocusItem != null)
+                _trayStopFocusItem.Enabled = hasFocus;
         }
 
         private void ShowFromTray()
@@ -752,6 +987,7 @@ namespace DesktopPet
             _behaviorTimer.Stop();
             _hydrationTimer.Stop();
             _focusTimer.Stop();
+            _focusCountdownTimer.Stop();
             _commandTimer.Stop();
             _bubbleTimer.Stop();
             if (_speechBubbleWindow != null)

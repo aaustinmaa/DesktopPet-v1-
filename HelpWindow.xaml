@@ -104,7 +104,7 @@
                             <Run FontWeight="Bold">和我聊聊：</Run><Run>打开通用聊天；推荐在设置中直接连接自己的 ChatGPT。&#x0a;</Run>
                             <Run FontWeight="Bold">给我一点鼓励：</Run><Run>显示一句鼓励并播放比心动画。&#x0a;</Run>
                             <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度保持工作状态，直到你关闭它。&#x0a;</Run>
-                            <Run FontWeight="Bold">开始专注计时：</Run><Run>一个番茄钟就是一个专注 block。开始和结束都会按你的铃声设置提示。&#x0a;</Run>
+                            <Run FontWeight="Bold">专注计时：</Run><Run>一个番茄钟就是一个专注 block。可以暂停、继续或停止；暂停时番茄钟和随机微休息都会冻结。单击苏无度可查看 4 秒动态剩余时间。&#x0a;</Run>
                             <Run FontWeight="Bold">随机提示音：</Run><Run>只在番茄钟内运行。系统每轮在最短/最长间隔内重新随机抽取时间；第一声开始微休息，休息指定秒数后第二声继续工作。&#x0a;</Run>
                             <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在附近轻轻移动。&#x0a;</Run>
                             <Run FontWeight="Bold">始终置顶：</Run><Run>保持在其它普通窗口上方。&#x0a;</Run>
