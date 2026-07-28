@@ -22,6 +22,8 @@ namespace DesktopPet
         private readonly SecretService _secretService = new SecretService();
         private readonly CommandService _commandService = new CommandService();
         private readonly SoundService _soundService = new SoundService();
+        private readonly FocusJournalService _focusJournalService =
+            FocusJournalService.Shared;
         private AppSettings _settings;
         private SpriteAnimator _animator;
         private HammerAnimator _hammerAnimator;
@@ -36,6 +38,8 @@ namespace DesktopPet
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
         private readonly DispatcherTimer _doubleClickTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
+        private DateTime? _activeFocusStartedAt;
+        private int _activeFocusPlannedMinutes;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
         private DateTime? _focusCountdownVisibleUntil;
@@ -54,6 +58,7 @@ namespace DesktopPet
         private HwndSource _source;
         private SpeechBubbleWindow _speechBubbleWindow;
         private LauncherWindow _launcherWindow;
+        private FocusJournalWindow _focusJournalWindow;
         private Forms.ToolStripMenuItem _trayStartFocusItem;
         private Forms.ToolStripMenuItem _trayPauseFocusItem;
         private Forms.ToolStripMenuItem _trayStopFocusItem;
@@ -363,6 +368,8 @@ namespace DesktopPet
                 _focusPauseBaseState = CaptureFocusPauseBaseState();
             var now = DateTime.Now;
             ResetFocusPauseState();
+            _activeFocusStartedAt = now;
+            _activeFocusPlannedMinutes = _settings.FocusMinutes;
             _focusEnds = now.AddMinutes(_settings.FocusMinutes);
             ResetRandomCues();
             ScheduleNextRandomCue(now);
@@ -471,6 +478,8 @@ namespace DesktopPet
         {
             _focusTimer.Stop();
             _focusEnds = null;
+            _activeFocusStartedAt = null;
+            _activeFocusPlannedMinutes = 0;
             ResetFocusPauseState();
             ResetRandomCues();
             UpdateFocusMenuState();
@@ -480,15 +489,53 @@ namespace DesktopPet
 
         private void CompleteFocus()
         {
+            var completedAt = DateTime.Now;
+            var recordMessage = RecordCompletedFocus(completedAt);
             _focusTimer.Stop();
             _focusEnds = null;
+            _activeFocusStartedAt = null;
+            _activeFocusPlannedMinutes = 0;
             ResetFocusPauseState();
             ResetRandomCues();
             UpdateFocusMenuState();
             _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
             _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
-            Notify("专注完成", "做得好！起来活动一下吧。");
-            ShowBubble("专注完成！做得好，起来活动一下吧。", 8);
+            Notify("专注完成", recordMessage + " 做得好，起来活动一下吧。");
+            ShowBubble(
+                "专注完成！" + recordMessage + " 做得好，起来活动一下吧。",
+                8);
+        }
+
+        private string RecordCompletedFocus(DateTime completedAt)
+        {
+            var plannedMinutes = Math.Max(
+                1,
+                _activeFocusPlannedMinutes > 0
+                    ? _activeFocusPlannedMinutes
+                    : _settings.FocusMinutes);
+            var startedAt = _activeFocusStartedAt ??
+                completedAt.AddMinutes(-plannedMinutes);
+
+            try
+            {
+                if (_focusJournalWindow != null)
+                    _focusJournalWindow.SavePendingChanges();
+                _focusJournalService.RecordCompletedSession(
+                    startedAt,
+                    completedAt,
+                    plannedMinutes);
+                var day = _focusJournalService.GetDay(completedAt);
+                if (_focusJournalWindow != null)
+                    _focusJournalWindow.RefreshFromStore();
+                return day.TargetCount > 0
+                    ? "今天已自动记录第 " + day.CompletedCount +
+                      " / " + day.TargetCount + " 个番茄钟。"
+                    : "今天已自动记录第 " + day.CompletedCount + " 个番茄钟。";
+            }
+            catch
+            {
+                return "自动记录暂时保存失败，请稍后手动补记。";
+            }
         }
 
         private void ResetFocusPauseState()
@@ -1129,6 +1176,11 @@ namespace DesktopPet
             OpenSettings(this);
         }
 
+        private void FocusJournal_Click(object sender, RoutedEventArgs e)
+        {
+            ShowFocusJournal();
+        }
+
         private void Launcher_Click(object sender, RoutedEventArgs e) => ShowLauncher();
 
         internal AppSettings OpenSettings(Window owner)
@@ -1192,6 +1244,31 @@ namespace DesktopPet
             }), DispatcherPriority.ApplicationIdle);
         }
 
+        public void ShowFocusJournal()
+        {
+            ToggleClickThrough(false);
+            if (_focusJournalWindow == null)
+            {
+                _focusJournalWindow = new FocusJournalWindow(
+                    _focusJournalService,
+                    _settings.FocusMinutes);
+                _focusJournalWindow.Closed +=
+                    (sender, args) => _focusJournalWindow = null;
+            }
+            else
+            {
+                _focusJournalWindow.UpdateDefaultFocusMinutes(
+                    _settings.FocusMinutes);
+                _focusJournalWindow.RefreshFromStore();
+            }
+
+            if (!_focusJournalWindow.IsVisible)
+                _focusJournalWindow.Show();
+            if (_focusJournalWindow.WindowState == WindowState.Minimized)
+                _focusJournalWindow.WindowState = WindowState.Normal;
+            _focusJournalWindow.Activate();
+        }
+
         internal void ShowFromLauncher() => ShowFromTray();
 
         internal void OpenChatFromLauncher() => OpenChat();
@@ -1199,6 +1276,8 @@ namespace DesktopPet
         internal void OpenSettingsFromLauncher(Window owner) => OpenSettings(owner);
 
         internal void OpenHelpFromLauncher() => Help_Click(this, null);
+
+        internal void OpenFocusJournalFromLauncher() => ShowFocusJournal();
 
         internal void TuckAwayFromLauncher() => TuckAway_Click(this, null);
 
@@ -1250,6 +1329,9 @@ namespace DesktopPet
                 "停止专注", null,
                 (s, e) => Dispatcher.Invoke(() => StopFocus_Click(s, null)))
                 as Forms.ToolStripMenuItem;
+            menu.Items.Add(
+                "今日专注记录", null,
+                (s, e) => Dispatcher.Invoke(ShowFocusJournal));
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add("使用说明书", null, (s, e) => Dispatcher.Invoke(() => Help_Click(s, null)));
             menu.Items.Add("设置", null, (s, e) => Dispatcher.Invoke(() => Settings_Click(s, null)));

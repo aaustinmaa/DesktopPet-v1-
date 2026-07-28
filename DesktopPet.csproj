@@ -79,6 +79,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="FocusJournalWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="FocusExportWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -102,8 +110,15 @@
     <Compile Include="LauncherWindow.xaml.cs">
       <DependentUpon>LauncherWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FocusJournalWindow.xaml.cs">
+      <DependentUpon>FocusJournalWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FocusExportWindow.xaml.cs">
+      <DependentUpon>FocusExportWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\AppSettings.cs" />
     <Compile Include="Models\ChatMemoryData.cs" />
+    <Compile Include="Models\FocusJournalData.cs" />
     <Compile Include="Models\PetCommand.cs" />
     <Compile Include="Models\PetState.cs" />
     <Compile Include="Services\AiService.cs" />
@@ -113,6 +128,8 @@
     <Compile Include="Services\CodexService.cs" />
     <Compile Include="Services\CommandService.cs" />
     <Compile Include="Services\DisplayService.cs" />
+    <Compile Include="Services\FocusJournalFormatter.cs" />
+    <Compile Include="Services\FocusJournalService.cs" />
     <Compile Include="Services\HammerAnimator.cs" />
     <Compile Include="Services\MemoryService.cs" />
     <Compile Include="Services\NativeMethods.cs" />

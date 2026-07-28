@@ -40,6 +40,7 @@
                     <MenuItem x:Name="StartFocusItem" Header="⏱ 开始专注计时" Click="StartFocus_Click"/>
                     <MenuItem x:Name="PauseFocusItem" Header="⏸ 暂停专注计时" IsEnabled="False" Click="PauseFocus_Click"/>
                     <MenuItem x:Name="StopFocusItem" Header="■ 停止专注计时" IsEnabled="False" Click="StopFocus_Click"/>
+                    <MenuItem Header="📊 今日专注记录" Click="FocusJournal_Click"/>
                     <Separator/>
                     <MenuItem x:Name="WanderItem" Header="🐾 自动漫游" IsCheckable="True" Click="Wander_Click"/>
                     <MenuItem x:Name="TopmostItem" Header="📌 始终置顶" IsCheckable="True" Click="Topmost_Click"/>

@@ -23,6 +23,9 @@ namespace DesktopPet
 
         private void Help_Click(object sender, RoutedEventArgs e) => _pet.OpenHelpFromLauncher();
 
+        private void FocusJournal_Click(object sender, RoutedEventArgs e) =>
+            _pet.OpenFocusJournalFromLauncher();
+
         private void TuckAway_Click(object sender, RoutedEventArgs e) => _pet.TuckAwayFromLauncher();
 
         private void DesktopShortcut_Click(object sender, RoutedEventArgs e)
