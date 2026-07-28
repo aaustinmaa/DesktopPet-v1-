@@ -34,7 +34,6 @@ namespace DesktopPet
         private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
-        private readonly DispatcherTimer _petActionTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
@@ -45,7 +44,6 @@ namespace DesktopPet
         private TimeSpan? _pausedRandomCueBreakRemaining;
         private bool _workingMode;
         private bool _manualRestMode;
-        private PetState? _activeCommandState;
         private bool _clickThrough;
         private bool _allowExit;
         private IntPtr _windowHandle;
@@ -82,7 +80,6 @@ namespace DesktopPet
             _focusCountdownTimer.Tick += FocusCountdownTimer_Tick;
             _commandTimer.Interval = TimeSpan.FromSeconds(1);
             _commandTimer.Tick += CommandTimer_Tick;
-            _petActionTimer.Tick += PetActionTimer_Tick;
             _bubbleTimer.Tick += (s, e) =>
             {
                 _bubbleTimer.Stop();
@@ -104,7 +101,8 @@ namespace DesktopPet
                     SleepZSmallTranslate,
                     SleepZMediumTranslate,
                     SleepZLargeTranslate
-                });
+                },
+                GetBasePetState);
             _hammerAnimator = new HammerAnimator(HammerImage);
             CreateSpeechBubbleWindow();
             CreateTrayIcon();
@@ -207,17 +205,18 @@ namespace DesktopPet
 
         private void BehaviorTimer_Tick(object sender, EventArgs e)
         {
+            if (_focusEnds.HasValue || _workingMode) return;
+
             if (_manualRestMode)
             {
-                if (_animator.CurrentState != PetState.Sleeping)
+                if (_animator.CurrentState == PetState.Idle)
                     _animator.SetState(PetState.Sleeping);
                 return;
             }
 
-            if (_workingMode || _focusEnds.HasValue) return;
             if (NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
             {
-                if (_animator.CurrentState != PetState.Sleeping)
+                if (_animator.CurrentState == PetState.Idle)
                     _animator.SetState(PetState.Sleeping);
                 return;
             }
@@ -228,8 +227,33 @@ namespace DesktopPet
                 ShowBubble("欢迎回来。", 3);
             }
 
-            if (_settings.AutoWander && _random.NextDouble() < 0.45)
+            if (_settings.AutoWander &&
+                _animator.CurrentState == PetState.Idle &&
+                _random.NextDouble() < 0.45)
                 Wander();
+        }
+
+        private PetState GetBasePetState()
+        {
+            if (_focusEnds.HasValue)
+            {
+                if (_focusPaused) return PetState.Idle;
+                if (_randomCueBreakEndsAt.HasValue) return PetState.Reminder;
+                return PetState.Working;
+            }
+            if (_workingMode) return PetState.Working;
+            if (_manualRestMode ||
+                NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
+                return PetState.Sleeping;
+            return PetState.Idle;
+        }
+
+        private void ApplyBasePetState()
+        {
+            if (_animator == null) return;
+            var baseState = GetBasePetState();
+            if (_animator.CurrentState != baseState)
+                _animator.SetState(baseState);
         }
 
         private void ScheduleNextSpecialAction()
@@ -244,10 +268,7 @@ namespace DesktopPet
         {
             _specialActionTimer.Stop();
             var canPlay =
-                !_manualRestMode &&
-                !_workingMode &&
-                !_focusEnds.HasValue &&
-                NativeMethods.GetSystemIdleTime() <= TimeSpan.FromMinutes(5) &&
+                GetBasePetState() == PetState.Idle &&
                 _animator.CurrentState == PetState.Idle;
 
             if (canPlay)
@@ -309,7 +330,7 @@ namespace DesktopPet
             ScheduleNextRandomCue(now);
             _focusTimer.Start();
             UpdateFocusMenuState();
-            _animator.SetState(PetState.Working);
+            ApplyBasePetState();
             _soundService.PlayFocusStart(_settings.FocusStartSound);
             ShowBubble("专注 " + _settings.FocusMinutes + " 分钟，开始！我陪你一起。", 5);
         }
@@ -356,7 +377,7 @@ namespace DesktopPet
             _focusPaused = true;
             _focusTimer.Stop();
             UpdateFocusMenuState();
-            _animator.SetState(PetState.Idle);
+            ApplyBasePetState();
             ShowBubble(
                 "番茄钟已暂停。还剩 " +
                 FormatFocusRemaining(_pausedFocusRemaining) + "。",
@@ -377,7 +398,7 @@ namespace DesktopPet
                 _randomCueBreakEndsAt =
                     now.Add(_pausedRandomCueBreakRemaining.Value);
                 _nextRandomCueAt = null;
-                _animator.SetState(PetState.Reminder);
+                ApplyBasePetState();
             }
             else
             {
@@ -397,7 +418,7 @@ namespace DesktopPet
                 {
                     ScheduleNextRandomCue(now);
                 }
-                _animator.SetState(PetState.Working);
+                ApplyBasePetState();
             }
 
             var resumedBreakRemaining = _pausedRandomCueBreakRemaining;
@@ -421,7 +442,7 @@ namespace DesktopPet
             ResetFocusPauseState();
             ResetRandomCues();
             UpdateFocusMenuState();
-            if (!_workingMode) _animator.SetState(PetState.Idle);
+            ApplyBasePetState();
             ShowBubble("计时已停止。随时都可以重新开始。", 4);
         }
 
@@ -468,7 +489,7 @@ namespace DesktopPet
                 var wasTakingBreak = _randomCueBreakEndsAt.HasValue;
                 ResetRandomCues();
                 if (wasTakingBreak && _animator != null)
-                    _animator.SetState(PetState.Working);
+                    ApplyBasePetState();
                 return;
             }
 
@@ -503,7 +524,7 @@ namespace DesktopPet
 
                 _randomCueBreakEndsAt = null;
                 _soundService.PlayRandomResume(_settings.RandomCueResumeSound);
-                _animator.SetState(PetState.Working);
+                ApplyBasePetState();
                 ShowBubble("微休息结束，听到第二声就继续工作吧。", 4);
                 ScheduleNextRandomCue(now);
                 return;
@@ -841,7 +862,7 @@ namespace DesktopPet
         {
             if (_animator == null) return;
             _animator.SetState(state,
-                state == PetState.Working || state == PetState.Sleeping || revertAfterSeconds <= 0
+                revertAfterSeconds <= 0
                     ? (TimeSpan?)null
                     : TimeSpan.FromSeconds(revertAfterSeconds));
         }
@@ -884,28 +905,7 @@ namespace DesktopPet
                     return;
             }
 
-            _petActionTimer.Stop();
-            _activeCommandState = state;
-            _animator.SetState(state);
-            _petActionTimer.Interval = duration;
-            _petActionTimer.Start();
-        }
-
-        private void PetActionTimer_Tick(object sender, EventArgs e)
-        {
-            _petActionTimer.Stop();
-            var commandedState = _activeCommandState;
-            _activeCommandState = null;
-            if (!commandedState.HasValue || _animator == null) return;
-
-            var actionStillVisible = _animator.CurrentState == commandedState.Value;
-            var blinkAlreadyFinished = commandedState.Value == PetState.Blinking
-                && _animator.CurrentState == PetState.Idle;
-            if (!actionStillVisible && !blinkAlreadyFinished) return;
-
-            _animator.SetState(_manualRestMode
-                ? PetState.Sleeping
-                : (_workingMode || _focusEnds.HasValue ? PetState.Working : PetState.Idle));
+            _animator.SetState(state, duration);
         }
 
         private void Chat_Click(object sender, RoutedEventArgs e) => OpenChat();
@@ -925,7 +925,7 @@ namespace DesktopPet
         private void WorkMode_Click(object sender, RoutedEventArgs e)
         {
             _workingMode = WorkModeItem.IsChecked;
-            _animator.SetState(_workingMode ? PetState.Working : PetState.Idle);
+            ApplyBasePetState();
             ShowBubble(_workingMode ? "工作模式启动。我会安静陪你。" : "工作完成了吗？辛苦啦。", 4);
         }
 
@@ -934,14 +934,12 @@ namespace DesktopPet
             _manualRestMode = RestModeItem.IsChecked;
             if (_manualRestMode)
             {
-                _animator.SetState(PetState.Sleeping);
+                ApplyBasePetState();
                 ShowBubble("我先休息一会儿。右键再点一次就能叫醒我。", 4);
                 return;
             }
 
-            _animator.SetState(_workingMode || _focusEnds.HasValue
-                ? PetState.Working
-                : PetState.Idle);
+            ApplyBasePetState();
             ShowBubble("我醒啦。", 3);
         }
 

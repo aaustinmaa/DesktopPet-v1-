@@ -18,13 +18,15 @@ namespace DesktopPet.Services
         private readonly Image[] _sleepZzzImages;
         private readonly ScaleTransform[] _sleepZzzScales;
         private readonly TranslateTransform[] _sleepZzzTranslations;
+        private readonly Func<PetState> _baseStateResolver;
         private readonly DispatcherTimer _frameTimer;
         private readonly DispatcherTimer _revertTimer;
         private readonly Dictionary<string, BitmapImage> _cache = new Dictionary<string, BitmapImage>();
         private string[] _frames = IdleFrames;
         private int _frameIndex;
         private bool _loopFrames = true;
-        private bool _returnToIdleWhenFinished;
+        private bool _returnToBaseWhenFinished;
+        private bool _returnToBaseAtLoopEnd;
 
         private static readonly string[] IdleFrames =
         {
@@ -150,13 +152,15 @@ namespace DesktopPet.Services
             FrameworkElement sleepZzzLayer,
             Image[] sleepZzzImages,
             ScaleTransform[] sleepZzzScales,
-            TranslateTransform[] sleepZzzTranslations)
+            TranslateTransform[] sleepZzzTranslations,
+            Func<PetState> baseStateResolver)
         {
             _image = image;
             _sleepZzzLayer = sleepZzzLayer;
             _sleepZzzImages = sleepZzzImages;
             _sleepZzzScales = sleepZzzScales;
             _sleepZzzTranslations = sleepZzzTranslations;
+            _baseStateResolver = baseStateResolver;
             _sleepZzzImages[0].Source = LoadImage("sleeping-z-small.png");
             _sleepZzzImages[1].Source = LoadImage("sleeping-z-medium.png");
             _sleepZzzImages[2].Source = LoadImage("sleeping-z-large.png");
@@ -166,7 +170,12 @@ namespace DesktopPet.Services
             _revertTimer.Tick += (s, e) =>
             {
                 _revertTimer.Stop();
-                SetState(PetState.Idle);
+                if (_loopFrames && _frames.Length > 1)
+                {
+                    _returnToBaseAtLoopEnd = true;
+                    return;
+                }
+                RestoreBaseState();
             };
             SetState(PetState.Idle);
             _frameTimer.Start();
@@ -179,7 +188,8 @@ namespace DesktopPet.Services
             _frameTimer.Stop();
             _revertTimer.Stop();
             _loopFrames = true;
-            _returnToIdleWhenFinished = false;
+            _returnToBaseWhenFinished = false;
+            _returnToBaseAtLoopEnd = false;
             StopSleepZzzAnimation();
 
             switch (state)
@@ -188,7 +198,7 @@ namespace DesktopPet.Services
                     _frames = BlinkFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(165);
                     _loopFrames = false;
-                    _returnToIdleWhenFinished = true;
+                    _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Happy:
@@ -227,14 +237,14 @@ namespace DesktopPet.Services
                     _frames = HeartFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
                     _loopFrames = false;
-                    _returnToIdleWhenFinished = true;
+                    _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Hit:
                     _frames = HitFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
                     _loopFrames = false;
-                    _returnToIdleWhenFinished = true;
+                    _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 default:
@@ -263,17 +273,30 @@ namespace DesktopPet.Services
             {
                 if (_loopFrames)
                 {
+                    if (_returnToBaseAtLoopEnd)
+                    {
+                        _frameTimer.Stop();
+                        RestoreBaseState();
+                        return;
+                    }
                     _frameIndex = 0;
                 }
                 else
                 {
                     _frameTimer.Stop();
-                    if (_returnToIdleWhenFinished)
-                        SetState(PetState.Idle);
+                    if (_returnToBaseWhenFinished)
+                        RestoreBaseState();
                     return;
                 }
             }
             ShowFrame(_frames[_frameIndex]);
+        }
+
+        private void RestoreBaseState()
+        {
+            SetState(_baseStateResolver == null
+                ? PetState.Idle
+                : _baseStateResolver());
         }
 
         private void ShowFrame(string filename)
