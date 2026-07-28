@@ -478,8 +478,8 @@ function Align-IdleOpenCloseFrames {
 }
 
 function Lift-IdleOpenCloseHeart {
-    $offsetsY = @(0, -1, -2, -3, -4, -5, -6, -7,
-        -8, -7, -6, -5, -4, -3, -2, 0)
+    $offsetsY = @(0, -2, -4, -6, -8, -10, -12, -14,
+        -16, -14, -12, -10, -8, -6, -4, 0)
     $heartRegion = [System.Drawing.Rectangle]::new(160, 240, 140, 90)
 
     for ($frame = 1; $frame -le 16; $frame++) {
@@ -509,8 +509,8 @@ function Lift-IdleOpenCloseHeart {
                         $localY * $heartRegion.Width + $localX]) {
                         continue
                     }
-                    for ($offsetY = -2; $offsetY -le 2; $offsetY++) {
-                        for ($offsetX = -2; $offsetX -le 2; $offsetX++) {
+                    for ($offsetY = -7; $offsetY -le 7; $offsetY++) {
+                        for ($offsetX = -7; $offsetX -le 7; $offsetX++) {
                             $targetX = $localX + $offsetX
                             $targetY = $localY + $offsetY
                             if ($targetX -ge 0 -and
@@ -523,6 +523,26 @@ function Lift-IdleOpenCloseHeart {
                             }
                         }
                     }
+                }
+            }
+
+            $heartObjectMask = [bool[]]::new($mask.Length)
+            for ($localY = 0; $localY -lt $heartRegion.Height; $localY++) {
+                for ($localX = 0; $localX -lt $heartRegion.Width; $localX++) {
+                    $index = $localY * $heartRegion.Width + $localX
+                    if (-not $expandedMask[$index]) {
+                        continue
+                    }
+
+                    $pixel = $input.GetPixel(
+                        $heartRegion.X + $localX,
+                        $heartRegion.Y + $localY)
+                    $isDarkOutline = $pixel.A -gt 0 -and
+                        $pixel.R -lt 120 -and
+                        $pixel.G -lt 120 -and
+                        $pixel.B -lt 120
+                    $heartObjectMask[$index] =
+                        $mask[$index] -or $isDarkOutline
                 }
             }
 
@@ -541,7 +561,7 @@ function Lift-IdleOpenCloseHeart {
                     for ($localX = 0;
                         $localX -lt $heartRegion.Width;
                         $localX++) {
-                        if (-not $expandedMask[
+                        if (-not $heartObjectMask[
                             $localY * $heartRegion.Width + $localX]) {
                             continue
                         }
@@ -562,7 +582,7 @@ function Lift-IdleOpenCloseHeart {
                     for ($localX = 0;
                         $localX -lt $heartRegion.Width;
                         $localX++) {
-                        if (-not $expandedMask[
+                        if (-not $heartObjectMask[
                             $localY * $heartRegion.Width + $localX]) {
                             continue
                         }
@@ -589,14 +609,22 @@ function Lift-IdleOpenCloseHeart {
             finally {
                 $output.Dispose()
             }
-            [System.IO.File]::Copy($temporaryPath, $path, $true)
-            [System.IO.File]::Delete($temporaryPath)
         }
         finally {
             if ($null -ne $input) {
                 $input.Dispose()
             }
         }
+    }
+
+    [System.GC]::Collect()
+    [System.GC]::WaitForPendingFinalizers()
+    for ($frame = 1; $frame -le 16; $frame++) {
+        $filename = 'idle-open-close-v5-{0:D2}.png' -f $frame
+        $path = Join-Path $spriteDirectory $filename
+        $temporaryPath = "$path.tmp.png"
+        [System.IO.File]::Copy($temporaryPath, $path, $true)
+        [System.IO.File]::Delete($temporaryPath)
     }
 }
 
