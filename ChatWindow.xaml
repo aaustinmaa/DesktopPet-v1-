@@ -127,14 +127,11 @@
         </Style>
 
         <Style x:Key="ScreenToggleStyle" TargetType="ToggleButton">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="11,0"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="8,0"/>
             <Setter Property="Margin" Value="0,0,0,5"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Background" Value="#FF34303A"/>
             <Setter Property="Foreground" Value="#FFD1CBD4"/>
-            <Setter Property="BorderBrush" Value="#35FFFFFF"/>
-            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -142,32 +139,93 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="ToggleSurface"
+                        <Border x:Name="SwitchSurface"
                                 Padding="{TemplateBinding Padding}"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="Transparent"
                                 CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="SwitchLabel"
+                                           Text="看屏幕"
+                                           Foreground="#FFD1CBD4"
+                                           VerticalAlignment="Center"/>
+                                <Border x:Name="SwitchTrack"
+                                        Width="44"
+                                        Height="24"
+                                        Margin="9,0,0,0"
+                                        Background="#FF3C3840"
+                                        BorderBrush="#FF5B5560"
+                                        BorderThickness="1"
+                                        CornerRadius="12">
+                                    <Grid>
+                                        <Ellipse x:Name="SwitchThumb"
+                                                 Width="18"
+                                                 Height="18"
+                                                 Margin="2"
+                                                 HorizontalAlignment="Left"
+                                                 VerticalAlignment="Center"
+                                                 Fill="#FF8D8691">
+                                            <Ellipse.RenderTransform>
+                                                <TranslateTransform x:Name="ThumbTranslate"/>
+                                            </Ellipse.RenderTransform>
+                                        </Ellipse>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ToggleSurface"
+                                <Setter TargetName="SwitchSurface"
+                                        Property="Background"
+                                        Value="#16FFFFFF"/>
+                                <Setter TargetName="SwitchTrack"
                                         Property="BorderBrush"
-                                        Value="#8877DA91"/>
+                                        Value="#FF77717B"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ToggleSurface"
+                                <Setter TargetName="SwitchTrack"
                                         Property="Background"
-                                        Value="#FF006B42"/>
-                                <Setter TargetName="ToggleSurface"
-                                        Property="BorderBrush"
                                         Value="#FF77DA91"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="SwitchTrack"
+                                        Property="BorderBrush"
+                                        Value="#FF98E8AA"/>
+                                <Setter TargetName="SwitchThumb"
+                                        Property="Fill"
+                                        Value="#FF102A1D"/>
+                                <Setter TargetName="SwitchLabel"
+                                        Property="Foreground"
+                                        Value="#FFF8F2DC"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTranslate"
+                                                             Storyboard.TargetProperty="X"
+                                                             To="20"
+                                                             Duration="0:0:0.16">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTranslate"
+                                                             Storyboard.TargetProperty="X"
+                                                             To="0"
+                                                             Duration="0:0:0.14">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ToggleSurface"
+                                <Setter TargetName="SwitchSurface"
                                         Property="Opacity"
                                         Value="0.42"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
@@ -244,7 +302,6 @@
             <StackPanel>
                 <ToggleButton x:Name="ScreenVisionToggle"
                               Style="{StaticResource ScreenToggleStyle}"
-                              Content="◉ 看屏幕：关"
                               IsChecked="False"
                               Checked="ScreenVisionToggle_Changed"
                               Unchecked="ScreenVisionToggle_Changed"

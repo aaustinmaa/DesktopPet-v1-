@@ -107,9 +107,6 @@ namespace DesktopPet
         {
             if (ScreenVisionToggle == null || StatusText == null) return;
             var enabled = ScreenVisionToggle.IsChecked == true;
-            ScreenVisionToggle.Content = enabled
-                ? "◉ 看屏幕：开"
-                : "◉ 看屏幕：关";
             if (enabled)
             {
                 StatusText.Text =
