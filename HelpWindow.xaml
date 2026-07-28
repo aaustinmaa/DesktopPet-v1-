@@ -33,6 +33,7 @@
                             <Run FontWeight="Bold">拖动：</Run><Run>按住苏无度并移动鼠标。&#x0a;</Run>
                             <Run FontWeight="Bold">聊天：</Run><Run>双击苏无度。&#x0a;</Run>
                             <Run FontWeight="Bold">功能菜单：</Run><Run>右键苏无度。&#x0a;</Run>
+                            <Run FontWeight="Bold">文字气泡：</Run><Run>会自然显示在她头顶，不会缩小人物；气泡区域始终鼠标穿透。&#x0a;</Run>
                             <Run FontWeight="Bold">暂时隐藏：</Run><Run>右键选择“收起来”，双击托盘图标或再次启动即可叫回。&#x0a;</Run>
                             <Run FontWeight="Bold">紧急恢复鼠标：</Run><Run>按 Ctrl + Alt + P，可关闭鼠标穿透并叫回她。</Run>
                         </TextBlock>

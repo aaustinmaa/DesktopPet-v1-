@@ -7,6 +7,8 @@ namespace DesktopPet.Services
     {
         public const int GwlExStyle = -20;
         public const int WsExTransparent = 0x00000020;
+        public const int WsExToolWindow = 0x00000080;
+        public const int WsExNoActivate = 0x08000000;
         public const int WmHotkey = 0x0312;
         public const int HotkeyId = 0xBEEF;
         public const uint ModAlt = 0x0001;

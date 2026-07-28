@@ -54,6 +54,8 @@ namespace DesktopPet
             {
                 window.ShowInTaskbar = true;
                 window.Title = "苏无度桌宠 Preview";
+                window.Loaded += (sender, args) =>
+                    window.ShowBubble("气泡测试：苏无度的大小不会改变，气泡区域可以鼠标穿透。", 10);
             }
             MainWindow = window;
             window.Show();

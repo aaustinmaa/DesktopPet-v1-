@@ -16,6 +16,8 @@ namespace DesktopPet
 {
     public partial class MainWindow : Window
     {
+        private const double SpeechBubbleHeight = 96;
+        private const double SpeechBubbleTailOverlap = 6;
         private readonly SettingsService _settingsService;
         private readonly SecretService _secretService = new SecretService();
         private readonly CommandService _commandService = new CommandService();
@@ -37,6 +39,7 @@ namespace DesktopPet
         private bool _allowExit;
         private IntPtr _windowHandle;
         private HwndSource _source;
+        private SpeechBubbleWindow _speechBubbleWindow;
 
         public MainWindow(SettingsService settingsService)
         {
@@ -47,7 +50,12 @@ namespace DesktopPet
             Loaded += MainWindow_Loaded;
             SourceInitialized += MainWindow_SourceInitialized;
             Closing += MainWindow_Closing;
-            LocationChanged += (s, e) => SaveWindowPosition();
+            LocationChanged += (s, e) =>
+            {
+                SaveWindowPosition();
+                PositionSpeechBubble();
+            };
+            SizeChanged += (s, e) => PositionSpeechBubble();
 
             _behaviorTimer.Interval = TimeSpan.FromSeconds(8);
             _behaviorTimer.Tick += BehaviorTimer_Tick;
@@ -59,7 +67,7 @@ namespace DesktopPet
             _bubbleTimer.Tick += (s, e) =>
             {
                 _bubbleTimer.Stop();
-                SpeechBubble.Visibility = Visibility.Collapsed;
+                HideSpeechBubble();
             };
         }
 
@@ -68,6 +76,7 @@ namespace DesktopPet
             ApplySettings();
             RestoreWindowPosition();
             _animator = new SpriteAnimator(PetImage);
+            CreateSpeechBubbleWindow();
             CreateTrayIcon();
             ConfigureHydrationTimer();
             _behaviorTimer.Start();
@@ -108,6 +117,11 @@ namespace DesktopPet
             Width = 210 * _settings.PetScale;
             Height = 238 * _settings.PetScale;
             Topmost = _settings.Topmost;
+            if (_speechBubbleWindow != null)
+            {
+                _speechBubbleWindow.Topmost = _settings.Topmost;
+                PositionSpeechBubble();
+            }
             TopmostItem.IsChecked = _settings.Topmost;
             WanderItem.IsChecked = _settings.AutoWander;
             if (StartupService.IsEnabled() != _settings.StartWithWindows)
@@ -129,6 +143,7 @@ namespace DesktopPet
                 Left = workArea.Right - Width - 24;
                 Top = workArea.Bottom - Height - 18;
             }
+            KeepOnScreen();
         }
 
         private bool IsVisiblePosition(double left, double top)
@@ -182,9 +197,10 @@ namespace DesktopPet
         private void Wander()
         {
             var work = SystemParameters.WorkArea;
+            var minimumTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
             var targetLeft = Math.Max(work.Left, Math.Min(work.Right - Width,
                 Left + _random.Next(-100, 101)));
-            var targetTop = Math.Max(work.Top, Math.Min(work.Bottom - Height,
+            var targetTop = Math.Max(minimumTop, Math.Min(work.Bottom - Height,
                 Top + _random.Next(-40, 41)));
             var duration = new Duration(TimeSpan.FromSeconds(1.4));
             var leftAnimation = new DoubleAnimation(targetLeft, duration)
@@ -350,6 +366,7 @@ namespace DesktopPet
             try
             {
                 DragMove();
+                KeepOnScreen();
                 SaveWindowPosition();
             }
             catch (InvalidOperationException) { }
@@ -380,11 +397,44 @@ namespace DesktopPet
         public void ShowBubble(string message, int seconds = 5)
         {
             if (string.IsNullOrWhiteSpace(message)) return;
-            SpeechText.Text = message;
-            SpeechBubble.Visibility = Visibility.Visible;
+            if (_speechBubbleWindow == null)
+                CreateSpeechBubbleWindow();
+            _speechBubbleWindow.SetMessage(message);
+            PositionSpeechBubble();
+            if (IsVisible && !_speechBubbleWindow.IsVisible)
+                _speechBubbleWindow.Show();
             _bubbleTimer.Stop();
             _bubbleTimer.Interval = TimeSpan.FromSeconds(seconds);
             _bubbleTimer.Start();
+        }
+
+        private void CreateSpeechBubbleWindow()
+        {
+            if (_speechBubbleWindow != null) return;
+            _speechBubbleWindow = new SpeechBubbleWindow
+            {
+                Owner = this,
+                Topmost = Topmost,
+                ShowInTaskbar = ShowInTaskbar,
+                Title = ShowInTaskbar ? "苏无度气泡 Preview" : "苏无度气泡"
+            };
+            PositionSpeechBubble();
+        }
+
+        private void PositionSpeechBubble()
+        {
+            if (_speechBubbleWindow == null || double.IsNaN(Left) || double.IsNaN(Top))
+                return;
+
+            _speechBubbleWindow.Width = Math.Max(184, Width);
+            _speechBubbleWindow.Left = Left + (Width - _speechBubbleWindow.Width) / 2;
+            _speechBubbleWindow.Top = Top - _speechBubbleWindow.Height + SpeechBubbleTailOverlap;
+        }
+
+        private void HideSpeechBubble()
+        {
+            if (_speechBubbleWindow != null && _speechBubbleWindow.IsVisible)
+                _speechBubbleWindow.Hide();
         }
 
         public void SetPetState(PetState state, int revertAfterSeconds = 5)
@@ -442,6 +492,8 @@ namespace DesktopPet
         {
             _settings.Topmost = TopmostItem.IsChecked;
             Topmost = _settings.Topmost;
+            if (_speechBubbleWindow != null)
+                _speechBubbleWindow.Topmost = _settings.Topmost;
             _settingsService.Save(_settings);
         }
 
@@ -485,8 +537,9 @@ namespace DesktopPet
         private void KeepOnScreen()
         {
             var work = SystemParameters.WorkArea;
+            var minimumTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
             Left = Math.Max(work.Left, Math.Min(Left, work.Right - Width));
-            Top = Math.Max(work.Top, Math.Min(Top, work.Bottom - Height));
+            Top = Math.Max(minimumTop, Math.Min(Top, work.Bottom - Height));
         }
 
         private void Settings_Click(object sender, RoutedEventArgs e)
@@ -527,6 +580,7 @@ namespace DesktopPet
 
         private void TuckAway_Click(object sender, RoutedEventArgs e)
         {
+            HideSpeechBubble();
             Hide();
             _trayIcon.ShowBalloonTip(2500, "桌宠已收起来",
                 "双击托盘图标可以把我叫回来。", Forms.ToolTipIcon.Info);
@@ -644,6 +698,11 @@ namespace DesktopPet
             _focusTimer.Stop();
             _commandTimer.Stop();
             _bubbleTimer.Stop();
+            if (_speechBubbleWindow != null)
+            {
+                _speechBubbleWindow.Close();
+                _speechBubbleWindow = null;
+            }
             if (_animator != null) _animator.Dispose();
             _soundService.Dispose();
             if (_source != null) _source.RemoveHook(WindowMessageHook);
