@@ -925,6 +925,11 @@ namespace DesktopPet
         private void WorkMode_Click(object sender, RoutedEventArgs e)
         {
             _workingMode = WorkModeItem.IsChecked;
+            if (_workingMode)
+            {
+                _manualRestMode = false;
+                RestModeItem.IsChecked = false;
+            }
             ApplyBasePetState();
             ShowBubble(_workingMode ? "工作模式启动。我会安静陪你。" : "工作完成了吗？辛苦啦。", 4);
         }
@@ -932,6 +937,11 @@ namespace DesktopPet
         private void RestMode_Click(object sender, RoutedEventArgs e)
         {
             _manualRestMode = RestModeItem.IsChecked;
+            if (_manualRestMode)
+            {
+                _workingMode = false;
+                WorkModeItem.IsChecked = false;
+            }
             if (_manualRestMode)
             {
                 ApplyBasePetState();
