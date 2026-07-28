@@ -620,10 +620,12 @@ namespace DesktopPet
             _doubleClickTimer.Stop();
             StopFocusCountdownDisplay();
             HideSpeechBubble();
-            if (_focusEnds.HasValue && _focusPaused)
+            if (!_focusEnds.HasValue)
+                StartFocus_Click(this, null);
+            else if (_focusPaused)
                 ResumeFocus();
             else
-                StartFocus_Click(this, null);
+                PauseFocus();
         }
 
         private void PetImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)

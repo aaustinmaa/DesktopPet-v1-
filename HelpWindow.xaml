@@ -31,7 +31,7 @@
                         <TextBlock Text="一分钟上手" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
                             <Run FontWeight="Bold">拖动：</Run><Run>按住苏无度并移动鼠标。&#x0a;</Run>
-                            <Run FontWeight="Bold">番茄钟：</Run><Run>双击苏无度；已有暂停的番茄钟会继续，否则开始一个新的。&#x0a;</Run>
+                            <Run FontWeight="Bold">番茄钟：</Run><Run>双击苏无度；没有计时器时开始，运行中暂停，暂停后继续。&#x0a;</Run>
                             <Run FontWeight="Bold">聊天：</Run><Run>连续点击苏无度三次。&#x0a;</Run>
                             <Run FontWeight="Bold">功能菜单：</Run><Run>右键苏无度。&#x0a;</Run>
                             <Run FontWeight="Bold">文字气泡：</Run><Run>会自然显示在她头顶，不会缩小人物；气泡区域始终鼠标穿透。&#x0a;</Run>
