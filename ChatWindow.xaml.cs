@@ -30,7 +30,12 @@ namespace DesktopPet
             ModeText.Text = GetModeText();
             LoadHistory();
             Closed += (s, e) => _aiService.Dispose();
-            Loaded += (s, e) => MessageBox.Focus();
+            ConversationScroll.SizeChanged += (s, e) => UpdateBubbleWidths();
+            Loaded += (s, e) =>
+            {
+                UpdateBubbleWidths();
+                MessageBox.Focus();
+            };
         }
 
         private string GetModeText()
@@ -132,7 +137,8 @@ namespace DesktopPet
                 Padding = new Thickness(10, 8, 10, 8),
                 Margin = new Thickness(fromUser ? 44 : 0, 4, fromUser ? 0 : 44, 4),
                 HorizontalAlignment = fromUser ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                MaxWidth = 330
+                MaxWidth = GetBubbleMaxWidth(),
+                Tag = "ChatBubble"
             };
             var stack = new StackPanel();
             stack.Children.Add(new TextBlock
@@ -153,6 +159,28 @@ namespace DesktopPet
             border.Child = stack;
             ConversationPanel.Children.Add(border);
             ConversationScroll.ScrollToEnd();
+        }
+
+        private double GetBubbleMaxWidth()
+        {
+            var availableWidth = ConversationScroll.ActualWidth;
+            if (availableWidth <= 0)
+                return 330;
+
+            // Keep compact windows readable while allowing wide and maximized
+            // chat windows to use their horizontal space naturally.
+            return Math.Max(280, Math.Min(1000, availableWidth * 0.86));
+        }
+
+        private void UpdateBubbleWidths()
+        {
+            var maxWidth = GetBubbleMaxWidth();
+            foreach (var child in ConversationPanel.Children)
+            {
+                var bubble = child as Border;
+                if (bubble != null && Equals(bubble.Tag, "ChatBubble"))
+                    bubble.MaxWidth = maxWidth;
+            }
         }
     }
 }

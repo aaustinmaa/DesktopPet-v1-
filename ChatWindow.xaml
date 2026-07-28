@@ -29,7 +29,7 @@
         <Style x:Key="ChatScrollThumbStyle" TargetType="Thumb">
             <Setter Property="MinHeight" Value="28"/>
             <Setter Property="MinWidth" Value="6"/>
-            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Margin" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -62,7 +62,8 @@
         <Style TargetType="ScrollBar">
             <Setter Property="Width" Value="10"/>
             <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Margin" Value="4,1,0,1"/>
+            <Setter Property="Margin" Value="2,1,0,1"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="Transparent"/>
             <Setter Property="Focusable" Value="False"/>
@@ -71,6 +72,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Grid x:Name="ScrollBarRoot"
+                              Width="8"
+                              HorizontalAlignment="Right"
                               Background="#12FFFFFF">
                             <Track x:Name="PART_Track"
                                    Minimum="{TemplateBinding Minimum}"
@@ -96,8 +99,18 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="Orientation" Value="Horizontal">
                                 <Setter Property="Width" Value="Auto"/>
-                                <Setter Property="Height" Value="10"/>
-                                <Setter Property="Margin" Value="1,4,1,0"/>
+                                <Setter Property="Height" Value="7"/>
+                                <Setter Property="Margin" Value="1,2,1,0"/>
+                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                <Setter TargetName="ScrollBarRoot"
+                                        Property="Width"
+                                        Value="Auto"/>
+                                <Setter TargetName="ScrollBarRoot"
+                                        Property="Height"
+                                        Value="7"/>
+                                <Setter TargetName="ScrollBarRoot"
+                                        Property="HorizontalAlignment"
+                                        Value="Stretch"/>
                                 <Setter TargetName="PART_Track"
                                         Property="IsDirectionReversed"
                                         Value="False"/>
