@@ -92,7 +92,10 @@ namespace DesktopPet
         {
             ApplySettings();
             RestoreWindowPosition();
-            _animator = new SpriteAnimator(PetImage);
+            _animator = new SpriteAnimator(
+                PetImage,
+                SleepZzzImage,
+                SleepZzzTranslate);
             _hammerAnimator = new HammerAnimator(HammerImage);
             CreateSpeechBubbleWindow();
             CreateTrayIcon();

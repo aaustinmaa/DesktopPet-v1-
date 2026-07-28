@@ -59,6 +59,19 @@
             </Image.ContextMenu>
         </Image>
 
+        <Image x:Name="SleepZzzImage"
+               Stretch="Uniform"
+               Visibility="Collapsed"
+               Opacity="0"
+               IsHitTestVisible="False"
+               Panel.ZIndex="1"
+               RenderOptions.BitmapScalingMode="NearestNeighbor"
+               SnapsToDevicePixels="True">
+            <Image.RenderTransform>
+                <TranslateTransform x:Name="SleepZzzTranslate"/>
+            </Image.RenderTransform>
+        </Image>
+
         <Image x:Name="HammerImage"
                Width="74"
                Height="74"

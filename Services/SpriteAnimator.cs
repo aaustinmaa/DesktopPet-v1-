@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using DesktopPet.Models;
@@ -11,6 +14,8 @@ namespace DesktopPet.Services
     public sealed class SpriteAnimator : IDisposable
     {
         private readonly Image _image;
+        private readonly Image _sleepZzzImage;
+        private readonly TranslateTransform _sleepZzzTranslate;
         private readonly DispatcherTimer _frameTimer;
         private readonly DispatcherTimer _revertTimer;
         private readonly Dictionary<string, BitmapImage> _cache = new Dictionary<string, BitmapImage>();
@@ -57,9 +62,15 @@ namespace DesktopPet.Services
 
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
-        public SpriteAnimator(Image image)
+        public SpriteAnimator(
+            Image image,
+            Image sleepZzzImage,
+            TranslateTransform sleepZzzTranslate)
         {
             _image = image;
+            _sleepZzzImage = sleepZzzImage;
+            _sleepZzzTranslate = sleepZzzTranslate;
+            _sleepZzzImage.Source = LoadImage("sleeping-zzz.png");
             _frameTimer = new DispatcherTimer();
             _frameTimer.Tick += (s, e) => ShowNextFrame();
             _revertTimer = new DispatcherTimer();
@@ -80,6 +91,7 @@ namespace DesktopPet.Services
             _revertTimer.Stop();
             _loopFrames = true;
             _returnToIdleWhenFinished = false;
+            StopSleepZzzAnimation();
 
             switch (state)
             {
@@ -111,7 +123,7 @@ namespace DesktopPet.Services
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Sleeping:
-                    _frames = new[] { "sleeping.png" };
+                    _frames = new[] { "sleeping-base.png" };
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Reminder:
@@ -133,6 +145,8 @@ namespace DesktopPet.Services
             }
 
             ShowFrame(_frames[0]);
+            if (state == PetState.Sleeping)
+                StartSleepZzzAnimation();
             if (_frames.Length > 1)
                 _frameTimer.Start();
             if (revertAfter.HasValue)
@@ -165,25 +179,85 @@ namespace DesktopPet.Services
 
         private void ShowFrame(string filename)
         {
+            _image.Source = LoadImage(filename);
+        }
+
+        private BitmapImage LoadImage(string filename)
+        {
             BitmapImage bitmap;
-            if (!_cache.TryGetValue(filename, out bitmap))
+            if (_cache.TryGetValue(filename, out bitmap))
+                return bitmap;
+
+            var path = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Assets",
+                "Sprites",
+                filename);
+            bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(path, UriKind.Absolute);
+            bitmap.EndInit();
+            bitmap.Freeze();
+            _cache[filename] = bitmap;
+            return bitmap;
+        }
+
+        private void StartSleepZzzAnimation()
+        {
+            _sleepZzzImage.Visibility = Visibility.Visible;
+
+            var rise = new DoubleAnimation
             {
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Sprites", filename);
-                bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.UriSource = new Uri(path, UriKind.Absolute);
-                bitmap.EndInit();
-                bitmap.Freeze();
-                _cache[filename] = bitmap;
-            }
-            _image.Source = bitmap;
+                From = 5,
+                To = -9,
+                Duration = TimeSpan.FromSeconds(2.8),
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase
+                {
+                    EasingMode = EasingMode.EaseInOut
+                }
+            };
+            var fade = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = TimeSpan.FromSeconds(2.8),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                0,
+                KeyTime.FromPercent(0)));
+            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                1,
+                KeyTime.FromPercent(0.22)));
+            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                0.9,
+                KeyTime.FromPercent(0.62)));
+            fade.KeyFrames.Add(new LinearDoubleKeyFrame(
+                0,
+                KeyTime.FromPercent(1)));
+
+            _sleepZzzTranslate.BeginAnimation(
+                TranslateTransform.YProperty,
+                rise);
+            _sleepZzzImage.BeginAnimation(UIElement.OpacityProperty, fade);
+        }
+
+        private void StopSleepZzzAnimation()
+        {
+            _sleepZzzTranslate.BeginAnimation(
+                TranslateTransform.YProperty,
+                null);
+            _sleepZzzImage.BeginAnimation(UIElement.OpacityProperty, null);
+            _sleepZzzTranslate.Y = 0;
+            _sleepZzzImage.Opacity = 0;
+            _sleepZzzImage.Visibility = Visibility.Collapsed;
         }
 
         public void Dispose()
         {
             _frameTimer.Stop();
             _revertTimer.Stop();
+            StopSleepZzzAnimation();
         }
     }
 }
