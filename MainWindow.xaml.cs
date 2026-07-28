@@ -825,7 +825,7 @@ namespace DesktopPet
                     break;
                 case "Blink":
                     state = PetState.Blinking;
-                    duration = TimeSpan.FromMilliseconds(650);
+                    duration = TimeSpan.FromMilliseconds(1450);
                     break;
                 case "Wave":
                     state = PetState.Waving;

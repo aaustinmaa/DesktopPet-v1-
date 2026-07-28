@@ -76,12 +76,15 @@ namespace DesktopPet.Services
                     {
                         "idle-v2-01.png",
                         "idle-v2-02.png",
-                        "blink.png",
-                        "blink.png",
+                        "blink-v2.png",
+                        "blink-v2.png",
+                        "blink-v2.png",
+                        "blink-v2.png",
                         "idle-v2-02.png",
+                        "idle-v2-01.png",
                         "idle-v2-01.png"
                     };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(78);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(145);
                     _loopFrames = false;
                     _returnToIdleWhenFinished = true;
                     revertAfter = null;
