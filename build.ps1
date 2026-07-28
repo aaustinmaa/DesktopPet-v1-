@@ -32,8 +32,18 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $sourceOutput = Join-Path $projectRoot "bin\$Configuration"
-$distOutput = Join-Path $projectRoot 'dist\DesktopPet'
+$distOutput = Join-Path $projectRoot 'dist\SuWuDu'
+if (Test-Path -LiteralPath $distOutput) {
+    $resolvedProject = [System.IO.Path]::GetFullPath($projectRoot)
+    $resolvedDist = [System.IO.Path]::GetFullPath($distOutput)
+    if (-not $resolvedDist.StartsWith(
+        $resolvedProject + [System.IO.Path]::DirectorySeparatorChar,
+        [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to clean an output directory outside the project: $resolvedDist"
+    }
+    Remove-Item -LiteralPath $resolvedDist -Recurse -Force
+}
 New-Item -ItemType Directory -Force -Path $distOutput | Out-Null
 Copy-Item -Path (Join-Path $sourceOutput '*') -Destination $distOutput -Recurse -Force
 
-Write-Host "Built successfully: $distOutput\DesktopPet.exe"
+Write-Host "Built successfully: $distOutput\SuWuDu.exe"

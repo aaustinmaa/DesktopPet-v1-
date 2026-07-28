@@ -1,0 +1,124 @@
+<Window x:Class="DesktopPet.LauncherWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="苏无度"
+        Width="440" Height="620"
+        MinWidth="410" MinHeight="590"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        ResizeMode="CanMinimize"
+        Icon="Assets/app.ico"
+        Background="{StaticResource SurfaceBrush}"
+        FontFamily="Microsoft YaHei UI">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="苏无度"
+                       FontSize="30"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource InkBrush}"/>
+            <TextBlock Text="你的 Windows 像素桌宠"
+                       Margin="0,2,0,0"
+                       FontSize="14"
+                       Foreground="{StaticResource MutedBrush}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Style="{StaticResource ModernCardStyle}"
+                Margin="0,20,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Width="44" Height="44"
+                        CornerRadius="22"
+                        Background="#FFDDF5E8"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="●"
+                               FontSize="20"
+                               Foreground="{StaticResource AccentBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="苏无度正在运行"
+                               FontWeight="Bold"
+                               FontSize="16"/>
+                    <TextBlock Text="关闭这个面板不会退出桌宠，她会继续待在桌面或托盘里。"
+                               Margin="0,3,0,0"
+                               Foreground="{StaticResource MutedBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Button Grid.Row="0" Grid.Column="0"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Height="48"
+                    Content="叫醒苏无度"
+                    Click="Wake_Click"/>
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Height="48"
+                    Content="和她聊聊"
+                    Click="Chat_Click"/>
+            <Button Grid.Row="2" Grid.Column="0"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Height="48"
+                    Content="设置"
+                    Click="Settings_Click"/>
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Height="48"
+                    Content="使用说明书"
+                    Click="Help_Click"/>
+            <Button Grid.Row="4" Grid.Column="0"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Height="48"
+                    Content="创建桌面快捷方式"
+                    Click="DesktopShortcut_Click"/>
+            <Button Grid.Row="4" Grid.Column="2"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Height="48"
+                    Content="把桌宠收起来"
+                    Click="TuckAway_Click"/>
+        </Grid>
+
+        <StackPanel Grid.Row="3" Margin="0,20,0,0">
+            <Border Padding="12,10"
+                    CornerRadius="8"
+                    Background="#FFF0E8D1">
+                <TextBlock TextWrapping="Wrap"
+                           LineHeight="20"
+                           Text="固定到任务栏：右键这个窗口在任务栏上的苏无度图标，选择“固定到任务栏”。也可以在开始菜单搜索“苏无度”后右键固定。"/>
+            </Border>
+            <Button Margin="0,12,0,0"
+                    HorizontalAlignment="Right"
+                    Padding="16,8"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Content="完全退出苏无度"
+                    Click="Exit_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

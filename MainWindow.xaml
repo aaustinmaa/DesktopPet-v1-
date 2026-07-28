@@ -43,6 +43,7 @@
                         <MenuItem Header="大" Tag="1.10" Click="Size_Click"/>
                     </MenuItem>
                     <Separator/>
+                    <MenuItem Header="🏠 打开启动面板" Click="Launcher_Click"/>
                     <MenuItem Header="📖 使用说明书" Click="Help_Click"/>
                     <MenuItem Header="⚙ 设置" Click="Settings_Click"/>
                     <MenuItem Header="🌙 收起来" Click="TuckAway_Click"/>

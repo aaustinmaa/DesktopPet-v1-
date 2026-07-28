@@ -7,7 +7,7 @@
     <ProjectGuid>{E53D2A6A-6400-4B02-A141-53C476E1D977}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>DesktopPet</RootNamespace>
-    <AssemblyName>DesktopPet</AssemblyName>
+    <AssemblyName>SuWuDu</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -75,6 +75,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="LauncherWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -95,11 +99,15 @@
     <Compile Include="HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LauncherWindow.xaml.cs">
+      <DependentUpon>LauncherWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\AppSettings.cs" />
     <Compile Include="Models\ChatMemoryData.cs" />
     <Compile Include="Models\PetCommand.cs" />
     <Compile Include="Models\PetState.cs" />
     <Compile Include="Services\AiService.cs" />
+    <Compile Include="Services\ApplicationIntegrationService.cs" />
     <Compile Include="Services\CodexAppServerClient.cs" />
     <Compile Include="Services\CodexLocator.cs" />
     <Compile Include="Services\CodexService.cs" />

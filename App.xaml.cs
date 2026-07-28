@@ -10,20 +10,35 @@ namespace DesktopPet
     {
         private const string MutexName = @"Local\PixelHeartDesktopPet";
         private const string WakeEventName = @"Local\PixelHeartDesktopPet.Wake";
+        private const string LauncherEventName = @"Local\PixelHeartDesktopPet.Launcher";
         private Mutex _singleInstanceMutex;
         private EventWaitHandle _wakeEvent;
+        private EventWaitHandle _launcherEvent;
         private Thread _wakeThread;
         private bool _ownsMutex;
         private volatile bool _isShuttingDown;
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            var manualLaunch = Array.IndexOf(e.Args, "--startup") < 0 &&
+                               Array.IndexOf(e.Args, "--background") < 0;
+            try
+            {
+                NativeMethods.SetCurrentProcessExplicitAppUserModelID(
+                    "SuWuDu.DesktopPet.Application");
+            }
+            catch
+            {
+                // Shell integration must never prevent the pet from starting.
+            }
+            StartShortcutRegistration();
+
             bool createdNew;
             _singleInstanceMutex = new Mutex(true, MutexName, out createdNew);
             _ownsMutex = createdNew;
             if (!createdNew)
             {
-                if (!WakeExistingInstance())
+                if (!SignalExistingInstance(manualLaunch ? LauncherEventName : WakeEventName))
                 {
                     MessageBox.Show("苏无度已经在运行，但暂时无法唤醒。请双击桌面右下角托盘图标。",
                         "苏无度桌宠", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -33,6 +48,8 @@ namespace DesktopPet
             }
 
             _wakeEvent = new EventWaitHandle(false, EventResetMode.AutoReset, WakeEventName);
+            _launcherEvent =
+                new EventWaitHandle(false, EventResetMode.AutoReset, LauncherEventName);
 
             DispatcherUnhandledException += (sender, args) =>
             {
@@ -59,14 +76,16 @@ namespace DesktopPet
             }
             MainWindow = window;
             window.Show();
+            if (manualLaunch)
+                window.ShowLauncher();
             StartWakeListener();
         }
 
-        private static bool WakeExistingInstance()
+        private static bool SignalExistingInstance(string eventName)
         {
             try
             {
-                using (var wakeEvent = EventWaitHandle.OpenExisting(WakeEventName))
+                using (var wakeEvent = EventWaitHandle.OpenExisting(eventName))
                 {
                     return wakeEvent.Set();
                 }
@@ -81,19 +100,48 @@ namespace DesktopPet
             }
         }
 
+        private static void StartShortcutRegistration()
+        {
+            var shortcutThread = new Thread(() =>
+            {
+                try
+                {
+                    ApplicationIntegrationService.EnsureStartMenuShortcut();
+                }
+                catch (Exception exception)
+                {
+                    LogError(exception);
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "SuWuDu.ShortcutRegistration"
+            };
+            shortcutThread.SetApartmentState(ApartmentState.STA);
+            shortcutThread.Start();
+        }
+
         private void StartWakeListener()
         {
             _wakeThread = new Thread(() =>
             {
+                var handles = new WaitHandle[] { _wakeEvent, _launcherEvent };
                 while (!_isShuttingDown)
                 {
-                    _wakeEvent.WaitOne();
+                    var signaled = WaitHandle.WaitAny(handles);
                     if (_isShuttingDown) break;
+                    var requestedAction = signaled;
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         var window = MainWindow as MainWindow;
-                        if (window != null)
+                        if (window == null) return;
+                        if (requestedAction == 1)
+                        {
+                            window.WakeFromSecondLaunch();
+                            window.ShowLauncher();
+                        }
+                        else
                             window.WakeFromSecondLaunch();
                     }));
                 }
@@ -128,9 +176,11 @@ namespace DesktopPet
             if (_wakeEvent != null)
             {
                 _wakeEvent.Set();
+                _launcherEvent?.Set();
                 if (_wakeThread != null && _wakeThread.IsAlive)
                     _wakeThread.Join(500);
                 _wakeEvent.Dispose();
+                _launcherEvent?.Dispose();
             }
 
             if (_singleInstanceMutex != null)

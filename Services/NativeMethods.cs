@@ -37,6 +37,9 @@ namespace DesktopPet.Services
         [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
         public static extern int SetWindowLong(IntPtr handle, int index, int newStyle);
 
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        public static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+
         public static TimeSpan GetSystemIdleTime()
         {
             var info = new LastInputInfo { cbSize = (uint)Marshal.SizeOf(typeof(LastInputInfo)) };

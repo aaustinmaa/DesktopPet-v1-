@@ -1,7 +1,7 @@
 @echo off
-set "PET_EXE=%~dp0dist\DesktopPet\DesktopPet.exe"
+set "PET_EXE=%~dp0dist\SuWuDu\SuWuDu.exe"
 if not exist "%PET_EXE%" (
-  echo DesktopPet.exe was not found. Building it now...
+  echo SuWuDu.exe was not found. Building it now...
   powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0build.ps1"
   if errorlevel 1 (
     echo Build failed. See the message above.

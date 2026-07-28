@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$executable = Join-Path $projectRoot 'dist\DesktopPet\DesktopPet.exe'
+$executable = Join-Path $projectRoot 'dist\SuWuDu\SuWuDu.exe'
 
 if (-not (Test-Path -LiteralPath $executable)) {
     & (Join-Path $projectRoot 'build.ps1')

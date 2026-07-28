@@ -40,6 +40,7 @@ namespace DesktopPet
         private IntPtr _windowHandle;
         private HwndSource _source;
         private SpeechBubbleWindow _speechBubbleWindow;
+        private LauncherWindow _launcherWindow;
 
         public MainWindow(SettingsService settingsService)
         {
@@ -551,6 +552,8 @@ namespace DesktopPet
             OpenSettings(this);
         }
 
+        private void Launcher_Click(object sender, RoutedEventArgs e) => ShowLauncher();
+
         internal AppSettings OpenSettings(Window owner)
         {
             ToggleClickThrough(false);
@@ -582,6 +585,41 @@ namespace DesktopPet
             help.Show();
         }
 
+        public void ShowLauncher()
+        {
+            ToggleClickThrough(false);
+            if (_launcherWindow == null)
+            {
+                _launcherWindow = new LauncherWindow(this);
+                _launcherWindow.Closed += (sender, args) => _launcherWindow = null;
+            }
+
+            if (!_launcherWindow.IsVisible)
+                _launcherWindow.Show();
+            if (_launcherWindow.WindowState == WindowState.Minimized)
+                _launcherWindow.WindowState = WindowState.Normal;
+
+            _launcherWindow.Topmost = true;
+            _launcherWindow.Activate();
+            _launcherWindow.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_launcherWindow != null)
+                    _launcherWindow.Topmost = false;
+            }), DispatcherPriority.ApplicationIdle);
+        }
+
+        internal void ShowFromLauncher() => ShowFromTray();
+
+        internal void OpenChatFromLauncher() => OpenChat();
+
+        internal void OpenSettingsFromLauncher(Window owner) => OpenSettings(owner);
+
+        internal void OpenHelpFromLauncher() => Help_Click(this, null);
+
+        internal void TuckAwayFromLauncher() => TuckAway_Click(this, null);
+
+        internal void ExitFromLauncher() => ExitApplication();
+
         private void TuckAway_Click(object sender, RoutedEventArgs e)
         {
             HideSpeechBubble();
@@ -612,6 +650,7 @@ namespace DesktopPet
 
             var menu = new Forms.ContextMenuStrip();
             menu.Items.Add("叫醒桌宠", null, (s, e) => Dispatcher.Invoke(ShowFromTray));
+            menu.Items.Add("打开启动面板", null, (s, e) => Dispatcher.Invoke(ShowLauncher));
             menu.Items.Add("聊聊天", null, (s, e) => Dispatcher.Invoke(OpenChat));
             menu.Items.Add("恢复鼠标交互 (Ctrl+Alt+P)", null,
                 (s, e) => Dispatcher.Invoke(() => ToggleClickThrough(false)));

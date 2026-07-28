@@ -42,6 +42,21 @@
 
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
+                        <TextBlock Text="它到底是什么应用？" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
+                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
+                            <Run>苏无度是一个真正的 Windows 桌面应用。</Run>
+                            <Run FontWeight="Bold">SuWuDu.exe</Run>
+                            <Run>是应用的主程序；“exe”只是 Windows 可执行程序的文件格式。&#x0a;&#x0a;</Run>
+                            <Run FontWeight="Bold">安装版：</Run><Run>运行“苏无度安装程序.exe”后，Windows 会把她放进你的用户应用目录，并创建开始菜单、桌面和卸载入口。之后直接在开始菜单搜索“苏无度”即可，不需要再找文件夹。&#x0a;</Run>
+                            <Run FontWeight="Bold">便携版：</Run><Run>也能直接运行，但 Windows 不会自动把任意文件夹里的 exe 当作已登记应用；移动文件夹后，旧快捷方式也可能失效。&#x0a;</Run>
+                            <Run FontWeight="Bold">任务栏：</Run><Run>桌宠本体故意不占任务栏。手动启动时出现的“苏无度启动面板”才是可固定的入口；右键它的任务栏图标即可固定。关闭面板不会退出桌宠。&#x0a;</Run>
+                            <Run FontWeight="Bold">重新打开：</Run><Run>苏无度已运行时，再点开始菜单、桌面快捷方式或固定图标，会打开启动面板并把现有桌宠叫回来，不会多开一只。</Run>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
+                    <StackPanel>
                         <TextBlock Text="她为什么会做这些动作？" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <Grid Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>

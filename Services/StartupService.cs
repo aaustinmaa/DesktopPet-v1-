@@ -6,13 +6,16 @@ namespace DesktopPet.Services
     public static class StartupService
     {
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string ValueName = "PixelHeartDesktopPet";
+        private const string ValueName = "SuWuDuDesktopPet";
+        private const string LegacyValueName = "PixelHeartDesktopPet";
 
         public static bool IsEnabled()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(RunKey, false))
             {
-                return key != null && key.GetValue(ValueName) != null;
+                return key != null &&
+                       (key.GetValue(ValueName) != null ||
+                        key.GetValue(LegacyValueName) != null);
             }
         }
 
@@ -25,10 +28,12 @@ namespace DesktopPet.Services
                 {
                     var executable = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
                     key.SetValue(ValueName, "\"" + executable + "\" --startup");
+                    key.DeleteValue(LegacyValueName, false);
                 }
                 else
                 {
                     key.DeleteValue(ValueName, false);
+                    key.DeleteValue(LegacyValueName, false);
                 }
             }
         }

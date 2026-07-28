@@ -2,7 +2,23 @@
 
 一个可直接运行的 Windows 原生 WPF 桌宠。角色基于 `v1image.png` 重新绘制成 12 帧透明像素动画，小巧、置顶、可拖动，也可以安静地待在托盘里。
 
-## 直接运行
+## 推荐：像普通应用一样安装
+
+双击：
+
+```text
+dist\苏无度安装程序.exe
+```
+
+安装程序不需要管理员权限，会安装到当前 Windows 用户的应用目录，并创建：
+
+- 开始菜单中的“苏无度”（Windows 搜索可以找到）
+- 可选的桌面快捷方式
+- Windows“已安装的应用”中的卸载入口
+
+手动启动时会出现“苏无度启动面板”。这个面板会显示在任务栏，可以右键固定；关闭面板不会退出桌宠。桌宠本体仍然不占任务栏。苏无度已经运行时，再点固定图标、开始菜单或桌面快捷方式，会打开面板并叫回现有桌宠，不会启动第二只。
+
+## 便携运行
 
 双击：
 
@@ -13,10 +29,10 @@ Start Desktop Pet.cmd
 已构建的便携版位于：
 
 ```text
-dist\DesktopPet\DesktopPet.exe
+dist\SuWuDu\SuWuDu.exe
 ```
 
-不需要安装。Windows 首次显示安全提示时，可以展开“更多信息”后选择运行；这是因为便携版没有商业代码签名。
+便携版不需要安装，也会尝试创建开始菜单入口；但如果移动或删除整个文件夹，快捷方式会失效。Windows 首次显示安全提示时，可以展开“更多信息”后选择运行；这是因为当前成品没有商业代码签名。
 
 ## 主要功能
 
@@ -46,7 +62,8 @@ dist\DesktopPet\DesktopPet.exe
 - 右键：打开完整菜单。
 - `Ctrl + Alt + P`：恢复鼠标交互并叫回隐藏的桌宠。
 - 双击托盘图标：叫醒桌宠。
-- 再次双击启动程序：不会创建第二只桌宠，而是直接叫回并置前现有桌宠。
+- 再次启动程序：不会创建第二只桌宠，而是打开启动面板并叫回现有桌宠。
+- 右键桌宠或托盘图标 → **使用说明书**：查看动作含义、应用入口和全部功能。
 
 ## AI 聊天与登录
 
@@ -85,10 +102,10 @@ dist\DesktopPet\DesktopPet.exe
 应用每秒检查一次本地命令文件。使用便携版附带的控制脚本：
 
 ```powershell
-.\dist\DesktopPet\Scripts\PetControl.ps1 -State working -Message 'Codex 正在处理任务…'
-.\dist\DesktopPet\Scripts\PetControl.ps1 -State success -Message '任务完成！'
-.\dist\DesktopPet\Scripts\PetControl.ps1 -State question -Message '需要你的输入。'
-.\dist\DesktopPet\Scripts\PetControl.ps1 -State error -Message '构建失败，请检查日志。'
+.\dist\SuWuDu\Scripts\PetControl.ps1 -State working -Message 'Codex 正在处理任务…'
+.\dist\SuWuDu\Scripts\PetControl.ps1 -State success -Message '任务完成！'
+.\dist\SuWuDu\Scripts\PetControl.ps1 -State question -Message '需要你的输入。'
+.\dist\SuWuDu\Scripts\PetControl.ps1 -State error -Message '构建失败，请检查日志。'
 ```
 
 可用状态：
@@ -122,6 +139,7 @@ idle blink happy working question success error sleeping reminder waving heart
 
 ```powershell
 .\build.ps1
+.\build-installer.ps1
 ```
 
 项目不使用 NuGet 包。便携版包含官方 Codex 运行组件，用于 ChatGPT OAuth 与 app-server 通信。
