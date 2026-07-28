@@ -6,9 +6,10 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $spriteDirectory = Join-Path $ProjectRoot 'Assets\Sprites'
-$sourcePath = Join-Path $spriteDirectory 'sleeping.png'
+$sourceDirectory = Join-Path $ProjectRoot 'Assets\Source\Sleeping'
+$sourcePath = Join-Path $sourceDirectory 'sleeping.png'
 $basePath = Join-Path $spriteDirectory 'sleeping-base.png'
-$zzzPath = Join-Path $spriteDirectory 'sleeping-zzz.png'
+$zzzPath = Join-Path $sourceDirectory 'sleeping-zzz.png'
 $smallZPath = Join-Path $spriteDirectory 'sleeping-z-small.png'
 $mediumZPath = Join-Path $spriteDirectory 'sleeping-z-medium.png'
 $largeZPath = Join-Path $spriteDirectory 'sleeping-z-large.png'

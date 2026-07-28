@@ -166,6 +166,8 @@ error.log           崩溃诊断日志
 
 ## 素材
 
-- `v1image.png`：用户提供的角色原型。
-- `Assets\sprite-sheet.png`：生成并透明化后的 4 × 3 Sprite sheet。
-- `Assets\Sprites\*.png`：应用实际使用的 12 个独立帧。
+- `Assets\Source\References\v1image.png`：用户提供的角色原型。
+- `Assets\Sprites\*.png`：应用当前真正加载的运行时帧。
+- `Assets\Source\`：用于重新生成当前资源的图集和原始素材。
+- `Assets\Archive\`：保留但不参与构建的历史图片与旧版本。
+- `Assets\README.md`：资源目录规则和维护方式。

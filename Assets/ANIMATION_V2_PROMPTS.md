@@ -1,6 +1,6 @@
 # Animation V2 sprite prompts
 
-Mode: built-in `image_gen`, with `v1image.png`, the existing sprite sheet,
+Mode: built-in `image_gen`, with `Source/References/v1image.png`, the archived sprite sheet,
 and current idle frames used as visible identity/style references.
 
 ## Calm idle and blink atlas
@@ -44,8 +44,8 @@ labels, blur, gradients, shadows, or watermark.
 
 ## Local processing
 
-The generated source and transparent atlases are stored in
-`Assets/AnimationAtlases`. Pixel-art chroma removal intentionally uses a hard
+The active generated source and transparent atlases are stored in
+`Assets/Source/AnimationAtlases`. Pixel-art chroma removal intentionally uses a hard
 matte with no despill so the red heart remains unchanged. Runtime frames are
 reproducibly extracted with:
 
@@ -53,6 +53,5 @@ reproducibly extracted with:
 .\Scripts\ExtractAnimationAtlases.ps1
 ```
 
-The extracted, non-destructive V2 frames are stored beside the original
-sprites under `Assets/Sprites` with `idle-v2-*`, `wave-v2-*`, `heart-v2-*`,
-and `hammer-v2-*` names.
+The extraction script writes only current runtime frames to `Assets/Sprites`.
+Superseded V2 frames remain available under `Assets/Archive/Sprites`.

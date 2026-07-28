@@ -1,6 +1,6 @@
 # Sprite generation prompt
 
-Mode: built-in `image_gen`, using `v1image.png` as the visible identity/style reference.
+Mode: built-in `image_gen`, using `Source/References/v1image.png` as the visible identity/style reference.
 
 ```text
 Use case: stylized-concept
@@ -14,4 +14,4 @@ Constraints: one character per cell, exactly 12 frames, no text, no captions, no
 Avoid: smooth vector curves, realistic rendering, extra limbs, changing identity, cropped pixels, inconsistent scale, white background.
 ```
 
-The generated magenta background was removed locally with the imagegen skill's chroma-key helper. The transparent 4 × 3 result is `sprite-sheet.png`; runtime frames are under `Sprites`.
+The generated magenta background was removed locally with the imagegen skill's chroma-key helper. The historical transparent 4 × 3 result is archived at `Archive/References/sprite-sheet.png`; current runtime frames are under `Sprites`.

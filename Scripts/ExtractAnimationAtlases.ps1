@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-$atlasDirectory = Join-Path $ProjectRoot 'Assets\AnimationAtlases'
+$atlasDirectory = Join-Path $ProjectRoot 'Assets\Source\AnimationAtlases'
 $spriteDirectory = Join-Path $ProjectRoot 'Assets\Sprites'
 
 function New-TransparentBitmap {
@@ -629,10 +629,6 @@ function Lift-IdleOpenCloseHeart {
 }
 
 Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'idle-blink-v2.png') `
-    0 8 'idle-v2'
-Build-IdleHandFrames
-Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-open-close-v5.png') `
     0 16 'idle-open-close-v5'
 Align-IdleOpenCloseFrames
@@ -644,9 +640,6 @@ Save-CharacterFrames `
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'social-v2.png') `
     0 8 'wave-v2'
-Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'social-v2.png') `
-    8 8 'heart-v2'
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'heart-lift-v3.png') `
     0 8 'heart-lift-v3'
