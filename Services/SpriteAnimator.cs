@@ -215,13 +215,13 @@ namespace DesktopPet.Services
         {
             _sleepZzzLayer.Visibility = Visibility.Visible;
             StartSleepZAnimation(
-                2, 0, 0.08, 0.34, 0.34, 0.43,
+                2, 0, 0.08, 0.45, 0.45, 0.495,
                 0.43, 1, -51, 56.5, 0, 0);
             StartSleepZAnimation(
-                1, 0.20, 0.28, 0.54, 0.54, 0.63,
+                1, 0.225, 0.305, 0.52, 0.52, 0.565,
                 0.54, 1.23, -22, 16, 29, -40.5);
             StartSleepZAnimation(
-                0, 0.40, 0.48, 0.76, 0.76, 0.86,
+                0, 0.40, 0.48, 0.59, 0.59, 0.665,
                 1, 2.29, 0, 0, 51, -56.5);
         }
 
