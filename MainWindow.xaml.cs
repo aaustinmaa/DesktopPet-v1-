@@ -139,7 +139,7 @@ namespace DesktopPet
             }
             else
             {
-                var workArea = SystemParameters.WorkArea;
+                var workArea = DisplayService.GetPrimaryWorkingArea(this);
                 Left = workArea.Right - Width - 24;
                 Top = workArea.Bottom - Height - 18;
             }
@@ -148,11 +148,7 @@ namespace DesktopPet
 
         private bool IsVisiblePosition(double left, double top)
         {
-            if (double.IsNaN(left) || double.IsNaN(top)) return false;
-            return left + 40 > SystemParameters.VirtualScreenLeft &&
-                   top + 40 > SystemParameters.VirtualScreenTop &&
-                   left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 20 &&
-                   top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 20;
+            return DisplayService.IsPositionVisible(this, left, top, Width, Height);
         }
 
         private void SaveWindowPosition()
@@ -196,7 +192,7 @@ namespace DesktopPet
 
         private void Wander()
         {
-            var work = SystemParameters.WorkArea;
+            var work = DisplayService.GetWorkingAreaForWindow(this);
             var minimumTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
             var targetLeft = Math.Max(work.Left, Math.Min(work.Right - Width,
                 Left + _random.Next(-100, 101)));
@@ -427,7 +423,12 @@ namespace DesktopPet
                 return;
 
             _speechBubbleWindow.Width = Math.Max(184, Width);
-            _speechBubbleWindow.Left = Left + (Width - _speechBubbleWindow.Width) / 2;
+            var workArea = DisplayService.GetWorkingAreaForWindow(this);
+            var desiredLeft = Left + (Width - _speechBubbleWindow.Width) / 2;
+            var maximumLeft = Math.Max(workArea.Left,
+                workArea.Right - _speechBubbleWindow.Width);
+            _speechBubbleWindow.Left = Math.Max(workArea.Left,
+                Math.Min(desiredLeft, maximumLeft));
             _speechBubbleWindow.Top = Top - _speechBubbleWindow.Height + SpeechBubbleTailOverlap;
         }
 
@@ -536,10 +537,13 @@ namespace DesktopPet
 
         private void KeepOnScreen()
         {
-            var work = SystemParameters.WorkArea;
-            var minimumTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
-            Left = Math.Max(work.Left, Math.Min(Left, work.Right - Width));
-            Top = Math.Max(minimumTop, Math.Min(Top, work.Bottom - Height));
+            var work = DisplayService.GetWorkingAreaForWindow(this);
+            var maximumLeft = Math.Max(work.Left, work.Right - Width);
+            var maximumTop = Math.Max(work.Top, work.Bottom - Height);
+            var preferredTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
+            var minimumTop = Math.Min(preferredTop, maximumTop);
+            Left = Math.Max(work.Left, Math.Min(Left, maximumLeft));
+            Top = Math.Max(minimumTop, Math.Min(Top, maximumTop));
         }
 
         private void Settings_Click(object sender, RoutedEventArgs e)
@@ -649,7 +653,7 @@ namespace DesktopPet
 
             if (!IsVisiblePosition(Left, Top))
             {
-                var workArea = SystemParameters.WorkArea;
+                var workArea = DisplayService.GetPrimaryWorkingArea(this);
                 Left = workArea.Right - Width - 24;
                 Top = workArea.Bottom - Height - 18;
             }

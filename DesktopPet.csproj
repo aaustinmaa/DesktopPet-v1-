@@ -104,6 +104,7 @@
     <Compile Include="Services\CodexLocator.cs" />
     <Compile Include="Services\CodexService.cs" />
     <Compile Include="Services\CommandService.cs" />
+    <Compile Include="Services\DisplayService.cs" />
     <Compile Include="Services\MemoryService.cs" />
     <Compile Include="Services\NativeMethods.cs" />
     <Compile Include="Services\ScreenCaptureService.cs" />
