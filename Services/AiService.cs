@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -26,7 +27,9 @@ namespace DesktopPet.Services
             _memory = memory;
         }
 
-        public async Task<PetReply> GetReplyAsync(string userMessage)
+        public async Task<PetReply> GetReplyAsync(
+            string userMessage,
+            string screenshotPath = null)
         {
             var memoryUpdate = _memory.ProcessMemoryInstruction(
                 userMessage, _settings.MemoryEnabled);
@@ -38,7 +41,8 @@ namespace DesktopPet.Services
             switch ((_settings.AiProvider ?? string.Empty).ToLowerInvariant())
             {
                 case "openai":
-                    reply = await GetOpenAiReplyAsync(userMessage, context);
+                    reply = await GetOpenAiReplyAsync(
+                        userMessage, context, screenshotPath);
                     reply.ProviderLabel = "OpenAI API";
                     break;
                 case "offline":
@@ -46,7 +50,8 @@ namespace DesktopPet.Services
                     reply.ProviderLabel = "离线陪伴";
                     break;
                 default:
-                    reply = await GetCodexReplyAsync(userMessage, context);
+                    reply = await GetCodexReplyAsync(
+                        userMessage, context, screenshotPath);
                     reply.ProviderLabel = "ChatGPT · Codex";
                     break;
             }
@@ -56,7 +61,10 @@ namespace DesktopPet.Services
             return reply;
         }
 
-        private async Task<PetReply> GetCodexReplyAsync(string userMessage, string context)
+        private async Task<PetReply> GetCodexReplyAsync(
+            string userMessage,
+            string context,
+            string screenshotPath)
         {
             if (!CodexService.IsAvailable)
                 throw new InvalidOperationException(
@@ -74,12 +82,16 @@ namespace DesktopPet.Services
                 _settings.PetName,
                 _settings.CodexModel,
                 _settings.CodexReasoningEffort,
+                screenshotPath,
                 _codexHasContext ? string.Empty : context);
             _codexHasContext = true;
             return ParsePetReply(raw);
         }
 
-        private async Task<PetReply> GetOpenAiReplyAsync(string userMessage, string context)
+        private async Task<PetReply> GetOpenAiReplyAsync(
+            string userMessage,
+            string context,
+            string screenshotPath)
         {
             var apiKey = _secrets.GetApiKey();
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -99,15 +111,60 @@ namespace DesktopPet.Services
                 var input = string.IsNullOrWhiteSpace(context)
                     ? userMessage
                     : "[本地记忆与最近聊天]\n" + context + "\n\n[当前消息]\n" + userMessage;
-
-                var request = new
+                if (!string.IsNullOrWhiteSpace(screenshotPath))
                 {
-                    model = _settings.AiModel,
-                    instructions,
-                    input,
-                    max_output_tokens = 300,
-                    reasoning = new { effort = "low" },
-                    text = new { verbosity = "low" }
+                    input =
+                        "[用户附带了点击发送瞬间的静态屏幕截图。请结合截图回答当前消息。]\n" +
+                        input;
+                }
+
+                object requestInput = input;
+                if (!string.IsNullOrWhiteSpace(screenshotPath) &&
+                    File.Exists(screenshotPath))
+                {
+                    var imageBytes = File.ReadAllBytes(screenshotPath);
+                    var imageUrl = "data:image/jpeg;base64," +
+                        Convert.ToBase64String(imageBytes);
+                    requestInput = new object[]
+                    {
+                        new Dictionary<string, object>
+                        {
+                            { "role", "user" },
+                            {
+                                "content", new object[]
+                                {
+                                    new Dictionary<string, object>
+                                    {
+                                        { "type", "input_text" },
+                                        { "text", input }
+                                    },
+                                    new Dictionary<string, object>
+                                    {
+                                        { "type", "input_image" },
+                                        { "image_url", imageUrl },
+                                        { "detail", "high" }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+                var request = new Dictionary<string, object>
+                {
+                    { "model", _settings.AiModel },
+                    { "instructions", instructions },
+                    { "input", requestInput },
+                    { "max_output_tokens", 300 },
+                    { "reasoning", new Dictionary<string, object>
+                        {
+                            { "effort", "low" }
+                        }
+                    },
+                    { "text", new Dictionary<string, object>
+                        {
+                            { "verbosity", "low" }
+                        }
+                    }
                 };
 
                 var body = new StringContent(

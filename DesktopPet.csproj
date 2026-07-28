@@ -99,6 +99,7 @@
     <Compile Include="Services\CommandService.cs" />
     <Compile Include="Services\MemoryService.cs" />
     <Compile Include="Services\NativeMethods.cs" />
+    <Compile Include="Services\ScreenCaptureService.cs" />
     <Compile Include="Services\SecretService.cs" />
     <Compile Include="Services\SettingsService.cs" />
     <Compile Include="Services\SpriteAnimator.cs" />

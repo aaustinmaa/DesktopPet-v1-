@@ -15,6 +15,7 @@ namespace DesktopPet
         private readonly SecretService _secrets;
         private readonly MainWindow _petWindow;
         private readonly MemoryService _memoryService;
+        private readonly ScreenCaptureService _screenCaptureService;
         private AiService _aiService;
         private bool _isSending;
 
@@ -25,9 +26,11 @@ namespace DesktopPet
             _secrets = secrets;
             _petWindow = petWindow;
             _memoryService = new MemoryService();
+            _screenCaptureService = new ScreenCaptureService();
             _aiService = new AiService(_secrets, _settings, _memoryService);
             TitleText.Text = "和 " + _settings.PetName + " 聊聊";
             ModeText.Text = GetModeText();
+            UpdateScreenVisionAvailability();
             LoadHistory();
             Closed += (s, e) => _aiService.Dispose();
             ConversationScroll.SizeChanged += (s, e) => UpdateBubbleWidths();
@@ -95,8 +98,45 @@ namespace DesktopPet
             _aiService = new AiService(_secrets, _settings, _memoryService);
             TitleText.Text = "和 " + _settings.PetName + " 聊聊";
             ModeText.Text = GetModeText();
+            UpdateScreenVisionAvailability();
             StatusText.Text = "设置已更新；下一条消息会使用新的聊天设置";
             MessageBox.Focus();
+        }
+
+        private void ScreenVisionToggle_Changed(object sender, RoutedEventArgs e)
+        {
+            if (ScreenVisionToggle == null || StatusText == null) return;
+            var enabled = ScreenVisionToggle.IsChecked == true;
+            ScreenVisionToggle.Content = enabled
+                ? "◉ 看屏幕：开"
+                : "◉ 看屏幕：关";
+            if (enabled)
+            {
+                StatusText.Text =
+                    "已开启：点击发送时截取一张所有显示器画面；不会持续录屏";
+            }
+            else if (ScreenVisionToggle.IsEnabled)
+            {
+                StatusText.Text = "屏幕不可见；只发送聊天文字";
+            }
+        }
+
+        private void UpdateScreenVisionAvailability()
+        {
+            if (ScreenVisionToggle == null) return;
+            var offline = string.Equals(
+                _settings.AiProvider, "offline", StringComparison.OrdinalIgnoreCase);
+            ScreenVisionToggle.IsEnabled = !offline;
+            if (offline)
+            {
+                ScreenVisionToggle.IsChecked = false;
+                ScreenVisionToggle.ToolTip = "离线模式不会向模型发送截图。";
+            }
+            else
+            {
+                ScreenVisionToggle.ToolTip =
+                    "开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。";
+            }
         }
 
         private async void MessageBox_KeyDown(object sender, KeyEventArgs e)
@@ -119,19 +159,30 @@ namespace DesktopPet
             MessageBox.Clear();
             SendButton.IsEnabled = false;
             SettingsButton.IsEnabled = false;
+            ScreenVisionToggle.IsEnabled = false;
             AddMessage("你", message, true);
-            StatusText.Text = _settings.PetName + " 正在想…";
+            var includeScreen = ScreenVisionToggle.IsChecked == true;
+            StatusText.Text = includeScreen
+                ? "正在截取发送瞬间的屏幕…"
+                : _settings.PetName + " 正在想…";
             _petWindow.SetPetState(PetState.Working, 0);
+            string screenshotPath = null;
 
             try
             {
-                var reply = await _aiService.GetReplyAsync(message);
+                if (includeScreen)
+                {
+                    screenshotPath = await CaptureScreenForMessageAsync();
+                    StatusText.Text = _settings.PetName + " 正在看截图并思考…";
+                }
+                var reply = await _aiService.GetReplyAsync(message, screenshotPath);
                 AddMessage(_settings.PetName, reply.Reply, false);
                 _petWindow.ShowBubble(reply.Reply, 6);
                 _petWindow.SetPetState(reply.Emotion, 6);
                 if (string.Equals(reply.Action, "bounce", StringComparison.OrdinalIgnoreCase))
                     _petWindow.Bounce();
                 StatusText.Text = reply.ProviderLabel +
+                    (includeScreen ? " · 已查看发送时截图" : string.Empty) +
                     (_settings.MemoryEnabled ? " · 已保存聊天" : string.Empty);
             }
             catch (Exception ex)
@@ -142,10 +193,30 @@ namespace DesktopPet
             }
             finally
             {
+                _screenCaptureService.DeleteCapture(screenshotPath);
                 _isSending = false;
                 SendButton.IsEnabled = true;
                 SettingsButton.IsEnabled = true;
+                UpdateScreenVisionAvailability();
                 MessageBox.Focus();
+            }
+        }
+
+        private async Task<string> CaptureScreenForMessageAsync()
+        {
+            Hide();
+            try
+            {
+                // Give the desktop compositor time to reveal the window behind
+                // the chat so the screenshot does not contain its own history.
+                await Task.Delay(140);
+                return await Task.Run(() =>
+                    _screenCaptureService.CaptureVirtualDesktop());
+            }
+            finally
+            {
+                Show();
+                Activate();
             }
         }
 

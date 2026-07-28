@@ -102,7 +102,7 @@
                     <StackPanel>
                         <TextBlock Text="AI、隐私与 Codex 联动" FontSize="18" FontWeight="Bold" Foreground="#FF007A43"/>
                         <TextBlock Margin="0,10,0,0"
-                                   Text="苏无度不会自动读取屏幕或项目文件。ChatGPT 模式通过官方 Codex OAuth 登录，只把你发送的聊天文字和已启用的本地聊天上下文交给模型；她不会询问或保存你的 ChatGPT 密码。API key 模式只在本机用 Windows DPAPI 加密 key。离线模式完全不联网。"
+                                   Text="苏无度默认不会读取屏幕或项目文件。只有你在聊天窗口手动开启“看屏幕”后，她才会在点击发送的瞬间截取一张所有显示器画面；不会持续录屏。ChatGPT 模式通过官方 Codex OAuth 登录，她不会询问或保存你的 ChatGPT 密码。API key 模式只在本机用 Windows DPAPI 加密 key。离线模式完全不联网。"
                                    TextWrapping="Wrap"
                                    LineHeight="22"/>
                         <TextBlock Margin="0,10,0,0"
@@ -117,6 +117,11 @@
                                    LineHeight="22"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="聊天窗口右上角的齿轮可以直接打开设置。保存后，下一条消息会立即使用新的聊天方式、模型和推理强度。"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="“看屏幕”默认关闭且只在当前聊天中生效。开启时，每条消息只发送一张静态截图；临时截图会在请求结束后从本机删除。发送前请先关闭或移走密码、付款信息、私人聊天等敏感内容。"
                                    Foreground="{StaticResource MutedBrush}"
                                    TextWrapping="Wrap"
                                    LineHeight="22"/>

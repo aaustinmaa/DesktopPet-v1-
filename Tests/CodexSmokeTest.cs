@@ -55,6 +55,7 @@ namespace DesktopPet.Tests
                     "苏无度",
                     "ChatGPT 5.6 sol",
                     "definitely-invalid-effort",
+                    null,
                     "用户喜欢简洁、自然的中文回答。");
                 Console.WriteLine(reply);
                 if (reply.IndexOf("苏无度", StringComparison.Ordinal) < 0)
@@ -70,6 +71,8 @@ namespace DesktopPet.Tests
                         "苏无度",
                         "gpt-5.6-sol",
                         "medium",
+                        System.IO.Path.GetFullPath(
+                            "Assets\\Sprites\\idle.png"),
                         string.Empty);
                     Console.WriteLine(explicitReply);
                     if (explicitReply.IndexOf("苏无度", StringComparison.Ordinal) < 0)

@@ -222,6 +222,7 @@ namespace DesktopPet.Services
             string petName,
             string model,
             string reasoningEffort,
+            string screenshotPath,
             string initialMemoryContext)
         {
             await StartAsync();
@@ -234,6 +235,12 @@ namespace DesktopPet.Services
                 text =
                     "[苏无度本地记忆上下文]\n" + initialMemoryContext +
                     "\n[当前消息]\n" + userMessage;
+            }
+            if (!string.IsNullOrWhiteSpace(screenshotPath))
+            {
+                text =
+                    "[用户附带了点击发送瞬间的静态屏幕截图。请结合截图回答当前消息。]\n" +
+                    text;
             }
 
             _activeAgentText = new StringBuilder();
@@ -277,20 +284,30 @@ namespace DesktopPet.Services
                 { "additionalProperties", false }
             };
 
+            var turnInput = new List<object>
+            {
+                new Dictionary<string, object>
+                {
+                    { "type", "text" },
+                    { "text", text },
+                    { "textElements", new object[0] }
+                }
+            };
+            if (!string.IsNullOrWhiteSpace(screenshotPath) &&
+                File.Exists(screenshotPath))
+            {
+                turnInput.Add(new Dictionary<string, object>
+                {
+                    { "type", "localImage" },
+                    { "path", Path.GetFullPath(screenshotPath) },
+                    { "detail", "high" }
+                });
+            }
+
             var parameters = new Dictionary<string, object>
             {
                 { "threadId", _threadId },
-                {
-                    "input", new object[]
-                    {
-                        new Dictionary<string, object>
-                        {
-                            { "type", "text" },
-                            { "text", text },
-                            { "textElements", new object[0] }
-                        }
-                    }
-                },
+                { "input", turnInput.ToArray() },
                 { "outputSchema", outputSchema }
             };
             if (!string.IsNullOrWhiteSpace(_activeReasoningEffort))

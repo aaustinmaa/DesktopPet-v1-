@@ -125,6 +125,58 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ScreenToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="11,0"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="#FF34303A"/>
+            <Setter Property="Foreground" Value="#FFD1CBD4"/>
+            <Setter Property="BorderBrush" Value="#35FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="ToggleSurface"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ToggleSurface"
+                                        Property="BorderBrush"
+                                        Value="#8877DA91"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ToggleSurface"
+                                        Property="Background"
+                                        Value="#FF006B42"/>
+                                <Setter TargetName="ToggleSurface"
+                                        Property="BorderBrush"
+                                        Value="#FF77DA91"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ToggleSurface"
+                                        Property="Opacity"
+                                        Value="0.42"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -189,8 +241,26 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="StatusText" Foreground="#FFAAA3AE" VerticalAlignment="Center" FontSize="11"/>
-            <Button x:Name="SendButton" Grid.Column="1" Content="发送  ↵" Width="104" Click="SendButton_Click"/>
+            <StackPanel>
+                <ToggleButton x:Name="ScreenVisionToggle"
+                              Style="{StaticResource ScreenToggleStyle}"
+                              Content="◉ 看屏幕：关"
+                              IsChecked="False"
+                              Checked="ScreenVisionToggle_Changed"
+                              Unchecked="ScreenVisionToggle_Changed"
+                              ToolTip="开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。"/>
+                <TextBlock x:Name="StatusText"
+                           Foreground="#FFAAA3AE"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+            <Button x:Name="SendButton"
+                    Grid.Column="1"
+                    Content="发送  ↵"
+                    Width="104"
+                    VerticalAlignment="Bottom"
+                    Click="SendButton_Click"/>
         </Grid>
     </Grid>
 </Window>
