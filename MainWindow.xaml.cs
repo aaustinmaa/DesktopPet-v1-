@@ -429,6 +429,7 @@ namespace DesktopPet
             _pausedRandomCueBreakRemaining = null;
             _focusTimer.Start();
             UpdateFocusMenuState();
+            _soundService.PlayFocusStart(_settings.FocusStartSound);
             ShowFocusCountdown();
         }
 
