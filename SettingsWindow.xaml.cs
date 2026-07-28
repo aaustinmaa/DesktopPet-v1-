@@ -40,6 +40,18 @@ namespace DesktopPet
             FocusStartSoundBox.SelectedValue = settings.FocusStartSound;
             FocusCompleteSoundBox.ItemsSource = SoundService.Options;
             FocusCompleteSoundBox.SelectedValue = settings.FocusCompleteSound;
+            RandomCueEnabledBox.IsChecked = settings.RandomCueEnabled;
+            RandomCueMinMinutesBox.Text =
+                settings.RandomCueMinMinutes.ToString(CultureInfo.InvariantCulture);
+            RandomCueMaxMinutesBox.Text =
+                settings.RandomCueMaxMinutes.ToString(CultureInfo.InvariantCulture);
+            RandomCueBreakSecondsBox.Text =
+                settings.RandomCueBreakSeconds.ToString(CultureInfo.InvariantCulture);
+            RandomCueBreakSoundBox.ItemsSource = SoundService.Options;
+            RandomCueBreakSoundBox.SelectedValue = settings.RandomCueBreakSound;
+            RandomCueResumeSoundBox.ItemsSource = SoundService.Options;
+            RandomCueResumeSoundBox.SelectedValue = settings.RandomCueResumeSound;
+            UpdateRandomCueControls();
             ModelBox.Text = settings.AiModel;
             _savedCodexModel = settings.CodexModel ?? string.Empty;
             _savedCodexReasoningEffort = settings.CodexReasoningEffort ?? string.Empty;
@@ -60,6 +72,29 @@ namespace DesktopPet
         private void PreviewFocusCompleteSound_Click(object sender, RoutedEventArgs e)
         {
             _soundService.PlayFocusComplete(Convert.ToString(FocusCompleteSoundBox.SelectedValue));
+        }
+
+        private void RandomCueEnabled_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateRandomCueControls();
+        }
+
+        private void UpdateRandomCueControls()
+        {
+            if (RandomCueOptionsPanel != null)
+                RandomCueOptionsPanel.IsEnabled = RandomCueEnabledBox.IsChecked == true;
+        }
+
+        private void PreviewRandomCueBreakSound_Click(object sender, RoutedEventArgs e)
+        {
+            _soundService.PlayRandomBreak(
+                Convert.ToString(RandomCueBreakSoundBox.SelectedValue));
+        }
+
+        private void PreviewRandomCueResumeSound_Click(object sender, RoutedEventArgs e)
+        {
+            _soundService.PlayRandomResume(
+                Convert.ToString(RandomCueResumeSoundBox.SelectedValue));
         }
 
         private void ScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -451,6 +486,9 @@ namespace DesktopPet
         {
             int hydrationMinutes;
             int focusMinutes;
+            int randomCueMinMinutes;
+            int randomCueMaxMinutes;
+            int randomCueBreakSeconds;
             if (!int.TryParse(HydrationBoxMinutes.Text, out hydrationMinutes) ||
                 hydrationMinutes < 10 || hydrationMinutes > 240)
             {
@@ -462,6 +500,24 @@ namespace DesktopPet
                 focusMinutes < 1 || focusMinutes > 120)
             {
                 MessageBox.Show("专注时长请输入 1–120 分钟。", "设置",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!int.TryParse(RandomCueMinMinutesBox.Text, out randomCueMinMinutes) ||
+                randomCueMinMinutes < 1 || randomCueMinMinutes > 120 ||
+                !int.TryParse(RandomCueMaxMinutesBox.Text, out randomCueMaxMinutes) ||
+                randomCueMaxMinutes < 1 || randomCueMaxMinutes > 120 ||
+                randomCueMinMinutes > randomCueMaxMinutes)
+            {
+                MessageBox.Show(
+                    "随机提示音间隔请输入 1–120 分钟，并确保最短间隔不大于最长间隔。",
+                    "设置", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!int.TryParse(RandomCueBreakSecondsBox.Text, out randomCueBreakSeconds) ||
+                randomCueBreakSeconds < 1 || randomCueBreakSeconds > 300)
+            {
+                MessageBox.Show("微休息时长请输入 1–300 秒。", "设置",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -478,6 +534,14 @@ namespace DesktopPet
                 Convert.ToString(FocusStartSoundBox.SelectedValue);
             ResultSettings.FocusCompleteSound =
                 Convert.ToString(FocusCompleteSoundBox.SelectedValue);
+            ResultSettings.RandomCueEnabled = RandomCueEnabledBox.IsChecked == true;
+            ResultSettings.RandomCueMinMinutes = randomCueMinMinutes;
+            ResultSettings.RandomCueMaxMinutes = randomCueMaxMinutes;
+            ResultSettings.RandomCueBreakSeconds = randomCueBreakSeconds;
+            ResultSettings.RandomCueBreakSound =
+                Convert.ToString(RandomCueBreakSoundBox.SelectedValue);
+            ResultSettings.RandomCueResumeSound =
+                Convert.ToString(RandomCueResumeSoundBox.SelectedValue);
             ResultSettings.AiProvider = _selectedProvider;
             ResultSettings.AiModel = ModelBox.Text.Trim();
             var selectedCodexModel = CodexModelBox.SelectedItem as CodexModelOption;

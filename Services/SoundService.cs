@@ -58,6 +58,16 @@ namespace DesktopPet.Services
             Play(soundId, true);
         }
 
+        public void PlayRandomBreak(string soundId)
+        {
+            Play(soundId, true);
+        }
+
+        public void PlayRandomResume(string soundId)
+        {
+            Play(soundId, false);
+        }
+
         private void Play(string soundId, bool isComplete)
         {
             if (string.Equals(soundId, "silent", StringComparison.OrdinalIgnoreCase))

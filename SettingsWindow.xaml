@@ -164,6 +164,92 @@
                                     Margin="0,0,0,1"
                                     Click="PreviewFocusCompleteSound_Click"/>
                         </Grid>
+
+                        <Separator Margin="0,14,0,12"/>
+                        <TextBlock Text="随机提示音与微休息"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="只在番茄钟运行期间生效。每轮会重新随机抽取专注间隔；第一声开始休息，第二声继续工作。"
+                                   Margin="0,2,0,8"
+                                   FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="18"/>
+                        <CheckBox x:Name="RandomCueEnabledBox"
+                                  Content="启用番茄钟内的随机微休息"
+                                  Margin="0,2,0,9"
+                                  Checked="RandomCueEnabled_Changed"
+                                  Unchecked="RandomCueEnabled_Changed"/>
+
+                        <StackPanel x:Name="RandomCueOptionsPanel">
+                            <UniformGrid Columns="3" Margin="-5,0,-5,8">
+                                <StackPanel Margin="5,0">
+                                    <TextBlock Text="最短间隔（分钟）"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"/>
+                                    <TextBox x:Name="RandomCueMinMinutesBox"
+                                             Margin="0,4,0,0"
+                                             HorizontalContentAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="5,0">
+                                    <TextBlock Text="最长间隔（分钟）"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"/>
+                                    <TextBox x:Name="RandomCueMaxMinutesBox"
+                                             Margin="0,4,0,0"
+                                             HorizontalContentAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="5,0">
+                                    <TextBlock Text="休息时长（秒）"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"/>
+                                    <TextBox x:Name="RandomCueBreakSecondsBox"
+                                             Margin="0,4,0,0"
+                                             HorizontalContentAlignment="Center"/>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="78"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="第一声：开始休息" FontSize="12"/>
+                                    <ComboBox x:Name="RandomCueBreakSoundBox"
+                                              Style="{StaticResource ModernComboBoxStyle}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="Id"
+                                              Margin="0,4,10,0"/>
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="试听"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        VerticalAlignment="Bottom"
+                                        Margin="0,0,0,1"
+                                        Click="PreviewRandomCueBreakSound_Click"/>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="78"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="第二声：继续工作" FontSize="12"/>
+                                    <ComboBox x:Name="RandomCueResumeSoundBox"
+                                              Style="{StaticResource ModernComboBoxStyle}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedValuePath="Id"
+                                              Margin="0,4,10,0"/>
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="试听"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        VerticalAlignment="Bottom"
+                                        Margin="0,0,0,1"
+                                        Click="PreviewRandomCueResumeSound_Click"/>
+                            </Grid>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

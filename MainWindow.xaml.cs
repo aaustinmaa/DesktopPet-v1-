@@ -30,6 +30,8 @@ namespace DesktopPet
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
+        private DateTime? _nextRandomCueAt;
+        private DateTime? _randomCueBreakEndsAt;
         private bool _workingMode;
         private bool _clickThrough;
         private bool _allowExit;
@@ -111,6 +113,7 @@ namespace DesktopPet
             if (StartupService.IsEnabled() != _settings.StartWithWindows)
                 StartupService.SetEnabled(_settings.StartWithWindows);
             ConfigureHydrationTimer();
+            ApplyRandomCueSettings();
         }
 
         private void RestoreWindowPosition()
@@ -213,7 +216,10 @@ namespace DesktopPet
 
         private void StartFocus_Click(object sender, RoutedEventArgs e)
         {
-            _focusEnds = DateTime.Now.AddMinutes(_settings.FocusMinutes);
+            var now = DateTime.Now;
+            _focusEnds = now.AddMinutes(_settings.FocusMinutes);
+            ResetRandomCues();
+            ScheduleNextRandomCue(now);
             StopFocusItem.IsEnabled = true;
             _focusTimer.Start();
             _animator.SetState(PetState.Working);
@@ -224,26 +230,100 @@ namespace DesktopPet
         private void FocusTimer_Tick(object sender, EventArgs e)
         {
             if (!_focusEnds.HasValue) return;
-            var remaining = _focusEnds.Value - DateTime.Now;
+            var now = DateTime.Now;
+            var remaining = _focusEnds.Value - now;
             if (remaining <= TimeSpan.Zero)
             {
                 _focusTimer.Stop();
                 _focusEnds = null;
+                ResetRandomCues();
                 StopFocusItem.IsEnabled = false;
                 _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
                 _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
                 Notify("专注完成", "做得好！起来活动一下吧。");
                 ShowBubble("专注完成！做得好，起来活动一下吧。", 8);
+                return;
             }
+
+            ProcessRandomCues(now);
         }
 
         private void StopFocus_Click(object sender, RoutedEventArgs e)
         {
             _focusTimer.Stop();
             _focusEnds = null;
+            ResetRandomCues();
             StopFocusItem.IsEnabled = false;
             if (!_workingMode) _animator.SetState(PetState.Idle);
             ShowBubble("计时已停止。随时都可以重新开始。", 4);
+        }
+
+        private void ApplyRandomCueSettings()
+        {
+            if (!_focusEnds.HasValue) return;
+
+            if (!_settings.RandomCueEnabled)
+            {
+                var wasTakingBreak = _randomCueBreakEndsAt.HasValue;
+                ResetRandomCues();
+                if (wasTakingBreak && _animator != null)
+                    _animator.SetState(PetState.Working);
+                return;
+            }
+
+            if (!_randomCueBreakEndsAt.HasValue)
+                ScheduleNextRandomCue(DateTime.Now);
+        }
+
+        private void ScheduleNextRandomCue(DateTime now)
+        {
+            _nextRandomCueAt = null;
+            if (!_settings.RandomCueEnabled || !_focusEnds.HasValue ||
+                _randomCueBreakEndsAt.HasValue)
+                return;
+
+            var minimumSeconds = _settings.RandomCueMinMinutes * 60;
+            var maximumSeconds = _settings.RandomCueMaxMinutes * 60;
+            var randomSeconds = _random.Next(minimumSeconds, maximumSeconds + 1);
+            var candidate = now.AddSeconds(randomSeconds);
+            var breakWouldEndAt =
+                candidate.AddSeconds(_settings.RandomCueBreakSeconds);
+            if (breakWouldEndAt < _focusEnds.Value)
+                _nextRandomCueAt = candidate;
+        }
+
+        private void ProcessRandomCues(DateTime now)
+        {
+            if (!_settings.RandomCueEnabled) return;
+
+            if (_randomCueBreakEndsAt.HasValue)
+            {
+                if (now < _randomCueBreakEndsAt.Value) return;
+
+                _randomCueBreakEndsAt = null;
+                _soundService.PlayRandomResume(_settings.RandomCueResumeSound);
+                _animator.SetState(PetState.Working);
+                ShowBubble("微休息结束，听到第二声就继续工作吧。", 4);
+                ScheduleNextRandomCue(now);
+                return;
+            }
+
+            if (!_nextRandomCueAt.HasValue || now < _nextRandomCueAt.Value) return;
+
+            _nextRandomCueAt = null;
+            _randomCueBreakEndsAt = now.AddSeconds(_settings.RandomCueBreakSeconds);
+            _soundService.PlayRandomBreak(_settings.RandomCueBreakSound);
+            _animator.SetState(PetState.Reminder);
+            ShowBubble(
+                "第一声：休息 " + _settings.RandomCueBreakSeconds +
+                " 秒。听到第二声再继续工作。",
+                _settings.RandomCueBreakSeconds + 1);
+        }
+
+        private void ResetRandomCues()
+        {
+            _nextRandomCueAt = null;
+            _randomCueBreakEndsAt = null;
         }
 
         private void CommandTimer_Tick(object sender, EventArgs e)
