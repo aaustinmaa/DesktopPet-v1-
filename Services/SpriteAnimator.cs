@@ -207,7 +207,7 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Working:
                     _frames = WorkingFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(110);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(50);
                     break;
                 case PetState.Question:
                     _frames = new[] { "question.png" };
