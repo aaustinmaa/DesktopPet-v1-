@@ -62,6 +62,25 @@ namespace DesktopPet.Services
             "blink-v2-08.png"
         };
 
+        private static readonly string[] HeartFrames =
+        {
+            "heart-lift-v3-01.png",
+            "heart-lift-v3-02.png",
+            "heart-lift-v3-03.png",
+            "heart-lift-v3-04.png",
+            "heart-lift-v3-05.png",
+            "heart-lift-v3-06.png",
+            "heart-lift-v3-07.png",
+            "heart-lift-v3-08.png",
+            "heart-lift-v3-07.png",
+            "heart-lift-v3-06.png",
+            "heart-lift-v3-05.png",
+            "heart-lift-v3-04.png",
+            "heart-lift-v3-03.png",
+            "heart-lift-v3-02.png",
+            "heart-lift-v3-01.png"
+        };
+
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
         public SpriteAnimator(
@@ -143,8 +162,11 @@ namespace DesktopPet.Services
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(105);
                     break;
                 case PetState.HeartPulse:
-                    _frames = new[] { "heart.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frames = HeartFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
+                    _loopFrames = false;
+                    _returnToIdleWhenFinished = true;
+                    revertAfter = null;
                     break;
                 default:
                     _frames = IdleFrames;
