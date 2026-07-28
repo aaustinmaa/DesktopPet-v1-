@@ -1,12 +1,68 @@
 import argparse
-import io
 import struct
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw
 
 
 ICON_SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
+CORNER_RADIUS_RATIO = 0.20
+MASK_SCALE = 4
+
+
+def apply_rounded_corners(image: Image.Image) -> Image.Image:
+    width, height = image.size
+    mask_size = (width * MASK_SCALE, height * MASK_SCALE)
+    radius = round(min(width, height) * CORNER_RADIUS_RATIO * MASK_SCALE)
+    mask = Image.new("L", mask_size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.rounded_rectangle(
+        (0, 0, mask_size[0] - 1, mask_size[1] - 1),
+        radius=radius,
+        fill=255,
+    )
+    mask = mask.resize((width, height), Image.Resampling.LANCZOS)
+
+    rounded = image.copy()
+    rounded.putalpha(ImageChops.multiply(image.getchannel("A"), mask))
+    return rounded
+
+
+def encode_windows_dib(image: Image.Image) -> bytes:
+    image = image.convert("RGBA")
+    width, height = image.size
+    pixels = image.load()
+
+    color_data = bytearray()
+    for y in range(height - 1, -1, -1):
+        for x in range(width):
+            red, green, blue, alpha = pixels[x, y]
+            color_data.extend((blue, green, red, alpha))
+
+    mask_stride = ((width + 31) // 32) * 4
+    mask_data = bytearray()
+    for y in range(height - 1, -1, -1):
+        row = bytearray(mask_stride)
+        for x in range(width):
+            if pixels[x, y][3] == 0:
+                row[x // 8] |= 0x80 >> (x % 8)
+        mask_data.extend(row)
+
+    header = struct.pack(
+        "<IiiHHIIiiII",
+        40,
+        width,
+        height * 2,
+        1,
+        32,
+        0,
+        len(color_data),
+        0,
+        0,
+        0,
+        0,
+    )
+    return header + color_data + mask_data
 
 
 def build_icon(source_path: Path, output_path: Path) -> None:
@@ -15,9 +71,8 @@ def build_icon(source_path: Path, output_path: Path) -> None:
         frames: list[tuple[int, bytes]] = []
         for size in ICON_SIZES:
             frame = source.resize((size, size), Image.Resampling.NEAREST)
-            buffer = io.BytesIO()
-            frame.save(buffer, format="PNG", optimize=False, compress_level=9)
-            frames.append((size, buffer.getvalue()))
+            frame = apply_rounded_corners(frame)
+            frames.append((size, encode_windows_dib(frame)))
 
     header_size = 6 + 16 * len(frames)
     offset = header_size
