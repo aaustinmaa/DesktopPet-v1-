@@ -33,6 +33,9 @@ namespace DesktopPet
             int defaultFocusMinutes)
         {
             InitializeComponent();
+            JournalCalendar.CalendarDayButtonStyle =
+                (Style)JournalCalendar.Resources[
+                    "ModernCalendarDayButtonStyle"];
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _defaultFocusMinutes = Math.Max(1, defaultFocusMinutes);
             _service.JournalChanged += FocusJournalService_JournalChanged;
@@ -88,7 +91,11 @@ namespace DesktopPet
                         .Where(item => item != null)
                         .Select(CreateSessionViewModel));
                 SessionsList.ItemsSource = _sessions;
-                JournalDatePicker.SelectedDate = _selectedDate;
+                JournalDateText.Text = _selectedDate.ToString(
+                    "yyyy年M月d日",
+                    _displayCulture);
+                JournalCalendar.SelectedDate = _selectedDate;
+                JournalCalendar.DisplayDate = _selectedDate;
                 Title = "苏无度 · " +
                     _selectedDate.ToString("yyyy年M月d日", _displayCulture) +
                     " 专注记录";
@@ -139,12 +146,23 @@ namespace DesktopPet
             NavigateTo(FocusTimeAccounting.GetJournalDate(DateTime.Now));
         }
 
-        private void JournalDatePicker_SelectedDateChanged(
+        private void JournalDateButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            JournalCalendar.DisplayDate = _selectedDate;
+            JournalCalendar.SelectedDate = _selectedDate;
+            JournalCalendarPopup.IsOpen = true;
+        }
+
+        private void JournalCalendar_SelectedDatesChanged(
             object sender,
             SelectionChangedEventArgs e)
         {
-            if (_loading || !JournalDatePicker.SelectedDate.HasValue) return;
-            NavigateTo(JournalDatePicker.SelectedDate.Value);
+            if (_loading || !JournalCalendar.SelectedDate.HasValue) return;
+            var selectedDate = JournalCalendar.SelectedDate.Value;
+            JournalCalendarPopup.IsOpen = false;
+            NavigateTo(selectedDate);
         }
 
         private void NavigateTo(DateTime date)
@@ -153,7 +171,8 @@ namespace DesktopPet
             if (!SavePendingChanges())
             {
                 _loading = true;
-                JournalDatePicker.SelectedDate = _selectedDate;
+                JournalCalendar.SelectedDate = _selectedDate;
+                JournalCalendar.DisplayDate = _selectedDate;
                 _loading = false;
                 return;
             }
