@@ -6,19 +6,16 @@ from PIL import Image, ImageChops, ImageDraw
 
 
 ICON_SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
-CORNER_RADIUS_RATIO = 0.20
 MASK_SCALE = 4
 
 
-def apply_rounded_corners(image: Image.Image) -> Image.Image:
+def apply_circular_mask(image: Image.Image) -> Image.Image:
     width, height = image.size
     mask_size = (width * MASK_SCALE, height * MASK_SCALE)
-    radius = round(min(width, height) * CORNER_RADIUS_RATIO * MASK_SCALE)
     mask = Image.new("L", mask_size, 0)
     draw = ImageDraw.Draw(mask)
-    draw.rounded_rectangle(
+    draw.ellipse(
         (0, 0, mask_size[0] - 1, mask_size[1] - 1),
-        radius=radius,
         fill=255,
     )
     mask = mask.resize((width, height), Image.Resampling.LANCZOS)
@@ -71,7 +68,7 @@ def build_icon(source_path: Path, output_path: Path) -> None:
         frames: list[tuple[int, bytes]] = []
         for size in ICON_SIZES:
             frame = source.resize((size, size), Image.Resampling.NEAREST)
-            frame = apply_rounded_corners(frame)
+            frame = apply_circular_mask(frame)
             frames.append((size, encode_windows_dib(frame)))
 
     header_size = 6 + 16 * len(frames)
