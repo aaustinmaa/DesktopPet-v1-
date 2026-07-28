@@ -12,6 +12,7 @@ namespace DesktopPet.Models
         Sleeping,
         Reminder,
         Waving,
-        HeartPulse
+        HeartPulse,
+        Hit
     }
 }

@@ -643,6 +643,12 @@ Save-CharacterFrames `
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'heart-lift-v3.png') `
     0 8 'heart-lift-v3'
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'working-float-v2.png') `
+    0 16 'working-float-v2'
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'idle-hit-v1.png') `
+    0 16 'idle-hit-v1'
 Save-HammerFrames (Join-Path $atlasDirectory 'hammer-v2.png')
 
 Write-Host 'Animation frames extracted successfully.'

@@ -28,6 +28,7 @@ namespace DesktopPet
         private Forms.NotifyIcon _trayIcon;
         private readonly Random _random = new Random();
         private readonly DispatcherTimer _behaviorTimer = new DispatcherTimer();
+        private readonly DispatcherTimer _specialActionTimer = new DispatcherTimer();
         private readonly DispatcherTimer _hydrationTimer = new DispatcherTimer();
         private readonly DispatcherTimer _focusTimer = new DispatcherTimer();
         private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
@@ -73,6 +74,7 @@ namespace DesktopPet
 
             _behaviorTimer.Interval = TimeSpan.FromSeconds(8);
             _behaviorTimer.Tick += BehaviorTimer_Tick;
+            _specialActionTimer.Tick += SpecialActionTimer_Tick;
             _hydrationTimer.Tick += HydrationTimer_Tick;
             _focusTimer.Interval = TimeSpan.FromSeconds(1);
             _focusTimer.Tick += FocusTimer_Tick;
@@ -108,6 +110,7 @@ namespace DesktopPet
             CreateTrayIcon();
             ConfigureHydrationTimer();
             _behaviorTimer.Start();
+            ScheduleNextSpecialAction();
             _commandTimer.Start();
 
             if (!_settings.FirstRunComplete)
@@ -225,13 +228,40 @@ namespace DesktopPet
                 ShowBubble("欢迎回来。", 3);
             }
 
-            var choice = _random.Next(5);
-            if (choice == 0) _animator.SetState(PetState.Blinking, TimeSpan.FromSeconds(2));
-            else if (choice == 1) _animator.SetState(PetState.HeartPulse, TimeSpan.FromSeconds(3));
-            else if (choice == 2) _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(3));
-
             if (_settings.AutoWander && _random.NextDouble() < 0.45)
                 Wander();
+        }
+
+        private void ScheduleNextSpecialAction()
+        {
+            _specialActionTimer.Stop();
+            _specialActionTimer.Interval =
+                TimeSpan.FromSeconds(_random.Next(20, 31));
+            _specialActionTimer.Start();
+        }
+
+        private void SpecialActionTimer_Tick(object sender, EventArgs e)
+        {
+            _specialActionTimer.Stop();
+            var canPlay =
+                !_manualRestMode &&
+                !_workingMode &&
+                !_focusEnds.HasValue &&
+                NativeMethods.GetSystemIdleTime() <= TimeSpan.FromMinutes(5) &&
+                _animator.CurrentState == PetState.Idle;
+
+            if (canPlay)
+            {
+                var choice = _random.Next(3);
+                if (choice == 0)
+                    _animator.SetState(PetState.Blinking);
+                else if (choice == 1)
+                    _animator.SetState(PetState.HeartPulse);
+                else
+                    _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(3));
+            }
+
+            ScheduleNextSpecialAction();
         }
 
         private void Wander()
@@ -534,6 +564,14 @@ namespace DesktopPet
                 Math.Abs(Top - startingTop) > 2;
             if (!wasDragged)
             {
+                var shouldPlayIdleHitReaction =
+                    !_workingMode &&
+                    !_focusEnds.HasValue &&
+                    !_manualRestMode &&
+                    _animator.CurrentState != PetState.Working &&
+                    _animator.CurrentState != PetState.Sleeping;
+                if (shouldPlayIdleHitReaction)
+                    _animator.SetState(PetState.Hit);
                 PlayHammerStrike();
                 if (_focusEnds.HasValue)
                     ShowFocusCountdown();
@@ -1204,6 +1242,7 @@ namespace DesktopPet
         private void Cleanup()
         {
             _behaviorTimer.Stop();
+            _specialActionTimer.Stop();
             _hydrationTimer.Stop();
             _focusTimer.Stop();
             _focusCountdownTimer.Stop();

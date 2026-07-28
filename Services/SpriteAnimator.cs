@@ -89,6 +89,60 @@ namespace DesktopPet.Services
             "heart-lift-v3-01.png"
         };
 
+        private static readonly string[] WorkingFrames =
+        {
+            "working-float-v2-01.png",
+            "working-float-v2-02.png",
+            "working-float-v2-03.png",
+            "working-float-v2-04.png",
+            "working-float-v2-05.png",
+            "working-float-v2-06.png",
+            "working-float-v2-07.png",
+            "working-float-v2-08.png",
+            "working-float-v2-09.png",
+            "working-float-v2-10.png",
+            "working-float-v2-11.png",
+            "working-float-v2-12.png",
+            "working-float-v2-13.png",
+            "working-float-v2-14.png",
+            "working-float-v2-15.png",
+            "working-float-v2-16.png",
+            "working-float-v2-15.png",
+            "working-float-v2-14.png",
+            "working-float-v2-13.png",
+            "working-float-v2-12.png",
+            "working-float-v2-11.png",
+            "working-float-v2-10.png",
+            "working-float-v2-09.png",
+            "working-float-v2-08.png",
+            "working-float-v2-07.png",
+            "working-float-v2-06.png",
+            "working-float-v2-05.png",
+            "working-float-v2-04.png",
+            "working-float-v2-03.png",
+            "working-float-v2-02.png"
+        };
+
+        private static readonly string[] HitFrames =
+        {
+            "idle-hit-v1-01.png",
+            "idle-hit-v1-02.png",
+            "idle-hit-v1-03.png",
+            "idle-hit-v1-04.png",
+            "idle-hit-v1-05.png",
+            "idle-hit-v1-06.png",
+            "idle-hit-v1-07.png",
+            "idle-hit-v1-08.png",
+            "idle-hit-v1-09.png",
+            "idle-hit-v1-10.png",
+            "idle-hit-v1-11.png",
+            "idle-hit-v1-12.png",
+            "idle-hit-v1-13.png",
+            "idle-hit-v1-14.png",
+            "idle-hit-v1-15.png",
+            "idle-hit-v1-16.png"
+        };
+
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
         public SpriteAnimator(
@@ -142,8 +196,8 @@ namespace DesktopPet.Services
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Working:
-                    _frames = new[] { "working.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frames = WorkingFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(110);
                     break;
                 case PetState.Question:
                     _frames = new[] { "question.png" };
@@ -172,6 +226,13 @@ namespace DesktopPet.Services
                 case PetState.HeartPulse:
                     _frames = HeartFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
+                    _loopFrames = false;
+                    _returnToIdleWhenFinished = true;
+                    revertAfter = null;
+                    break;
+                case PetState.Hit:
+                    _frames = HitFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
                     _loopFrames = false;
                     _returnToIdleWhenFinished = true;
                     revertAfter = null;
