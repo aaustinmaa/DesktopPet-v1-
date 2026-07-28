@@ -34,6 +34,7 @@ namespace DesktopPet
         private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
+        private readonly DispatcherTimer _doubleClickTimer = new DispatcherTimer();
         private DateTime? _focusEnds;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
@@ -80,6 +81,9 @@ namespace DesktopPet
             _focusCountdownTimer.Tick += FocusCountdownTimer_Tick;
             _commandTimer.Interval = TimeSpan.FromSeconds(1);
             _commandTimer.Tick += CommandTimer_Tick;
+            _doubleClickTimer.Interval = TimeSpan.FromMilliseconds(
+                Forms.SystemInformation.DoubleClickTime + 75);
+            _doubleClickTimer.Tick += DoubleClickTimer_Tick;
             _bubbleTimer.Tick += (s, e) =>
             {
                 _bubbleTimer.Stop();
@@ -115,7 +119,7 @@ namespace DesktopPet
             {
                 _settings.FirstRunComplete = true;
                 _settingsService.Save(_settings);
-                ShowBubble("你好，我是" + _settings.PetName + "！双击我聊天，右键查看更多功能。", 7);
+                ShowBubble("你好，我是" + _settings.PetName + "！双击开始专注，三击和我聊天，右键查看更多功能。", 7);
                 _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(4));
             }
         }
@@ -562,11 +566,23 @@ namespace DesktopPet
 
         private void PetImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount >= 2)
+            if (e.ClickCount >= 3)
             {
-                StopFocusCountdownDisplay();
-                HideSpeechBubble();
-                OpenChat();
+                _doubleClickTimer.Stop();
+                if (e.ClickCount == 3)
+                {
+                    StopFocusCountdownDisplay();
+                    HideSpeechBubble();
+                    OpenChat();
+                }
+                e.Handled = true;
+                return;
+            }
+
+            if (e.ClickCount == 2)
+            {
+                _doubleClickTimer.Stop();
+                _doubleClickTimer.Start();
                 e.Handled = true;
                 return;
             }
@@ -597,6 +613,17 @@ namespace DesktopPet
                 if (_focusEnds.HasValue)
                     ShowFocusCountdown();
             }
+        }
+
+        private void DoubleClickTimer_Tick(object sender, EventArgs e)
+        {
+            _doubleClickTimer.Stop();
+            StopFocusCountdownDisplay();
+            HideSpeechBubble();
+            if (_focusEnds.HasValue && _focusPaused)
+                ResumeFocus();
+            else
+                StartFocus_Click(this, null);
         }
 
         private void PetImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -991,21 +1018,6 @@ namespace DesktopPet
             }
         }
 
-        private void Size_Click(object sender, RoutedEventArgs e)
-        {
-            var item = sender as MenuItem;
-            double scale;
-            if (item != null && double.TryParse(Convert.ToString(item.Tag),
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out scale))
-            {
-                _settings.PetScale = scale;
-                ApplySettings();
-                KeepOnScreen();
-                _settingsService.Save(_settings);
-            }
-        }
-
         private void KeepOnScreen()
         {
             var work = DisplayService.GetWorkingAreaForWindow(this);
@@ -1256,6 +1268,7 @@ namespace DesktopPet
             _focusCountdownTimer.Stop();
             _commandTimer.Stop();
             _bubbleTimer.Stop();
+            _doubleClickTimer.Stop();
             if (_speechBubbleWindow != null)
             {
                 _speechBubbleWindow.Close();

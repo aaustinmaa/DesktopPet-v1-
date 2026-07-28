@@ -44,11 +44,6 @@
                     <MenuItem x:Name="WanderItem" Header="🐾 自动漫游" IsCheckable="True" Click="Wander_Click"/>
                     <MenuItem x:Name="TopmostItem" Header="📌 始终置顶" IsCheckable="True" Click="Topmost_Click"/>
                     <MenuItem x:Name="ClickThroughItem" Header="👻 鼠标穿透（Ctrl+Alt+P 恢复）" IsCheckable="True" Click="ClickThrough_Click"/>
-                    <MenuItem Header="🔍 大小">
-                        <MenuItem Header="小" Tag="0.65" Click="Size_Click"/>
-                        <MenuItem Header="默认" Tag="0.82" Click="Size_Click"/>
-                        <MenuItem Header="大" Tag="1.10" Click="Size_Click"/>
-                    </MenuItem>
                     <Separator/>
                     <MenuItem Header="🏠 打开启动面板" Click="Launcher_Click"/>
                     <MenuItem Header="📖 使用说明书" Click="Help_Click"/>
