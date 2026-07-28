@@ -215,13 +215,14 @@ namespace DesktopPet.Services
         {
             _sleepZzzLayer.Visibility = Visibility.Visible;
             StartSleepZAnimation(
-                2, 0, 0.08, 0.45, 0.45, 0.495,
+                2, 0, 0.0711111111111111, 0.40, 0.40, 0.44,
                 0.43, 1, -51, 56.5, 0, 0);
             StartSleepZAnimation(
-                1, 0.225, 0.305, 0.675, 0.675, 0.72,
+                1, 0.20, 0.271111111111111, 0.60, 0.60, 0.64,
                 0.54, 1.23, -22, 16, 29, -40.5);
             StartSleepZAnimation(
-                0, 0.45, 0.53, 0.90, 0.90, 1,
+                0, 0.40, 0.471111111111111, 0.80, 0.80,
+                0.888888888888889,
                 1, 2.29, 0, 0, 51, -56.5);
         }
 
@@ -239,7 +240,7 @@ namespace DesktopPet.Services
             double endX,
             double endY)
         {
-            var duration = TimeSpan.FromSeconds(8);
+            var duration = TimeSpan.FromSeconds(9);
             var opacity = new DoubleAnimationUsingKeyFrames
             {
                 Duration = duration,
