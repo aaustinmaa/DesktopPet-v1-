@@ -20,6 +20,51 @@ function New-TransparentBitmap {
         [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 }
 
+function Clear-HorizontalEdgeArtifacts {
+    param(
+        [System.Drawing.Bitmap]$Bitmap
+    )
+
+    $top = 0
+    while ($top -lt $Bitmap.Height) {
+        $hasVisiblePixel = $false
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            if ($Bitmap.GetPixel($x, $top).A -ge 12) {
+                $hasVisiblePixel = $true
+                break
+            }
+        }
+        if (-not $hasVisiblePixel) {
+            break
+        }
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            $Bitmap.SetPixel($x, $top, [System.Drawing.Color]::Transparent)
+        }
+        $top++
+    }
+
+    $bottom = $Bitmap.Height - 1
+    while ($bottom -ge 0) {
+        $hasVisiblePixel = $false
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            if ($Bitmap.GetPixel($x, $bottom).A -ge 12) {
+                $hasVisiblePixel = $true
+                break
+            }
+        }
+        if (-not $hasVisiblePixel) {
+            break
+        }
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            $Bitmap.SetPixel(
+                $x,
+                $bottom,
+                [System.Drawing.Color]::Transparent)
+        }
+        $bottom--
+    }
+}
+
 function Get-CellRectangle {
     param(
         [System.Drawing.Image]$Image,
@@ -106,7 +151,8 @@ function Save-CharacterFrames {
         [string]$AtlasPath,
         [int]$StartIndex,
         [int]$Count,
-        [string]$Prefix
+        [string]$Prefix,
+        [switch]$ClearEdgeArtifacts
     )
 
     $atlas = [System.Drawing.Bitmap]::FromFile($AtlasPath)
@@ -172,6 +218,10 @@ function Save-CharacterFrames {
                 }
                 finally {
                     $graphics.Dispose()
+                }
+
+                if ($ClearEdgeArtifacts) {
+                    Clear-HorizontalEdgeArtifacts $output
                 }
 
                 $filename = '{0}-{1:D2}.png' -f $Prefix, ($frame + 1)
@@ -296,7 +346,8 @@ Save-CharacterFrames `
     0 8 'idle-v2'
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
-    8 8 'blink-v2'
+    8 8 'blink-v2' `
+    -ClearEdgeArtifacts
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'social-v2.png') `
     0 8 'wave-v2'
