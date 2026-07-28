@@ -19,6 +19,7 @@ namespace DesktopPet
         private readonly SettingsService _settingsService;
         private readonly SecretService _secretService = new SecretService();
         private readonly CommandService _commandService = new CommandService();
+        private readonly SoundService _soundService = new SoundService();
         private AppSettings _settings;
         private SpriteAnimator _animator;
         private Forms.NotifyIcon _trayIcon;
@@ -216,6 +217,7 @@ namespace DesktopPet
             StopFocusItem.IsEnabled = true;
             _focusTimer.Start();
             _animator.SetState(PetState.Working);
+            _soundService.PlayFocusStart(_settings.FocusStartSound);
             ShowBubble("专注 " + _settings.FocusMinutes + " 分钟，开始！我陪你一起。", 5);
         }
 
@@ -229,6 +231,7 @@ namespace DesktopPet
                 _focusEnds = null;
                 StopFocusItem.IsEnabled = false;
                 _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
+                _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
                 Notify("专注完成", "做得好！起来活动一下吧。");
                 ShowBubble("专注完成！做得好，起来活动一下吧。", 8);
             }
@@ -562,6 +565,7 @@ namespace DesktopPet
             _commandTimer.Stop();
             _bubbleTimer.Stop();
             if (_animator != null) _animator.Dispose();
+            _soundService.Dispose();
             if (_source != null) _source.RemoveHook(WindowMessageHook);
             if (_windowHandle != IntPtr.Zero)
                 NativeMethods.UnregisterHotKey(_windowHandle, NativeMethods.HotkeyId);

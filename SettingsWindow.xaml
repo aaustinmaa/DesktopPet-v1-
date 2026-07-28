@@ -96,7 +96,7 @@
                                      HorizontalContentAlignment="Center"/>
                         </Grid>
 
-                        <Grid Margin="0,3,0,0">
+                        <Grid Margin="0,3,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="105"/>
@@ -112,6 +112,57 @@
                                      Grid.Column="1"
                                      Margin="10,0,0,0"
                                      HorizontalContentAlignment="Center"/>
+                        </Grid>
+
+                        <Separator Margin="0,2,0,12"/>
+                        <TextBlock Text="番茄钟铃声"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="开始与结束可以使用不同提示音；选择“静音”即可关闭。"
+                                   Margin="0,2,0,9"
+                                   FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}"
+                                   TextWrapping="Wrap"/>
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="78"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="开始铃声" FontSize="12"/>
+                                <ComboBox x:Name="FocusStartSoundBox"
+                                          Style="{StaticResource ModernComboBoxStyle}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="Id"
+                                          Margin="0,4,10,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="试听"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,1"
+                                    Click="PreviewFocusStartSound_Click"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="78"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="结束铃声" FontSize="12"/>
+                                <ComboBox x:Name="FocusCompleteSoundBox"
+                                          Style="{StaticResource ModernComboBoxStyle}"
+                                          DisplayMemberPath="DisplayName"
+                                          SelectedValuePath="Id"
+                                          Margin="0,4,10,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="试听"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,1"
+                                    Click="PreviewFocusCompleteSound_Click"/>
                         </Grid>
                     </StackPanel>
                 </Border>

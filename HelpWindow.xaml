@@ -88,11 +88,11 @@
                             <Run FontWeight="Bold">和我聊聊：</Run><Run>打开通用聊天；推荐在设置中直接连接自己的 ChatGPT。&#x0a;</Run>
                             <Run FontWeight="Bold">给我一点鼓励：</Run><Run>显示一句鼓励并播放比心动画。&#x0a;</Run>
                             <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度保持工作状态，直到你关闭它。&#x0a;</Run>
-                            <Run FontWeight="Bold">开始专注计时：</Run><Run>按设置中的分钟数计时，结束后提醒。&#x0a;</Run>
+                            <Run FontWeight="Bold">开始专注计时：</Run><Run>按设置中的分钟数计时；开始和结束都会按你的铃声设置提示。&#x0a;</Run>
                             <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在附近轻轻移动。&#x0a;</Run>
                             <Run FontWeight="Bold">始终置顶：</Run><Run>保持在其它普通窗口上方。&#x0a;</Run>
                             <Run FontWeight="Bold">鼠标穿透：</Run><Run>鼠标会点到她后面的窗口；用 Ctrl + Alt + P 恢复。&#x0a;</Run>
-                            <Run FontWeight="Bold">设置：</Run><Run>修改名字、大小、提醒、开机启动、聊天方式和本地记忆。&#x0a;</Run>
+                            <Run FontWeight="Bold">设置：</Run><Run>修改名字、大小、提醒、番茄钟铃声、开机启动、聊天方式和本地记忆。铃声可以分别试听或设为静音。&#x0a;</Run>
                             <Run FontWeight="Bold">收起来：</Run><Run>隐藏到系统托盘，不会退出程序。</Run>
                         </TextBlock>
                     </StackPanel>

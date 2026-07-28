@@ -102,6 +102,7 @@
     <Compile Include="Services\ScreenCaptureService.cs" />
     <Compile Include="Services\SecretService.cs" />
     <Compile Include="Services\SettingsService.cs" />
+    <Compile Include="Services\SoundService.cs" />
     <Compile Include="Services\SpriteAnimator.cs" />
     <Compile Include="Services\StartupService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -14,6 +14,7 @@ namespace DesktopPet
     {
         private readonly SecretService _secretService;
         private readonly MemoryService _memoryService = new MemoryService();
+        private readonly SoundService _soundService = new SoundService();
         private string _selectedProvider;
         private string _savedCodexModel;
         private string _savedCodexReasoningEffort;
@@ -35,6 +36,10 @@ namespace DesktopPet
             HydrationBox.IsChecked = settings.HydrationEnabled;
             HydrationBoxMinutes.Text = settings.HydrationMinutes.ToString(CultureInfo.InvariantCulture);
             FocusBoxMinutes.Text = settings.FocusMinutes.ToString(CultureInfo.InvariantCulture);
+            FocusStartSoundBox.ItemsSource = SoundService.Options;
+            FocusStartSoundBox.SelectedValue = settings.FocusStartSound;
+            FocusCompleteSoundBox.ItemsSource = SoundService.Options;
+            FocusCompleteSoundBox.SelectedValue = settings.FocusCompleteSound;
             ModelBox.Text = settings.AiModel;
             _savedCodexModel = settings.CodexModel ?? string.Empty;
             _savedCodexReasoningEffort = settings.CodexReasoningEffort ?? string.Empty;
@@ -44,6 +49,17 @@ namespace DesktopPet
             UpdateProviderPanels();
             UpdateApiStatus();
             Loaded += async (sender, args) => await RefreshCodexStatusAsync();
+            Closed += (sender, args) => _soundService.Dispose();
+        }
+
+        private void PreviewFocusStartSound_Click(object sender, RoutedEventArgs e)
+        {
+            _soundService.PlayFocusStart(Convert.ToString(FocusStartSoundBox.SelectedValue));
+        }
+
+        private void PreviewFocusCompleteSound_Click(object sender, RoutedEventArgs e)
+        {
+            _soundService.PlayFocusComplete(Convert.ToString(FocusCompleteSoundBox.SelectedValue));
         }
 
         private void ScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -458,6 +474,10 @@ namespace DesktopPet
             ResultSettings.HydrationEnabled = HydrationBox.IsChecked == true;
             ResultSettings.HydrationMinutes = hydrationMinutes;
             ResultSettings.FocusMinutes = focusMinutes;
+            ResultSettings.FocusStartSound =
+                Convert.ToString(FocusStartSoundBox.SelectedValue);
+            ResultSettings.FocusCompleteSound =
+                Convert.ToString(FocusCompleteSoundBox.SelectedValue);
             ResultSettings.AiProvider = _selectedProvider;
             ResultSettings.AiModel = ModelBox.Text.Trim();
             var selectedCodexModel = CodexModelBox.SelectedItem as CodexModelOption;
