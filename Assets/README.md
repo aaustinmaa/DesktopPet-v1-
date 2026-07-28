@@ -30,9 +30,12 @@ Assets/
 ## Regeneration
 
 ```powershell
+.\Scripts\BuildStableWorkingAtlas.ps1
 .\Scripts\ExtractAnimationAtlases.ps1
 .\Scripts\BuildSleepingLayers.ps1
 ```
 
-Both scripts read active source art from `Source` and write only current runtime
-images to `Sprites`.
+These scripts read active source art from `Source` and write only current
+runtime images to `Sprites`. The stable working-atlas script must use fixed
+362-by-362 cells so the character and laptop pixels are never rescaled or
+recentered between frames.

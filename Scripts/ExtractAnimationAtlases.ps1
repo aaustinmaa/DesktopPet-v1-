@@ -419,6 +419,44 @@ function Build-IdleHandFrames {
     }
 }
 
+function Save-FixedGridFrames {
+    param(
+        [string]$AtlasPath,
+        [int]$Count,
+        [string]$Prefix
+    )
+
+    $atlas = [System.Drawing.Bitmap]::FromFile($AtlasPath)
+    try {
+        if ($atlas.Width -ne 1448 -or $atlas.Height -ne 1448) {
+            throw "Expected a 1448x1448 fixed-grid atlas in $AtlasPath."
+        }
+
+        for ($frame = 0; $frame -lt $Count; $frame++) {
+            $cell = Get-CellRectangle $atlas 4 4 $frame
+            if ($cell.Width -ne 362 -or $cell.Height -ne 362) {
+                throw "Expected 362x362 cells in $AtlasPath."
+            }
+
+            $output = $atlas.Clone(
+                $cell,
+                [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+            try {
+                $filename = '{0}-{1:D2}.png' -f $Prefix, ($frame + 1)
+                $output.Save(
+                    (Join-Path $spriteDirectory $filename),
+                    [System.Drawing.Imaging.ImageFormat]::Png)
+            }
+            finally {
+                $output.Dispose()
+            }
+        }
+    }
+    finally {
+        $atlas.Dispose()
+    }
+}
+
 function Align-IdleOpenCloseFrames {
     for ($frame = 1; $frame -le 16; $frame++) {
         $filename = 'idle-open-close-v5-{0:D2}.png' -f $frame
@@ -643,9 +681,9 @@ Save-CharacterFrames `
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'heart-lift-v3.png') `
     0 8 'heart-lift-v3'
-Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'working-float-v2.png') `
-    0 16 'working-float-v2'
+Save-FixedGridFrames `
+    (Join-Path $atlasDirectory 'working-float-v3.png') `
+    16 'working-float-v3'
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-hit-v1.png') `
     0 16 'idle-hit-v1'
