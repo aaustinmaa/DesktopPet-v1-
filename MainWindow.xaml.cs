@@ -39,6 +39,7 @@ namespace DesktopPet
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
         private DateTime? _focusCountdownVisibleUntil;
+        private DateTime? _firstSleepingHammerHitAt;
         private bool _focusPaused;
         private TimeSpan _pausedFocusRemaining;
         private TimeSpan? _pausedNextRandomCueRemaining;
@@ -214,19 +215,26 @@ namespace DesktopPet
             if (_manualRestMode)
             {
                 if (_animator.CurrentState == PetState.Idle)
+                {
+                    _firstSleepingHammerHitAt = null;
                     _animator.SetState(PetState.Sleeping);
+                }
                 return;
             }
 
             if (NativeMethods.GetSystemIdleTime() > TimeSpan.FromMinutes(5))
             {
                 if (_animator.CurrentState == PetState.Idle)
+                {
+                    _firstSleepingHammerHitAt = null;
                     _animator.SetState(PetState.Sleeping);
+                }
                 return;
             }
 
             if (_animator.CurrentState == PetState.Sleeping)
             {
+                _firstSleepingHammerHitAt = null;
                 _animator.SetState(PetState.Idle);
                 ShowBubble("欢迎回来。", 3);
             }
@@ -595,6 +603,7 @@ namespace DesktopPet
                 Math.Abs(Top - startingTop) > 2;
             if (!wasDragged)
             {
+                var wasSleeping = _animator.CurrentState == PetState.Sleeping;
                 var shouldPlayIdleHitReaction =
                     !_workingMode &&
                     !_focusEnds.HasValue &&
@@ -604,9 +613,28 @@ namespace DesktopPet
                 if (shouldPlayIdleHitReaction)
                     _animator.SetState(PetState.Hit);
                 PlayHammerStrike();
+                if (wasSleeping)
+                    RegisterSleepingHammerHit();
                 if (_focusEnds.HasValue)
                     ShowFocusCountdown();
             }
+        }
+
+        private void RegisterSleepingHammerHit()
+        {
+            var now = DateTime.Now;
+            if (!_firstSleepingHammerHitAt.HasValue ||
+                now - _firstSleepingHammerHitAt.Value > TimeSpan.FromSeconds(4))
+            {
+                _firstSleepingHammerHitAt = now;
+                return;
+            }
+
+            _firstSleepingHammerHitAt = null;
+            _manualRestMode = false;
+            RestModeItem.IsChecked = false;
+            ApplyBasePetState();
+            ShowBubble("好啦好啦，我醒了！", 3);
         }
 
         private void DoubleClickTimer_Tick(object sender, EventArgs e)
@@ -959,6 +987,7 @@ namespace DesktopPet
 
         private void RestMode_Click(object sender, RoutedEventArgs e)
         {
+            _firstSleepingHammerHitAt = null;
             _manualRestMode = RestModeItem.IsChecked;
             if (_manualRestMode)
             {
