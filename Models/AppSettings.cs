@@ -60,7 +60,7 @@ namespace DesktopPet.Models
                 RandomCueResumeSound = "pixel";
             }
             SettingsVersion = 5;
-            if (PetScale < 0.55) PetScale = 0.55;
+            if (PetScale < 0.20) PetScale = 0.20;
             if (PetScale > 1.5) PetScale = 1.5;
             if (HydrationMinutes < 10) HydrationMinutes = 10;
             if (HydrationMinutes > 240) HydrationMinutes = 240;

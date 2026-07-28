@@ -21,6 +21,7 @@ namespace DesktopPet
         private bool _isUpdatingCodexModels;
         private bool _isUpdatingCodexReasoning;
         public AppSettings ResultSettings { get; private set; }
+        public event Action<double> PetScalePreviewChanged;
 
         public SettingsWindow(AppSettings settings, SecretService secretService)
         {
@@ -100,6 +101,7 @@ namespace DesktopPet
         private void ScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (ScaleLabel != null) ScaleLabel.Text = Math.Round(e.NewValue * 100) + "%";
+            PetScalePreviewChanged?.Invoke(e.NewValue);
         }
 
         private void ClearApiKey_Click(object sender, RoutedEventArgs e)

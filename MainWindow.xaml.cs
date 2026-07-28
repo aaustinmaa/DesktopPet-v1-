@@ -115,8 +115,7 @@ namespace DesktopPet
         private void ApplySettings()
         {
             _settings.Normalize();
-            Width = 210 * _settings.PetScale;
-            Height = 238 * _settings.PetScale;
+            ApplyPetScale(_settings.PetScale);
             Topmost = _settings.Topmost;
             if (_speechBubbleWindow != null)
             {
@@ -129,6 +128,13 @@ namespace DesktopPet
                 StartupService.SetEnabled(_settings.StartWithWindows);
             ConfigureHydrationTimer();
             ApplyRandomCueSettings();
+        }
+
+        private void ApplyPetScale(double scale)
+        {
+            Width = 210 * scale;
+            Height = 238 * scale;
+            PositionSpeechBubble();
         }
 
         private void RestoreWindowPosition()
@@ -562,6 +568,11 @@ namespace DesktopPet
                 Owner = owner ?? this,
                 Topmost = Topmost
             };
+            dialog.PetScalePreviewChanged += scale =>
+            {
+                ApplyPetScale(scale);
+                KeepOnScreen();
+            };
             if (dialog.ShowDialog() == true)
             {
                 _settings = dialog.ResultSettings;
@@ -571,6 +582,8 @@ namespace DesktopPet
                 ShowBubble("设置保存好了。", 3);
                 return _settings.Clone();
             }
+            ApplyPetScale(_settings.PetScale);
+            KeepOnScreen();
             return null;
         }
 

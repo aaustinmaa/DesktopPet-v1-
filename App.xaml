@@ -321,7 +321,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="3"/>
+                        <Border Height="6"
+                                VerticalAlignment="Center"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
