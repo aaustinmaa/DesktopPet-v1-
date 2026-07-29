@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="苏无度 · 专注记录"
-        Width="760" Height="780"
-        MinWidth="650" MinHeight="620"
+        Width="820" Height="800"
+        MinWidth="680" MinHeight="620"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="True"
         Icon="Assets/app.ico"
@@ -17,7 +17,7 @@
             <Setter Property="Height" Value="40"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Margin" Value="0"/>
-            <Setter Property="Background" Value="#FFF3F1EB"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
@@ -42,7 +42,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#FFE7F7ED"/>
+                                        Value="{StaticResource AccentSoftBrush}"/>
                                 <Setter TargetName="ButtonBorder"
                                         Property="BorderBrush"
                                         Value="{StaticResource AccentBrush}"/>
@@ -50,7 +50,7 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#FFD5F0DF"/>
+                                        Value="#FFD5E1D9"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -91,7 +91,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="DateBorder"
                                         Property="Background"
-                                        Value="#FFFBFFFC"/>
+                                        Value="{StaticResource AccentSoftBrush}"/>
                                 <Setter TargetName="DateBorder"
                                         Property="BorderBrush"
                                         Value="{StaticResource AccentBrush}"/>
@@ -99,7 +99,7 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="DateBorder"
                                         Property="Background"
-                                        Value="#FFE7F7ED"/>
+                                        Value="{StaticResource AccentSoftBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -127,8 +127,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Text="专注记录"
-                               FontSize="27"
-                               FontWeight="Bold"/>
+                               Style="{StaticResource PageTitleStyle}"/>
                     <TextBlock Text="查看、补记和整理每天完成的番茄钟。"
                                Margin="0,4,0,0"
                                Foreground="{StaticResource MutedBrush}"/>
@@ -166,7 +165,7 @@
                                 <Border Width="24"
                                         Height="24"
                                         CornerRadius="8"
-                                        Background="#FFE7F7ED"
+                                        Background="{StaticResource AccentSoftBrush}"
                                         VerticalAlignment="Center">
                                     <Path Width="13"
                                           Height="13"
@@ -213,7 +212,7 @@
                                PopupAnimation="Fade">
                             <Border Margin="0,7,0,0"
                                     Padding="10"
-                                    Background="#FFFCFBF7"
+                                    Background="{StaticResource SurfaceElevatedBrush}"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="13">
@@ -265,7 +264,7 @@
                                                                      Value="True">
                                                                 <Setter TargetName="DayBorder"
                                                                         Property="Background"
-                                                                        Value="#FFE7F7ED"/>
+                                                                        Value="{StaticResource AccentSoftBrush}"/>
                                                             </Trigger>
                                                             <Trigger Property="IsToday"
                                                                      Value="True">
@@ -334,7 +333,7 @@
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24,20,24,24">
+            <StackPanel Margin="28,22,28,28">
                 <Border Style="{StaticResource ModernCardStyle}"
                         Margin="0,0,0,14">
                     <StackPanel>
@@ -416,9 +415,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="番茄钟"
-                                           FontSize="18"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource AccentBrush}"/>
+                                           Style="{StaticResource SectionTitleStyle}"/>
                                 <TextBlock Text="完成时自动记录，也可以手动补记或删除。"
                                            Margin="0,3,0,0"
                                            FontSize="12"
@@ -439,7 +436,7 @@
                         <ItemsControl x:Name="SessionsList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#FFF7F6F2"
+                                    <Border Background="{StaticResource SurfaceBrush}"
                                             BorderBrush="{StaticResource BorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="10"
@@ -499,9 +496,7 @@
                 <Border Style="{StaticResource ModernCardStyle}">
                     <StackPanel>
                         <TextBlock Text="今日 Notes"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource AccentBrush}"/>
+                                   Style="{StaticResource SectionTitleStyle}"/>
                         <TextBox x:Name="DailyNotesBox"
                                  Margin="0,10,0,0"
                                  MinHeight="110"
@@ -515,10 +510,7 @@
         </ScrollViewer>
 
         <Border Grid.Row="2"
-                Background="{StaticResource SurfaceElevatedBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="0,1,0,0"
-                Padding="24,13">
+                Style="{StaticResource FooterBarStyle}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

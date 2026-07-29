@@ -222,10 +222,10 @@ namespace DesktopPet
             var border = new Border
             {
                 Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-                    isError ? "#FF4A2228" : fromUser ? "#FF005F3B" : "#FF34303A")),
-                CornerRadius = new CornerRadius(9),
-                Padding = new Thickness(10, 8, 10, 8),
-                Margin = new Thickness(fromUser ? 44 : 0, 4, fromUser ? 0 : 44, 4),
+                    isError ? "#FFF2E6E6" : fromUser ? "#FF607D6D" : "#FFEDF0EC")),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(12, 9, 12, 9),
+                Margin = new Thickness(fromUser ? 52 : 0, 5, fromUser ? 0 : 52, 5),
                 HorizontalAlignment = fromUser ? HorizontalAlignment.Right : HorizontalAlignment.Left,
                 MaxWidth = GetBubbleMaxWidth(),
                 Tag = "ChatBubble"
@@ -234,15 +234,17 @@ namespace DesktopPet
             stack.Children.Add(new TextBlock
             {
                 Text = author,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF8FE6A7")),
-                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                    fromUser ? "#FFEAF1EC" : isError ? "#FF9A5E60" : "#FF607D6D")),
+                FontWeight = FontWeights.SemiBold,
                 FontSize = 11,
                 Margin = new Thickness(0, 0, 0, 3)
             });
             stack.Children.Add(new TextBlock
             {
                 Text = message,
-                Foreground = Brushes.White,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
+                    fromUser ? "#FFFFFFFF" : "#FF2C312D")),
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 13
             });
