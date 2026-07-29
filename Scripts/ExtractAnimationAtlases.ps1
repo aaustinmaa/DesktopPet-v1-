@@ -25,6 +25,7 @@ function Clear-HorizontalEdgeArtifacts {
         [System.Drawing.Bitmap]$Bitmap
     )
 
+    $transparentPixel = [System.Drawing.Color]::FromArgb(0, 0, 0, 0)
     $top = 0
     while ($top -lt $Bitmap.Height) {
         $hasVisiblePixel = $false
@@ -38,7 +39,7 @@ function Clear-HorizontalEdgeArtifacts {
             break
         }
         for ($x = 0; $x -lt $Bitmap.Width; $x++) {
-            $Bitmap.SetPixel($x, $top, [System.Drawing.Color]::Transparent)
+            $Bitmap.SetPixel($x, $top, $transparentPixel)
         }
         $top++
     }
@@ -59,9 +60,22 @@ function Clear-HorizontalEdgeArtifacts {
             $Bitmap.SetPixel(
                 $x,
                 $bottom,
-                [System.Drawing.Color]::Transparent)
+                $transparentPixel)
         }
         $bottom--
+    }
+
+    $edgeBandHeight = [Math]::Min(8, [Math]::Floor($Bitmap.Height / 2))
+    for ($y = 0; $y -lt $edgeBandHeight; $y++) {
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            if ($Bitmap.GetPixel($x, $y).A -gt 0) {
+                $Bitmap.SetPixel($x, $y, $transparentPixel)
+            }
+            $bottomY = $Bitmap.Height - 1 - $y
+            if ($Bitmap.GetPixel($x, $bottomY).A -gt 0) {
+                $Bitmap.SetPixel($x, $bottomY, $transparentPixel)
+            }
+        }
     }
 }
 
@@ -686,7 +700,8 @@ Save-FixedGridFrames `
     16 'working-float-v3'
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-hit-v1.png') `
-    0 16 'idle-hit-v1'
+    0 16 'idle-hit-v1' `
+    -ClearEdgeArtifacts
 Save-HammerFrames (Join-Path $atlasDirectory 'hammer-v2.png')
 
 Write-Host 'Animation frames extracted successfully.'
