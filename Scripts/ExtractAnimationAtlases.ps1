@@ -702,6 +702,18 @@ Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-hit-v1.png') `
     0 16 'idle-hit-v1' `
     -ClearEdgeArtifacts
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'success-v2.png') `
+    0 16 'success-v2' `
+    -ClearEdgeArtifacts
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'error-v2.png') `
+    0 16 'error-v2' `
+    -ClearEdgeArtifacts
+Save-CharacterFrames `
+    (Join-Path $atlasDirectory 'reminder-v2.png') `
+    0 16 'reminder-v2' `
+    -ClearEdgeArtifacts
 Save-HammerFrames (Join-Path $atlasDirectory 'hammer-v2.png')
 
 Write-Host 'Animation frames extracted successfully.'

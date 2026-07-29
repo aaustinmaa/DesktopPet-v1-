@@ -125,6 +125,66 @@ namespace DesktopPet.Services
             "working-float-v3-02.png"
         };
 
+        private static readonly string[] SuccessFrames =
+        {
+            "success-v2-01.png",
+            "success-v2-02.png",
+            "success-v2-03.png",
+            "success-v2-04.png",
+            "success-v2-05.png",
+            "success-v2-06.png",
+            "success-v2-07.png",
+            "success-v2-08.png",
+            "success-v2-09.png",
+            "success-v2-10.png",
+            "success-v2-11.png",
+            "success-v2-12.png",
+            "success-v2-13.png",
+            "success-v2-14.png",
+            "success-v2-15.png",
+            "success-v2-16.png"
+        };
+
+        private static readonly string[] ErrorFrames =
+        {
+            "error-v2-01.png",
+            "error-v2-02.png",
+            "error-v2-03.png",
+            "error-v2-04.png",
+            "error-v2-05.png",
+            "error-v2-06.png",
+            "error-v2-07.png",
+            "error-v2-08.png",
+            "error-v2-09.png",
+            "error-v2-10.png",
+            "error-v2-11.png",
+            "error-v2-12.png",
+            "error-v2-13.png",
+            "error-v2-14.png",
+            "error-v2-15.png",
+            "error-v2-16.png"
+        };
+
+        private static readonly string[] ReminderFrames =
+        {
+            "reminder-v2-01.png",
+            "reminder-v2-02.png",
+            "reminder-v2-03.png",
+            "reminder-v2-04.png",
+            "reminder-v2-05.png",
+            "reminder-v2-06.png",
+            "reminder-v2-07.png",
+            "reminder-v2-08.png",
+            "reminder-v2-09.png",
+            "reminder-v2-10.png",
+            "reminder-v2-11.png",
+            "reminder-v2-12.png",
+            "reminder-v2-13.png",
+            "reminder-v2-14.png",
+            "reminder-v2-15.png",
+            "reminder-v2-16.png"
+        };
+
         private static readonly string[] HitFrames =
         {
             "idle-hit-v1-01.png",
@@ -214,20 +274,20 @@ namespace DesktopPet.Services
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Success:
-                    _frames = new[] { "success.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frames = SuccessFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(95);
                     break;
                 case PetState.Error:
-                    _frames = new[] { "error.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frames = ErrorFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(125);
                     break;
                 case PetState.Sleeping:
                     _frames = new[] { "sleeping-base.png" };
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Reminder:
-                    _frames = new[] { "reminder.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frames = ReminderFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(90);
                     break;
                 case PetState.Waving:
                     _frames = WaveFrames;

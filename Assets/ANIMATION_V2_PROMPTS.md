@@ -42,6 +42,36 @@ solid #ff00ff chroma-key background. No realistic weapon, violence, text,
 labels, blur, gradients, shadows, or watermark.
 ```
 
+## Success, error, and reminder atlases
+
+Each feedback state uses its existing static sprite as the primary identity
+reference and a separate 4 × 4 atlas:
+
+```text
+Success: create a seamless 16-frame celebration loop. Ease from a tiny
+anticipation into both arms lifting, reveal the three yellow sparkles in
+stages, hold a joyful peak, then settle smoothly. Keep the body centered and
+avoid lateral rocking, squash/stretch, or sudden pose jumps.
+```
+
+```text
+Error: create a seamless 16-frame sympathetic sad loop. Lower the head and
+shoulders slightly, close the eyelids over several frames, form one blue tear,
+let it descend, then gradually restore the starting pose. Keep the red heart
+and body scale stable; do not add dramatic shaking.
+```
+
+```text
+Reminder: create a seamless 16-frame alert loop. Keep the character nearly
+motionless while the rigid bell swings through several intermediate angles
+with natural follow-through. Stage the yellow sound marks in and out, then
+settle smoothly. Do not deform the bell or sway the body.
+```
+
+All three atlases preserve the SuWuDu identity, palette, scale, baseline, and
+padding, and use a flat #ff00ff chroma-key background without grid lines,
+labels, shadows, blur, antialiasing, text, or watermark.
+
 ## Local processing
 
 The active generated source and transparent atlases are stored in
