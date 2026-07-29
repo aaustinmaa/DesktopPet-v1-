@@ -231,15 +231,31 @@ namespace DesktopPet
                 Tag = "ChatBubble"
             };
             var stack = new StackPanel();
-            stack.Children.Add(new TextBlock
+            var header = new DockPanel();
+            var copyButton = new Button
+            {
+                Content = "复制",
+                Style = (Style)FindResource("BubbleCopyButtonStyle"),
+                ToolTip = "复制这条消息",
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            copyButton.SetResourceReference(
+                Control.ForegroundProperty,
+                fromUser ? "LightTextBrush" : "InkBrush");
+            copyButton.Click += (s, e) => CopyMessage(message);
+            DockPanel.SetDock(copyButton, Dock.Right);
+            header.Children.Add(copyButton);
+            header.Children.Add(new TextBlock
             {
                 Text = author,
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
                     fromUser ? "#FFF7FBFA" : isError ? "#FF93625F" : "#FF007175")),
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 11,
-                Margin = new Thickness(0, 0, 0, 3)
+                Margin = new Thickness(0, 2, 0, 3),
+                VerticalAlignment = VerticalAlignment.Center
             });
+            stack.Children.Add(header);
             stack.Children.Add(new TextBlock
             {
                 Text = message,
@@ -251,6 +267,21 @@ namespace DesktopPet
             border.Child = stack;
             ConversationPanel.Children.Add(border);
             ConversationScroll.ScrollToEnd();
+        }
+
+        private void CopyMessage(string message)
+        {
+            if (string.IsNullOrEmpty(message)) return;
+
+            try
+            {
+                Clipboard.SetText(message);
+                StatusText.Text = "已复制这条消息";
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = "复制失败：" + ex.Message;
+            }
         }
 
         private double GetBubbleMaxWidth()

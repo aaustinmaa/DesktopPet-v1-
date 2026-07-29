@@ -104,9 +104,10 @@
                BasedOn="{StaticResource ModernTextBoxStyle}">
             <Setter Property="Padding" Value="3,4"/>
             <Setter Property="MinHeight" Value="64"/>
+            <Setter Property="MaxHeight" Value="132"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
-                <Setter.Value>能不能帮我把这两个改了?
+                <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="InputBorder"
                                 Background="{TemplateBinding Background}"
@@ -135,6 +136,18 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="BubbleCopyButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource SecondaryButtonStyle}">
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="MinHeight" Value="22"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
         </Style>
     </Window.Resources>
 
