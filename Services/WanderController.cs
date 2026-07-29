@@ -8,10 +8,9 @@ namespace DesktopPet.Services
 {
     internal sealed class WanderController : IDisposable
     {
-        private const double BottomBandStart = 0.70;
-        private const double RightBandStart = 0.76;
+        private const double BottomBandStart = 0.85;
+        private const double RightBandStart = 0.88;
         private const double MinimumMoveSeconds = 5.0;
-        private const double MaximumMoveSeconds = 24.0;
 
         private readonly Window _window;
         private readonly Func<bool> _canMove;
@@ -136,8 +135,10 @@ namespace DesktopPet.Services
             var usableWidth = Math.Max(1, maximumLeft - minimumLeft);
             var usableHeight = Math.Max(1, maximumTop - minimumTop);
 
-            var bottomX = new[] { 0.08, 0.24, 0.40, 0.56, 0.72, 0.88 };
-            var bottomY = new[] { 0.86, 0.89, 0.85, 0.89, 0.86, 0.90 };
+            var bottomX =
+                new[] { 0.08, 0.22, 0.36, 0.50, 0.64, 0.78, 0.94 };
+            var bottomY =
+                new[] { 0.92, 0.95, 0.91, 0.95, 0.92, 0.95, 0.96 };
             for (var index = 0; index < bottomX.Length; index++)
             {
                 _routeNodes.Add(new Point(
@@ -145,7 +146,7 @@ namespace DesktopPet.Services
                     minimumTop + usableHeight * bottomY[index]));
             }
 
-            var rightX = new[] { 0.89, 0.86, 0.90, 0.87 };
+            var rightX = new[] { 0.94, 0.92, 0.95, 0.93 };
             var rightY = new[] { 0.72, 0.54, 0.36, 0.18 };
             for (var index = 0; index < rightX.Length; index++)
             {
@@ -263,8 +264,8 @@ namespace DesktopPet.Services
                 1,
                 maximumLeft - _lockedWorkingArea.Left);
             var usableHeight = Math.Max(1, maximumTop - minimumTop);
-            var bottomY = minimumTop + usableHeight * 0.87;
-            var rightX = _lockedWorkingArea.Left + usableWidth * 0.88;
+            var bottomY = minimumTop + usableHeight * 0.94;
+            var rightX = _lockedWorkingArea.Left + usableWidth * 0.94;
             var distanceToBottom = Math.Abs(bottomY - current.Y);
             var distanceToRight = Math.Abs(rightX - current.X);
 
@@ -276,7 +277,7 @@ namespace DesktopPet.Services
 
         private Point AddNodeJitter(Point node, int routeIndex)
         {
-            var isBottomNode = routeIndex <= 5;
+            var isBottomNode = routeIndex <= 6;
             var xJitter = isBottomNode
                 ? _random.Next(-18, 19)
                 : _random.Next(-12, 13);
@@ -320,10 +321,10 @@ namespace DesktopPet.Services
             _segmentControl = CreateControlPoint(_segmentStart, _segmentEnd);
 
             var distance = Distance(_segmentStart, _segmentEnd);
-            var speed = 18 + _random.NextDouble() * 8;
+            var speed = 10 + _random.NextDouble() * 8;
             _segmentDurationSeconds = Math.Max(
                 MinimumMoveSeconds,
-                Math.Min(MaximumMoveSeconds, distance / speed));
+                distance / speed);
 
             _movementClock.Restart();
             _movementTimer.Start();
