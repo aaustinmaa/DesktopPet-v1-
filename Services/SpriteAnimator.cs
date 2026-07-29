@@ -147,22 +147,22 @@ namespace DesktopPet.Services
 
         private static readonly string[] ErrorFrames =
         {
-            "error-v2-01.png",
-            "error-v2-02.png",
-            "error-v2-03.png",
-            "error-v2-04.png",
-            "error-v2-05.png",
-            "error-v2-06.png",
-            "error-v2-07.png",
-            "error-v2-08.png",
-            "error-v2-09.png",
-            "error-v2-10.png",
-            "error-v2-11.png",
-            "error-v2-12.png",
-            "error-v2-13.png",
-            "error-v2-14.png",
-            "error-v2-15.png",
-            "error-v2-16.png"
+            "error-v4-01.png",
+            "error-v4-02.png",
+            "error-v4-03.png",
+            "error-v4-04.png",
+            "error-v4-05.png",
+            "error-v4-06.png",
+            "error-v4-07.png",
+            "error-v4-08.png",
+            "error-v4-09.png",
+            "error-v4-10.png",
+            "error-v4-11.png",
+            "error-v4-12.png",
+            "error-v4-13.png",
+            "error-v4-14.png",
+            "error-v4-15.png",
+            "error-v4-16.png"
         };
 
         private static readonly string[] ReminderFrames =

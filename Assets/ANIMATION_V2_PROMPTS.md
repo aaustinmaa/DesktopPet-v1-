@@ -55,10 +55,13 @@ avoid lateral rocking, squash/stretch, or sudden pose jumps.
 ```
 
 ```text
-Error: create a seamless 16-frame sympathetic sad loop. Lower the head and
-shoulders slightly, close the eyelids over several frames, form one blue tear,
-let it descend, then gradually restore the starting pose. Keep the red heart
-and body scale stable; do not add dramatic shaking.
+Error: create a seamless 16-frame unmistakable big-cry loop using the original
+static error sprite as the authoritative slim-body reference. Squeeze both
+eyes shut, open the mouth in a small cry, and grow two broad, continuous blue
+tear streams from the eyes into a dramatic peak before drawing them back.
+Use only a subtle vertical sobbing motion; keep the narrow hood, compact body,
+red heart, baseline, and proportions stable. Do not add isolated tear drops,
+lateral rocking, body widening, or abrupt pose jumps.
 ```
 
 ```text

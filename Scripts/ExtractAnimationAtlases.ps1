@@ -166,7 +166,9 @@ function Save-CharacterFrames {
         [int]$StartIndex,
         [int]$Count,
         [string]$Prefix,
-        [switch]$ClearEdgeArtifacts
+        [switch]$ClearEdgeArtifacts,
+        [switch]$PreserveAspectRatio,
+        [double]$AspectScale = 1.0
     )
 
     $atlas = [System.Drawing.Bitmap]::FromFile($AtlasPath)
@@ -210,6 +212,25 @@ function Save-CharacterFrames {
                 [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
             $output = New-TransparentBitmap 362 362
             try {
+                $destination = [System.Drawing.Rectangle]::new(0, 0, 362, 362)
+                if ($PreserveAspectRatio) {
+                    $scale = [Math]::Min(
+                        362.0 / $cellImage.Width,
+                        362.0 / $cellImage.Height)
+                    $scale *= $AspectScale
+                    $destinationWidth = [Math]::Max(
+                        1,
+                        [int][Math]::Round($cellImage.Width * $scale))
+                    $destinationHeight = [Math]::Max(
+                        1,
+                        [int][Math]::Round($cellImage.Height * $scale))
+                    $destination = [System.Drawing.Rectangle]::new(
+                        [int][Math]::Round((362 - $destinationWidth) / 2.0),
+                        [int][Math]::Round((362 - $destinationHeight) / 2.0),
+                        $destinationWidth,
+                        $destinationHeight)
+                }
+
                 $graphics = [System.Drawing.Graphics]::FromImage($output)
                 try {
                     $graphics.CompositingMode =
@@ -222,7 +243,7 @@ function Save-CharacterFrames {
                         [System.Drawing.Drawing2D.SmoothingMode]::None
                     $graphics.DrawImage(
                         $cellImage,
-                        ([System.Drawing.Rectangle]::new(0, 0, 362, 362)),
+                        $destination,
                         ([System.Drawing.Rectangle]::new(
                             0,
                             0,
@@ -707,9 +728,11 @@ Save-CharacterFrames `
     0 16 'success-v2' `
     -ClearEdgeArtifacts
 Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'error-v2.png') `
-    0 16 'error-v2' `
-    -ClearEdgeArtifacts
+    (Join-Path $atlasDirectory 'error-v4.png') `
+    0 16 'error-v4' `
+    -ClearEdgeArtifacts `
+    -PreserveAspectRatio `
+    -AspectScale 1.07
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'reminder-v2.png') `
     0 16 'reminder-v2' `
