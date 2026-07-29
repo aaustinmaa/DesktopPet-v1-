@@ -65,6 +65,7 @@ namespace DesktopPet
         private SpeechBubbleWindow _speechBubbleWindow;
         private LauncherWindow _launcherWindow;
         private FocusJournalWindow _focusJournalWindow;
+        private WanderController _wanderController;
         private Forms.ToolStripMenuItem _trayStartFocusItem;
         private Forms.ToolStripMenuItem _trayPauseFocusItem;
         private Forms.ToolStripMenuItem _trayStopFocusItem;
@@ -123,6 +124,11 @@ namespace DesktopPet
                 GetBasePetState);
             _hammerAnimator = new HammerAnimator(HammerImage);
             _hammerAnimator.Completed += HammerAnimator_Completed;
+            _wanderController = new WanderController(
+                this,
+                CanAutoWander,
+                _random);
+            _wanderController.SetEnabled(_settings.AutoWander);
             CreateSpeechBubbleWindow();
             CreateTrayIcon();
             ConfigureHydrationTimer();
@@ -171,6 +177,7 @@ namespace DesktopPet
             }
             TopmostItem.IsChecked = _settings.Topmost;
             WanderItem.IsChecked = _settings.AutoWander;
+            _wanderController?.SetEnabled(_settings.AutoWander);
             if (StartupService.IsEnabled() != _settings.StartWithWindows)
                 StartupService.SetEnabled(_settings.StartWithWindows);
             ConfigureHydrationTimer();
@@ -183,6 +190,7 @@ namespace DesktopPet
             Height = 238 * scale;
             HammerImage.Width = 90 * scale;
             HammerImage.Height = 90 * scale;
+            _wanderController?.RefreshWindowBounds();
             PositionSpeechBubble();
         }
 
@@ -256,10 +264,19 @@ namespace DesktopPet
                 ShowBubble("欢迎回来。", 3);
             }
 
-            if (_settings.AutoWander &&
-                _animator.CurrentState == PetState.Idle &&
-                _random.NextDouble() < 0.45)
-                Wander();
+        }
+
+        private bool CanAutoWander()
+        {
+            return _settings != null &&
+                   _settings.AutoWander &&
+                   IsVisible &&
+                   !_focusEnds.HasValue &&
+                   !_workingMode &&
+                   !_manualRestMode &&
+                   NativeMethods.GetSystemIdleTime() <= TimeSpan.FromMinutes(5) &&
+                   _animator != null &&
+                   _animator.CurrentState == PetState.Idle;
         }
 
         private PetState GetBasePetState()
@@ -330,35 +347,6 @@ namespace DesktopPet
             }
 
             ScheduleNextSpecialAction();
-        }
-
-        private void Wander()
-        {
-            var work = DisplayService.GetWorkingAreaForWindow(this);
-            var minimumTop = work.Top + SpeechBubbleHeight - SpeechBubbleTailOverlap;
-            var targetLeft = Math.Max(work.Left, Math.Min(work.Right - Width,
-                Left + _random.Next(-100, 101)));
-            var targetTop = Math.Max(minimumTop, Math.Min(work.Bottom - Height,
-                Top + _random.Next(-40, 41)));
-            var duration = new Duration(TimeSpan.FromSeconds(1.4));
-            var leftAnimation = new DoubleAnimation(targetLeft, duration)
-            {
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-            };
-            var topAnimation = new DoubleAnimation(targetTop, duration)
-            {
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-            };
-            leftAnimation.Completed += (s, e) =>
-            {
-                BeginAnimation(LeftProperty, null);
-                BeginAnimation(TopProperty, null);
-                Left = targetLeft;
-                Top = targetTop;
-                SaveWindowPosition();
-            };
-            BeginAnimation(LeftProperty, leftAnimation);
-            BeginAnimation(TopProperty, topAnimation);
         }
 
         private void HydrationTimer_Tick(object sender, EventArgs e)
@@ -839,6 +827,8 @@ namespace DesktopPet
 
         private void PetImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            _wanderController?.PauseForUserInteraction();
+
             if (e.ClickCount >= 3)
             {
                 _doubleClickTimer.Stop();
@@ -848,6 +838,7 @@ namespace DesktopPet
                     HideSpeechBubble();
                     OpenChat();
                 }
+                _wanderController?.ResumeAfterUserInteraction(false);
                 e.Handled = true;
                 return;
             }
@@ -856,6 +847,7 @@ namespace DesktopPet
             {
                 _doubleClickTimer.Stop();
                 _doubleClickTimer.Start();
+                _wanderController?.ResumeAfterUserInteraction(false);
                 e.Handled = true;
                 return;
             }
@@ -872,6 +864,7 @@ namespace DesktopPet
             var wasDragged =
                 Math.Abs(Left - startingLeft) > 2 ||
                 Math.Abs(Top - startingTop) > 2;
+            _wanderController?.ResumeAfterUserInteraction(wasDragged);
             if (!wasDragged)
             {
                 var wasSleeping = _animator.CurrentState == PetState.Sleeping;
@@ -960,8 +953,14 @@ namespace DesktopPet
 
         private void PetImage_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
+            _wanderController?.PauseForUserInteraction();
             PetMenu.IsOpen = true;
             e.Handled = true;
+        }
+
+        private void PetMenu_Closed(object sender, RoutedEventArgs e)
+        {
+            _wanderController?.ResumeAfterUserInteraction(false);
         }
 
         private void PlayHammerStrike()
@@ -1324,7 +1323,7 @@ namespace DesktopPet
         {
             _settings.AutoWander = WanderItem.IsChecked;
             _settingsService.Save(_settings);
-            if (_settings.AutoWander) Wander();
+            _wanderController?.SetEnabled(_settings.AutoWander);
         }
 
         private void Topmost_Click(object sender, RoutedEventArgs e)
@@ -1383,6 +1382,7 @@ namespace DesktopPet
 
         internal AppSettings OpenSettings(Window owner)
         {
+            _wanderController?.PauseForUserInteraction();
             ToggleClickThrough(false);
             var dialog = new SettingsWindow(_settings.Clone(), _secretService)
             {
@@ -1401,10 +1401,12 @@ namespace DesktopPet
                 ApplySettings();
                 KeepOnScreen();
                 ShowBubble("设置保存好了。", 3);
+                _wanderController?.ResumeAfterUserInteraction(false);
                 return _settings.Clone();
             }
             ApplyPetScale(_settings.PetScale);
             KeepOnScreen();
+            _wanderController?.ResumeAfterUserInteraction(false);
             return null;
         }
 
@@ -1510,6 +1512,12 @@ namespace DesktopPet
             _trayIcon.DoubleClick += (s, e) => Dispatcher.Invoke(ShowFromTray);
 
             var menu = new Forms.ContextMenuStrip();
+            menu.Opening += (s, e) =>
+                Dispatcher.Invoke(() =>
+                    _wanderController?.PauseForUserInteraction());
+            menu.Closed += (s, e) =>
+                Dispatcher.Invoke(() =>
+                    _wanderController?.ResumeAfterUserInteraction(false));
             menu.Items.Add("叫醒桌宠", null, (s, e) => Dispatcher.Invoke(ShowFromTray));
             menu.Items.Add("打开启动面板", null, (s, e) => Dispatcher.Invoke(ShowLauncher));
             menu.Items.Add("聊聊天", null, (s, e) => Dispatcher.Invoke(OpenChat));
@@ -1570,6 +1578,7 @@ namespace DesktopPet
             Activate();
             Topmost = _settings.Topmost;
             _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(3));
+            _wanderController?.ResumeAfterUserInteraction(false);
         }
 
         public void WakeFromSecondLaunch()
@@ -1644,6 +1653,7 @@ namespace DesktopPet
             _commandTimer.Stop();
             _bubbleTimer.Stop();
             _doubleClickTimer.Stop();
+            if (_wanderController != null) _wanderController.Dispose();
             if (_speechBubbleWindow != null)
             {
                 _speechBubbleWindow.Close();

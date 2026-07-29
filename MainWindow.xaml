@@ -26,7 +26,9 @@
             </Image.RenderTransform>
             <Image.RenderTransformOrigin>0.5,0.82</Image.RenderTransformOrigin>
             <Image.ContextMenu>
-                <ContextMenu x:Name="PetMenu" FontFamily="Microsoft YaHei UI">
+                <ContextMenu x:Name="PetMenu"
+                             FontFamily="Microsoft YaHei UI"
+                             Closed="PetMenu_Closed">
                     <MenuItem Header="💬 和我聊聊" Click="Chat_Click"/>
                     <MenuItem Header="💚 给我一点鼓励" Click="Cheer_Click"/>
                     <MenuItem Header="🎭 命令她做动作">

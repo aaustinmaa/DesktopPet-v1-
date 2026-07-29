@@ -140,6 +140,7 @@
     <Compile Include="Services\SoundService.cs" />
     <Compile Include="Services\SpriteAnimator.cs" />
     <Compile Include="Services\StartupService.cs" />
+    <Compile Include="Services\WanderController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
