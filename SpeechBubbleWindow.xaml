@@ -10,6 +10,8 @@
         ShowActivated="False"
         ResizeMode="NoResize"
         Focusable="False"
+        FontFamily="Microsoft YaHei UI"
+        Foreground="{StaticResource InkBrush}"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
     <Grid IsHitTestVisible="False">
@@ -18,16 +20,17 @@
                 VerticalAlignment="Bottom"
                 MaxHeight="83"
                 CornerRadius="14"
-                BorderBrush="#FF16131A"
-                BorderThickness="2"
-                Background="#FFF8F2DC">
+                BorderBrush="{StaticResource PaleJadeBrush}"
+                BorderThickness="1.5"
+                Background="{StaticResource SurfaceBrush}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="13"
                                   ShadowDepth="4"
-                                  Opacity="0.24"/>
+                                  Color="#FF284852"
+                                  Opacity="0.16"/>
             </Border.Effect>
             <TextBlock x:Name="SpeechText"
-                       Foreground="#FF16131A"
+                       Foreground="{StaticResource InkBrush}"
                        FontFamily="Microsoft YaHei UI"
                        FontSize="12"
                        FontWeight="SemiBold"
@@ -42,8 +45,8 @@
                  Margin="0,0,0,2"
                  HorizontalAlignment="Center"
                  VerticalAlignment="Bottom"
-                 Fill="#FFF8F2DC"
-                 Stroke="#FF16131A"
-                 StrokeThickness="2"/>
+                 Fill="{StaticResource SurfaceBrush}"
+                 Stroke="{StaticResource PaleJadeBrush}"
+                 StrokeThickness="1.5"/>
     </Grid>
 </Window>

@@ -141,18 +141,11 @@ namespace DesktopPet
         private void StyleProviderButton(Button button, bool selected)
         {
             if (button == null) return;
-            if (selected)
-            {
-                button.SetResourceReference(Control.BackgroundProperty, "AccentBrush");
-                button.Foreground = Brushes.White;
-                button.BorderBrush = Brushes.Transparent;
-            }
-            else
-            {
-                button.SetResourceReference(Control.BackgroundProperty, "SurfaceElevatedBrush");
-                button.SetResourceReference(Control.ForegroundProperty, "InkBrush");
-                button.SetResourceReference(Control.BorderBrushProperty, "BorderBrush");
-            }
+            button.ClearValue(Control.BackgroundProperty);
+            button.ClearValue(Control.ForegroundProperty);
+            button.ClearValue(Control.BorderBrushProperty);
+            button.Style = (Style)FindResource(
+                selected ? "ProviderSelectedButtonStyle" : "SecondaryButtonStyle");
         }
 
         private async System.Threading.Tasks.Task RefreshCodexStatusAsync()

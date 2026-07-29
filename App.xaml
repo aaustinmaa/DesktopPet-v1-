@@ -20,7 +20,12 @@
         <SolidColorBrush x:Key="LightTextBrush" Color="#FFF7FBFA" />
         <SolidColorBrush x:Key="HeartBrush" Color="#FF509296" />
 
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
+        </Style>
+
         <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Padding" Value="15,9"/>
             <Setter Property="Margin" Value="3"/>
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
@@ -76,7 +81,16 @@
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         </Style>
 
+        <Style x:Key="ProviderSelectedButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource LightTextBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
         <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Padding" Value="11,8"/>
             <Setter Property="Margin" Value="0,4,0,10"/>
             <Setter Property="MinHeight" Value="38"/>
@@ -116,6 +130,7 @@
         <Style TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}"/>
 
         <Style TargetType="PasswordBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Padding" Value="11,8"/>
             <Setter Property="MinHeight" Value="38"/>
             <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
@@ -149,6 +164,7 @@
         </Style>
 
         <Style x:Key="ModernComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Padding" Value="11,9"/>
             <Setter Property="Margin" Value="3,2"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
@@ -180,6 +196,7 @@
         </Style>
 
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Height" Value="42"/>
             <Setter Property="Margin" Value="0,5,0,5"/>
             <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
@@ -276,6 +293,7 @@
         </Style>
 
         <Style TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Margin" Value="0,7"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -583,7 +601,7 @@
         </Style>
 
         <Style x:Key="PageTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="KaiTi"/>
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="FontSize" Value="28"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
@@ -606,7 +624,7 @@
         </Style>
 
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="KaiTi"/>
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="FontSize" Value="19"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
@@ -636,6 +654,7 @@
         </Style>
 
         <Style TargetType="ContextMenu">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
@@ -660,6 +679,7 @@
         </Style>
 
         <Style TargetType="MenuItem">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="1"/>
@@ -749,6 +769,7 @@
         </Style>
 
         <Style TargetType="ToolTip">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
             <Setter Property="Background" Value="{StaticResource DeepJadeBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource LightTextBrush}"/>
             <Setter Property="Padding" Value="10,7"/>
