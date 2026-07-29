@@ -21,12 +21,16 @@ namespace DesktopPet
     {
         private const double SpeechBubbleHeight = 96;
         private const double SpeechBubbleTailOverlap = 6;
+        private static readonly TimeSpan FocusStateCheckpointInterval =
+            TimeSpan.FromSeconds(5);
         private readonly SettingsService _settingsService;
         private readonly SecretService _secretService = new SecretService();
         private readonly CommandService _commandService = new CommandService();
         private readonly SoundService _soundService = new SoundService();
         private readonly FocusJournalService _focusJournalService =
             FocusJournalService.Shared;
+        private readonly ActiveFocusStateService _activeFocusStateService =
+            new ActiveFocusStateService();
         private AppSettings _settings;
         private SpriteAnimator _animator;
         private HammerAnimator _hammerAnimator;
@@ -45,6 +49,7 @@ namespace DesktopPet
         private DateTime? _focusEnds;
         private DateTime? _activeFocusStartedAt;
         private DateTime? _activeFocusSegmentStartedAt;
+        private DateTime _lastFocusStateSavedAt = DateTime.MinValue;
         private int _activeFocusPlannedMinutes;
         private DateTime? _nextRandomCueAt;
         private DateTime? _randomCueBreakEndsAt;
@@ -145,6 +150,8 @@ namespace DesktopPet
                 ShowBubble("你好，我是" + _settings.PetName + "！双击开始专注，三击和我聊天，右键查看更多功能。", 7);
                 _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(4));
             }
+
+            RestoreActiveFocusState();
         }
 
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -368,6 +375,7 @@ namespace DesktopPet
                 ? RecordInterruptedFocus(now)
                 : string.Empty;
             _focusTimer.Stop();
+            ClearPersistedActiveFocusState();
             ResetFocusPauseState();
             ResetFocusTracking();
             BeginFocusTracking(now, _settings.FocusMinutes);
@@ -378,6 +386,7 @@ namespace DesktopPet
             UpdateFocusMenuState();
             ApplyBasePetState();
             _soundService.PlayFocusStart(_settings.FocusStartSound);
+            PersistActiveFocusState(true);
             ShowBubble(
                 (string.IsNullOrWhiteSpace(interruptedMessage)
                     ? string.Empty
@@ -398,6 +407,7 @@ namespace DesktopPet
                 return;
             }
 
+            PersistActiveFocusState(false);
             ProcessRandomCues(now);
         }
 
@@ -431,6 +441,7 @@ namespace DesktopPet
             _focusTimer.Stop();
             UpdateFocusMenuState();
             ApplyBasePetState();
+            PersistActiveFocusState(true);
             ShowBubble(
                 "番茄钟已暂停。还剩 " +
                 FormatFocusRemaining(_pausedFocusRemaining) + "。",
@@ -480,6 +491,7 @@ namespace DesktopPet
             _focusTimer.Start();
             UpdateFocusMenuState();
             _soundService.PlayFocusStart(_settings.FocusStartSound);
+            PersistActiveFocusState(true);
             ShowFocusCountdown();
         }
 
@@ -492,6 +504,7 @@ namespace DesktopPet
             ResetFocusTracking();
             ResetFocusPauseState();
             ResetRandomCues();
+            ClearPersistedActiveFocusState();
             UpdateFocusMenuState();
             ApplyBasePetState();
             ShowBubble(
@@ -514,6 +527,7 @@ namespace DesktopPet
             ResetFocusTracking();
             ResetFocusPauseState();
             ResetRandomCues();
+            ClearPersistedActiveFocusState();
             UpdateFocusMenuState();
             _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
             _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
@@ -655,6 +669,214 @@ namespace DesktopPet
             _activeFocusStartedAt = null;
             _activeFocusSegmentStartedAt = null;
             _activeFocusPlannedMinutes = 0;
+        }
+
+        private void PersistActiveFocusState(bool force)
+        {
+            if (!_focusEnds.HasValue)
+                return;
+
+            var now = DateTime.Now;
+            if (!force &&
+                now - _lastFocusStateSavedAt <
+                FocusStateCheckpointInterval)
+            {
+                return;
+            }
+
+            var remaining = GetCurrentFocusRemaining();
+            if (!remaining.HasValue ||
+                remaining.Value <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                _activeFocusStateService.Save(
+                    CreateActiveFocusStateSnapshot(
+                        now,
+                        remaining.Value));
+                _lastFocusStateSavedAt = now;
+            }
+            catch
+            {
+                // The timer remains usable even if this checkpoint fails.
+            }
+        }
+
+        private ActiveFocusStateData CreateActiveFocusStateSnapshot(
+            DateTime savedAt,
+            TimeSpan remaining)
+        {
+            var segments = _activeFocusSegments
+                .Select(segment =>
+                    new ActiveFocusSegmentData
+                    {
+                        StartedAt = ToIsoTimestamp(
+                            segment.StartedAt),
+                        EndedAt = ToIsoTimestamp(
+                            segment.EndedAt)
+                    })
+                .ToList();
+
+            if (!_focusPaused &&
+                _activeFocusSegmentStartedAt.HasValue)
+            {
+                var segmentEnd = _focusEnds.HasValue &&
+                    _focusEnds.Value < savedAt
+                    ? _focusEnds.Value
+                    : savedAt;
+                if (segmentEnd >
+                    _activeFocusSegmentStartedAt.Value)
+                {
+                    segments.Add(new ActiveFocusSegmentData
+                    {
+                        StartedAt = ToIsoTimestamp(
+                            _activeFocusSegmentStartedAt.Value),
+                        EndedAt = ToIsoTimestamp(segmentEnd)
+                    });
+                }
+            }
+
+            var plannedMinutes = Math.Max(
+                1,
+                _activeFocusPlannedMinutes > 0
+                    ? _activeFocusPlannedMinutes
+                    : _settings.FocusMinutes);
+            var startedAt = _activeFocusStartedAt ??
+                savedAt.AddMinutes(-plannedMinutes);
+            return new ActiveFocusStateData
+            {
+                Version = 1,
+                StartedAt = ToIsoTimestamp(startedAt),
+                PlannedMinutes = plannedMinutes,
+                RemainingSeconds = Math.Max(
+                    0.001,
+                    remaining.TotalSeconds),
+                WasPaused = _focusPaused,
+                SavedAt = ToIsoTimestamp(savedAt),
+                Segments = segments
+            };
+        }
+
+        private bool RestoreActiveFocusState()
+        {
+            ActiveFocusStateData state;
+            try
+            {
+                state = _activeFocusStateService.Load();
+            }
+            catch
+            {
+                return false;
+            }
+            if (state == null)
+                return false;
+
+            DateTime startedAt;
+            if (!TryParseLocalTimestamp(
+                state.StartedAt,
+                out startedAt))
+            {
+                return false;
+            }
+
+            var remaining = TimeSpan.FromSeconds(
+                Math.Min(
+                    state.PlannedMinutes * 60.0,
+                    state.RemainingSeconds));
+            if (remaining <= TimeSpan.Zero)
+                return false;
+
+            ResetRandomCues();
+            ResetFocusPauseState();
+            ResetFocusTracking();
+            _focusPauseBaseState = CaptureFocusPauseBaseState();
+            _activeFocusStartedAt = startedAt;
+            _activeFocusPlannedMinutes =
+                state.PlannedMinutes;
+            foreach (var savedSegment in state.Segments ??
+                new List<ActiveFocusSegmentData>())
+            {
+                DateTime segmentStart;
+                DateTime segmentEnd;
+                if (!TryParseLocalTimestamp(
+                        savedSegment.StartedAt,
+                        out segmentStart) ||
+                    !TryParseLocalTimestamp(
+                        savedSegment.EndedAt,
+                        out segmentEnd) ||
+                    segmentEnd <= segmentStart)
+                {
+                    continue;
+                }
+                _activeFocusSegments.Add(
+                    new FocusTimeSegment(
+                        segmentStart,
+                        segmentEnd));
+            }
+
+            var now = DateTime.Now;
+            _activeFocusSegmentStartedAt = null;
+            _pausedFocusRemaining = remaining;
+            _focusEnds = now.Add(remaining);
+            _focusPaused = true;
+            _lastFocusStateSavedAt = now;
+            UpdateFocusMenuState();
+            ApplyBasePetState();
+            ShowBubble(
+                "已恢复上次的番茄钟，目前为暂停状态，还剩 " +
+                FormatFocusRemaining(remaining) +
+                "。双击苏无度即可继续。",
+                9);
+            return true;
+        }
+
+        private void ClearPersistedActiveFocusState()
+        {
+            try
+            {
+                _activeFocusStateService.Clear();
+            }
+            catch
+            {
+                // A later checkpoint can safely replace a stale file.
+            }
+            _lastFocusStateSavedAt = DateTime.MinValue;
+        }
+
+        private static string ToIsoTimestamp(DateTime timestamp)
+        {
+            var local = timestamp.Kind == DateTimeKind.Utc
+                ? timestamp.ToLocalTime()
+                : timestamp.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(
+                        timestamp,
+                        DateTimeKind.Local)
+                    : timestamp;
+            return new DateTimeOffset(local).ToString(
+                "o",
+                CultureInfo.InvariantCulture);
+        }
+
+        private static bool TryParseLocalTimestamp(
+            string value,
+            out DateTime timestamp)
+        {
+            DateTimeOffset parsed;
+            if (DateTimeOffset.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out parsed))
+            {
+                timestamp = parsed.LocalDateTime;
+                return true;
+            }
+
+            timestamp = default(DateTime);
+            return false;
         }
 
         private IDictionary<string, int> AllocateActiveFocusMinutes(
@@ -1629,6 +1851,7 @@ namespace DesktopPet
 
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
+            PersistActiveFocusState(true);
             SaveWindowPosition();
             try { _settingsService.Save(_settings); } catch { }
             if (!_allowExit)

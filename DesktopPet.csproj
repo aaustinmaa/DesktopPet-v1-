@@ -117,11 +117,13 @@
       <DependentUpon>FocusExportWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\AppSettings.cs" />
+    <Compile Include="Models\ActiveFocusStateData.cs" />
     <Compile Include="Models\ChatMemoryData.cs" />
     <Compile Include="Models\FocusJournalData.cs" />
     <Compile Include="Models\PetCommand.cs" />
     <Compile Include="Models\PetState.cs" />
     <Compile Include="Services\AiService.cs" />
+    <Compile Include="Services\ActiveFocusStateService.cs" />
     <Compile Include="Services\ApplicationIntegrationService.cs" />
     <Compile Include="Services\CodexAppServerClient.cs" />
     <Compile Include="Services\CodexLocator.cs" />
