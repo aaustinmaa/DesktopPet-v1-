@@ -117,6 +117,7 @@
                            Style="{StaticResource PageTitleStyle}"/>
                 <TextBlock x:Name="ModeText"
                            Style="{StaticResource PageSubtitleStyle}"/>
+                <Border Style="{StaticResource TitleRuleStyle}"/>
             </StackPanel>
             <Button x:Name="SettingsButton"
                     Grid.Column="1"

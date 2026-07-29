@@ -50,7 +50,7 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#FFD5E1D9"/>
+                                        Value="#FFC3DEDA"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -131,6 +131,8 @@
                     <TextBlock Text="查看、补记和整理每天完成的番茄钟。"
                                Margin="0,4,0,0"
                                Foreground="{StaticResource MutedBrush}"/>
+                    <Border Style="{StaticResource TitleRuleStyle}"
+                            Margin="0,9,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"

@@ -18,6 +18,7 @@
                        FontSize="30"/>
             <TextBlock Text="桌宠控制面板"
                        Style="{StaticResource PageSubtitleStyle}"/>
+            <Border Style="{StaticResource TitleRuleStyle}"/>
 
             <Border Margin="0,20,0,16"
                     Style="{StaticResource InfoCalloutStyle}">

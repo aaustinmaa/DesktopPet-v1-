@@ -222,7 +222,7 @@ namespace DesktopPet
             var border = new Border
             {
                 Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-                    isError ? "#FFF2E6E6" : fromUser ? "#FF607D6D" : "#FFEDF0EC")),
+                    isError ? "#FFF2E8E7" : fromUser ? "#FF007175" : "#FFD9E8E6")),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(12, 9, 12, 9),
                 Margin = new Thickness(fromUser ? 52 : 0, 5, fromUser ? 0 : 52, 5),
@@ -235,7 +235,7 @@ namespace DesktopPet
             {
                 Text = author,
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-                    fromUser ? "#FFEAF1EC" : isError ? "#FF9A5E60" : "#FF607D6D")),
+                    fromUser ? "#FFF7FBFA" : isError ? "#FF93625F" : "#FF007175")),
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 11,
                 Margin = new Thickness(0, 0, 0, 3)
@@ -244,7 +244,7 @@ namespace DesktopPet
             {
                 Text = message,
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-                    fromUser ? "#FFFFFFFF" : "#FF2C312D")),
+                    fromUser ? "#FFF7FBFA" : "#FF284852")),
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 13
             });
