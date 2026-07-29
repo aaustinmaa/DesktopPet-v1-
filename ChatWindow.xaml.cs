@@ -136,7 +136,7 @@ namespace DesktopPet
             }
         }
 
-        private async void MessageBox_KeyDown(object sender, KeyEventArgs e)
+        private async void MessageBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if ((e.Key == Key.Enter || e.Key == Key.Return) &&
                 (Keyboard.Modifiers & ModifierKeys.Shift) == 0)

@@ -98,6 +98,44 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ChatMessageInputStyle"
+               TargetType="TextBox"
+               BasedOn="{StaticResource ModernTextBoxStyle}">
+            <Setter Property="Padding" Value="3,4"/>
+            <Setter Property="MinHeight" Value="64"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>能不能帮我把这两个改了?
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="InputBorder"
+                                        Property="BorderThickness"
+                                        Value="1.5"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="InputBorder"
+                                        Property="Opacity"
+                                        Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="24,22,24,20">
@@ -147,19 +185,19 @@
         <Border Grid.Row="2"
                 Margin="0,14,0,0"
                 Style="{StaticResource ModernCardStyle}"
-                Padding="14">
+                Padding="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBox x:Name="MessageBox"
-                         MinHeight="76"
+                         Style="{StaticResource ChatMessageInputStyle}"
                          Margin="0"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
-                         KeyDown="MessageBox_KeyDown"
+                         PreviewKeyDown="MessageBox_PreviewKeyDown"
                          ToolTip="Enter 发送，Shift+Enter 换行"/>
 
                 <Grid Grid.Row="1" Margin="0,10,0,0">
