@@ -10,11 +10,13 @@ namespace DesktopPet.Services
     {
         private const double BottomBandStart = 0.70;
         private const double RightBandStart = 0.76;
-        private const double MinimumMoveSeconds = 3.0;
-        private const double MaximumMoveSeconds = 10.0;
+        private const double MinimumMoveSeconds = 5.0;
+        private const double MaximumMoveSeconds = 24.0;
 
         private readonly Window _window;
         private readonly Func<bool> _canMove;
+        private readonly Func<int> _minimumIdleSeconds;
+        private readonly Func<int> _maximumIdleSeconds;
         private readonly Random _random;
         private readonly DispatcherTimer _decisionTimer;
         private readonly DispatcherTimer _movementTimer;
@@ -34,10 +36,21 @@ namespace DesktopPet.Services
         private bool _interactionPaused;
         private bool _disposed;
 
-        public WanderController(Window window, Func<bool> canMove, Random random)
+        public WanderController(
+            Window window,
+            Func<bool> canMove,
+            Func<int> minimumIdleSeconds,
+            Func<int> maximumIdleSeconds,
+            Random random)
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
             _canMove = canMove ?? throw new ArgumentNullException(nameof(canMove));
+            _minimumIdleSeconds = minimumIdleSeconds ??
+                                  throw new ArgumentNullException(
+                                      nameof(minimumIdleSeconds));
+            _maximumIdleSeconds = maximumIdleSeconds ??
+                                  throw new ArgumentNullException(
+                                      nameof(maximumIdleSeconds));
             _random = random ?? throw new ArgumentNullException(nameof(random));
 
             _decisionTimer = new DispatcherTimer(DispatcherPriority.Background);
@@ -87,7 +100,7 @@ namespace DesktopPet.Services
 
             _interactionPaused = false;
             if (_enabled)
-                Schedule(TimeSpan.FromSeconds(_random.Next(10, 21)));
+                ScheduleQuietIdle();
         }
 
         public void RefreshWindowBounds()
@@ -307,7 +320,7 @@ namespace DesktopPet.Services
             _segmentControl = CreateControlPoint(_segmentStart, _segmentEnd);
 
             var distance = Distance(_segmentStart, _segmentEnd);
-            var speed = 35 + _random.NextDouble() * 20;
+            var speed = 18 + _random.NextDouble() * 8;
             _segmentDurationSeconds = Math.Max(
                 MinimumMoveSeconds,
                 Math.Min(MaximumMoveSeconds, distance / speed));
@@ -403,14 +416,11 @@ namespace DesktopPet.Services
 
         private void ScheduleQuietIdle()
         {
-            var roll = _random.NextDouble();
-            int seconds;
-            if (roll < 0.70)
-                seconds = _random.Next(35, 91);
-            else if (roll < 0.95)
-                seconds = _random.Next(90, 151);
-            else
-                seconds = _random.Next(150, 241);
+            var minimum = Math.Max(3, Math.Min(300, _minimumIdleSeconds()));
+            var maximum = Math.Max(
+                minimum,
+                Math.Min(300, _maximumIdleSeconds()));
+            var seconds = _random.Next(minimum, maximum + 1);
             Schedule(TimeSpan.FromSeconds(seconds));
         }
 

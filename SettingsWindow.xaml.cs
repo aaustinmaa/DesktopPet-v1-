@@ -33,6 +33,10 @@ namespace DesktopPet
             ScaleSlider.Value = settings.PetScale;
             TopmostBox.IsChecked = settings.Topmost;
             WanderBox.IsChecked = settings.AutoWander;
+            WanderMinIdleSecondsBox.Text =
+                settings.WanderMinIdleSeconds.ToString(CultureInfo.InvariantCulture);
+            WanderMaxIdleSecondsBox.Text =
+                settings.WanderMaxIdleSeconds.ToString(CultureInfo.InvariantCulture);
             StartupBox.IsChecked = settings.StartWithWindows;
             HydrationBox.IsChecked = settings.HydrationEnabled;
             HydrationBoxMinutes.Text = settings.HydrationMinutes.ToString(CultureInfo.InvariantCulture);
@@ -491,6 +495,25 @@ namespace DesktopPet
             int randomCueMinMinutes;
             int randomCueMaxMinutes;
             int randomCueBreakSeconds;
+            int wanderMinIdleSeconds;
+            int wanderMaxIdleSeconds;
+            if (!int.TryParse(
+                    WanderMinIdleSecondsBox.Text,
+                    out wanderMinIdleSeconds) ||
+                wanderMinIdleSeconds < 3 ||
+                wanderMinIdleSeconds > 300 ||
+                !int.TryParse(
+                    WanderMaxIdleSecondsBox.Text,
+                    out wanderMaxIdleSeconds) ||
+                wanderMaxIdleSeconds < 3 ||
+                wanderMaxIdleSeconds > 300 ||
+                wanderMinIdleSeconds > wanderMaxIdleSeconds)
+            {
+                MessageBox.Show(
+                    "漫游停留范围请输入 3–300 秒，并确保最短时间不大于最长时间。",
+                    "设置", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (!int.TryParse(HydrationBoxMinutes.Text, out hydrationMinutes) ||
                 hydrationMinutes < 10 || hydrationMinutes > 240)
             {
@@ -528,6 +551,8 @@ namespace DesktopPet
             ResultSettings.PetScale = ScaleSlider.Value;
             ResultSettings.Topmost = TopmostBox.IsChecked == true;
             ResultSettings.AutoWander = WanderBox.IsChecked == true;
+            ResultSettings.WanderMinIdleSeconds = wanderMinIdleSeconds;
+            ResultSettings.WanderMaxIdleSeconds = wanderMaxIdleSeconds;
             ResultSettings.StartWithWindows = StartupBox.IsChecked == true;
             ResultSettings.HydrationEnabled = HydrationBox.IsChecked == true;
             ResultSettings.HydrationMinutes = hydrationMinutes;

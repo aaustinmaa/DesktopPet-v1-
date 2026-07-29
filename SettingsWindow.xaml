@@ -64,6 +64,36 @@
 
                         <CheckBox x:Name="TopmostBox" Content="始终置顶"/>
                         <CheckBox x:Name="WanderBox" Content="偶尔在屏幕附近漫游"/>
+                        <Grid Margin="24,2,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="72"/>
+                                <ColumnDefinition Width="22"/>
+                                <ColumnDefinition Width="72"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="漫游停留范围（秒）"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="每次移动或判断前随机等待，3–300 秒"
+                                           Margin="0,2,8,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <TextBox x:Name="WanderMinIdleSecondsBox"
+                                     Grid.Column="1"
+                                     VerticalAlignment="Center"
+                                     HorizontalContentAlignment="Center"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="–"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="{StaticResource MutedBrush}"/>
+                            <TextBox x:Name="WanderMaxIdleSecondsBox"
+                                     Grid.Column="3"
+                                     VerticalAlignment="Center"
+                                     HorizontalContentAlignment="Center"/>
+                        </Grid>
                         <CheckBox x:Name="StartupBox" Content="登录 Windows 时自动启动"/>
                     </StackPanel>
                 </Border>

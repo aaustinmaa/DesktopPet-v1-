@@ -127,6 +127,8 @@ namespace DesktopPet
             _wanderController = new WanderController(
                 this,
                 CanAutoWander,
+                () => _settings.WanderMinIdleSeconds,
+                () => _settings.WanderMaxIdleSeconds,
                 _random);
             _wanderController.SetEnabled(_settings.AutoWander);
             CreateSpeechBubbleWindow();
