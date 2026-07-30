@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using DesktopPet.Services;
 
 namespace DesktopPet
@@ -20,6 +22,7 @@ namespace DesktopPet
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            RegisterTextInputCaretBehavior();
             var manualLaunch = Array.IndexOf(e.Args, "--startup") < 0 &&
                                Array.IndexOf(e.Args, "--background") < 0;
             try
@@ -79,6 +82,59 @@ namespace DesktopPet
             if (manualLaunch)
                 window.ShowLauncher();
             StartWakeListener();
+        }
+
+        private static void RegisterTextInputCaretBehavior()
+        {
+            EventManager.RegisterClassHandler(
+                typeof(TextBox),
+                UIElement.PreviewMouseLeftButtonDownEvent,
+                new MouseButtonEventHandler(TextBox_PreviewMouseLeftButtonDown),
+                true);
+            EventManager.RegisterClassHandler(
+                typeof(TextBox),
+                Keyboard.GotKeyboardFocusEvent,
+                new KeyboardFocusChangedEventHandler(TextBox_GotKeyboardFocus),
+                true);
+        }
+
+        private static void TextBox_PreviewMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null ||
+                textBox.IsReadOnly ||
+                !textBox.IsEnabled ||
+                textBox.IsKeyboardFocusWithin)
+                return;
+
+            e.Handled = true;
+            textBox.Focus();
+            MoveCaretToEnd(textBox);
+        }
+
+        private static void TextBox_GotKeyboardFocus(
+            object sender,
+            KeyboardFocusChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null ||
+                textBox.IsReadOnly ||
+                !textBox.IsEnabled ||
+                !textBox.IsKeyboardFocused)
+                return;
+
+            MoveCaretToEnd(textBox);
+        }
+
+        private static void MoveCaretToEnd(TextBox textBox)
+        {
+            textBox.CaretIndex = textBox.Text == null
+                ? 0
+                : textBox.Text.Length;
+            textBox.SelectionLength = 0;
+            textBox.ScrollToEnd();
         }
 
         private static bool SignalExistingInstance(string eventName)
