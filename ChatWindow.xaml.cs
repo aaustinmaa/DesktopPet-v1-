@@ -2,8 +2,10 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using DesktopPet.Models;
 using DesktopPet.Services;
 
@@ -234,7 +236,6 @@ namespace DesktopPet
             var header = new DockPanel();
             var copyButton = new Button
             {
-                Content = "复制",
                 Style = (Style)FindResource("BubbleCopyButtonStyle"),
                 ToolTip = "复制这条消息",
                 VerticalAlignment = VerticalAlignment.Center
@@ -242,6 +243,7 @@ namespace DesktopPet
             copyButton.SetResourceReference(
                 Control.ForegroundProperty,
                 fromUser ? "LightTextBrush" : "InkBrush");
+            copyButton.Content = CreateCopyIcon(copyButton);
             copyButton.Click += (s, e) => CopyMessage(message);
             DockPanel.SetDock(copyButton, Dock.Right);
             header.Children.Add(copyButton);
@@ -267,6 +269,39 @@ namespace DesktopPet
             border.Child = stack;
             ConversationPanel.Children.Add(border);
             ConversationScroll.ScrollToEnd();
+        }
+
+        private static Grid CreateCopyIcon(Button button)
+        {
+            var icon = new Grid
+            {
+                Width = 14,
+                Height = 14,
+                IsHitTestVisible = false
+            };
+            var backDocument = new Path
+            {
+                Data = Geometry.Parse(
+                    "M1,4 C1,2.9 1.9,2 3,2 H6 V4 H4 V11 H10 V9 H12 V12 " +
+                    "C12,13.1 11.1,14 10,14 H3 C1.9,14 1,13.1 1,12 Z"),
+                Stretch = Stretch.None
+            };
+            var frontDocument = new Path
+            {
+                Data = Geometry.Parse(
+                    "M7,0 H10.4 L14,3.6 V10 C14,11.1 13.1,12 12,12 H7 " +
+                    "C5.9,12 5,11.1 5,10 V2 C5,0.9 5.9,0 7,0 Z"),
+                Stretch = Stretch.None
+            };
+            backDocument.SetBinding(
+                Shape.FillProperty,
+                new Binding("Foreground") { Source = button });
+            frontDocument.SetBinding(
+                Shape.FillProperty,
+                new Binding("Foreground") { Source = button });
+            icon.Children.Add(backDocument);
+            icon.Children.Add(frontDocument);
+            return icon;
         }
 
         private void CopyMessage(string message)

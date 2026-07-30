@@ -40,31 +40,135 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder"
-                                Padding="{TemplateBinding Padding}"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                SnapsToDevicePixels="True">
+                        <Grid x:Name="ButtonRoot"
+                              Background="Transparent"
+                              SnapsToDevicePixels="True">
+                            <Border x:Name="OuterOutline"
+                                    Background="Transparent"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="OutlineScale"
+                                                    ScaleX="0.7"
+                                                    ScaleY="0.7"/>
+                                </Border.RenderTransform>
+                            </Border>
+
+                            <Border x:Name="FillSurface"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="FillScale"
+                                                    ScaleX="1"
+                                                    ScaleY="1"/>
+                                </Border.RenderTransform>
+                            </Border>
+
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              Panel.ZIndex="1"
                                               RecognizesAccessKey="True"/>
-                        </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                                <Setter TargetName="OuterOutline"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource AccentHoverBrush}"/>
+                                <Setter TargetName="FillSurface"
+                                        Property="Background"
+                                        Value="{StaticResource AccentHoverBrush}"/>
+                                <Setter TargetName="FillSurface"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource AccentHoverBrush}"/>
                                 <Setter Property="Foreground" Value="{StaticResource LightTextBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="OutlineScale"
+                                                Storyboard.TargetProperty="ScaleX">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="1"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="OutlineScale"
+                                                Storyboard.TargetProperty="ScaleY">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="1"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="FillScale"
+                                                Storyboard.TargetProperty="ScaleX">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="0.7"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="FillScale"
+                                                Storyboard.TargetProperty="ScaleY">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="0.7"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="OutlineScale"
+                                                Storyboard.TargetProperty="ScaleX">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="0.7"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="OutlineScale"
+                                                Storyboard.TargetProperty="ScaleY">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="0.7"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="FillScale"
+                                                Storyboard.TargetProperty="ScaleX">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="1"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetName="FillScale"
+                                                Storyboard.TargetProperty="ScaleY">
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="1"
+                                                                      KeySpline="0.25,0,0.3,1"/>
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DeepJadeBrush}"/>
+                                <Setter TargetName="FillSurface"
+                                        Property="Background"
+                                        Value="{StaticResource DeepJadeBrush}"/>
                                 <Setter Property="Foreground" Value="{StaticResource LightTextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource AccentSoftBrush}"/>
+                                <Setter TargetName="OuterOutline"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.42"/>
+                                <Setter TargetName="ButtonRoot" Property="Opacity" Value="0.42"/>
                                 <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
