@@ -16,15 +16,21 @@ namespace DesktopPet.Services
         private readonly SecretService _secrets;
         private readonly AppSettings _settings;
         private readonly MemoryService _memory;
+        private readonly string _threadId;
         private readonly JavaScriptSerializer _json = new JavaScriptSerializer();
         private CodexAppServerClient _codexClient;
         private bool _codexHasContext;
 
-        public AiService(SecretService secrets, AppSettings settings, MemoryService memory)
+        public AiService(
+            SecretService secrets,
+            AppSettings settings,
+            MemoryService memory,
+            string threadId)
         {
             _secrets = secrets;
             _settings = settings;
             _memory = memory;
+            _threadId = threadId;
         }
 
         public async Task<PetReply> GetReplyAsync(
@@ -33,9 +39,9 @@ namespace DesktopPet.Services
         {
             var memoryUpdate = _memory.ProcessMemoryInstruction(
                 userMessage, _settings.MemoryEnabled);
-            var context = _memory.BuildContext(_settings.MemoryEnabled, 16);
-            if (_settings.MemoryEnabled)
-                _memory.RecordUserMessage(userMessage);
+            var context = _memory.BuildContext(
+                _settings.MemoryEnabled, _threadId, 24);
+            _memory.RecordUserMessage(_threadId, userMessage);
 
             PetReply reply;
             switch ((_settings.AiProvider ?? string.Empty).ToLowerInvariant())
@@ -56,8 +62,7 @@ namespace DesktopPet.Services
                     break;
             }
 
-            if (_settings.MemoryEnabled)
-                _memory.RecordAssistantMessage(reply.Reply);
+            _memory.RecordAssistantMessage(_threadId, reply.Reply);
             return reply;
         }
 

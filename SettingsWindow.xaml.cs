@@ -13,7 +13,7 @@ namespace DesktopPet
     public partial class SettingsWindow : Window
     {
         private readonly SecretService _secretService;
-        private readonly MemoryService _memoryService = new MemoryService();
+        private readonly MemoryService _memoryService = MemoryService.Shared;
         private readonly SoundService _soundService = new SoundService();
         private string _selectedProvider;
         private string _savedCodexModel;
@@ -464,12 +464,14 @@ namespace DesktopPet
         private void ClearMemory_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(
-                    "确定清除苏无度保存的最近聊天和所有明确记住的内容吗？此操作无法撤销。",
-                    "清除聊天与记忆", MessageBoxButton.YesNo, MessageBoxImage.Warning) !=
+                    "确定清除苏无度保存的所有聊天、归档和记忆吗？此操作无法撤销。",
+                    "清除所有聊天与记忆",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning) !=
                 MessageBoxResult.Yes)
                 return;
             _memoryService.ClearAll();
-            MessageBox.Show("苏无度的本地聊天与记忆已经清除。",
+            MessageBox.Show("苏无度的所有本地聊天、归档与记忆已经清除。",
                 "清除完成", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

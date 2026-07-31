@@ -6,9 +6,26 @@ namespace DesktopPet.Models
     [DataContract]
     public class ChatMemoryData
     {
-        [DataMember] public int Version { get; set; } = 1;
+        [DataMember] public int Version { get; set; } = 2;
+        [DataMember] public List<ChatThreadData> Threads { get; set; } =
+            new List<ChatThreadData>();
+        // Version 1 stored every message in one flat history. Keep this member
+        // for a lossless migration into a regular thread.
         [DataMember] public List<ChatRecord> History { get; set; } = new List<ChatRecord>();
         [DataMember] public List<MemoryFact> Facts { get; set; } = new List<MemoryFact>();
+    }
+
+    [DataContract]
+    public class ChatThreadData
+    {
+        [DataMember] public string Id { get; set; }
+        [DataMember] public string Title { get; set; }
+        [DataMember] public string Summary { get; set; }
+        [DataMember] public string CreatedAtUtc { get; set; }
+        [DataMember] public string UpdatedAtUtc { get; set; }
+        [DataMember] public bool IsArchived { get; set; }
+        [DataMember] public List<ChatRecord> Messages { get; set; } =
+            new List<ChatRecord>();
     }
 
     [DataContract]

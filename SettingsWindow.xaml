@@ -415,13 +415,13 @@
                         </Border>
 
                         <CheckBox x:Name="MemoryBox"
-                                  Content="保存最近聊天，并记住我明确要求“记住”的内容"/>
-                        <TextBlock Text="数据保存在本机 LocalAppData，不会与 ChatGPT 网页记忆同步。"
+                                  Content="开启记忆功能"/>
+                        <TextBlock Text="所有聊天都会保存在本机；开启后，苏无度还会跨聊天使用精简记忆和你明确要求记住的内容。"
                                    Margin="28,-2,0,4"
                                    FontSize="11"
                                    Foreground="{StaticResource MutedBrush}"
                                    TextWrapping="Wrap"/>
-                        <Button Content="清除苏无度的聊天与记忆"
+                        <Button Content="清除所有聊天与记忆"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Click="ClearMemory_Click"
