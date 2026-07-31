@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using DesktopPet.Models;
 using DesktopPet.Services;
 
@@ -25,6 +26,7 @@ namespace DesktopPet
         private bool _isUpdatingScreenVisionToggle;
         private bool _archiveSectionExpanded;
         private bool _sidebarExpanded;
+        private Border _typingIndicator;
 
         public ChatWindow(AppSettings settings, SecretService secrets, MainWindow petWindow)
         {
@@ -635,6 +637,7 @@ namespace DesktopPet
             MessageBox.Clear();
             SetInteractionEnabled(false);
             AddMessage("你", message, true);
+            ShowTypingIndicator();
             var includeScreen = ScreenVisionToggle.IsChecked == true;
             StatusText.Text = includeScreen
                 ? "正在截取发送瞬间的屏幕…"
@@ -663,6 +666,7 @@ namespace DesktopPet
                 }
 
                 var reply = await replyTask;
+                HideTypingIndicator();
                 AddMessage(_settings.PetName, reply.Reply, false);
                 _petWindow.ShowBubble(reply.Reply, 6);
                 _petWindow.SetPetState(reply.Emotion, 6);
@@ -678,6 +682,7 @@ namespace DesktopPet
             }
             catch (Exception exception)
             {
+                HideTypingIndicator();
                 if (!messageRecordedByAiService)
                     _memoryService.RecordUserMessage(_currentThreadId, message);
                 AddMessage(
@@ -691,6 +696,7 @@ namespace DesktopPet
             }
             finally
             {
+                HideTypingIndicator();
                 _screenCaptureService.DeleteCapture(screenshotPath);
                 _isSending = false;
                 SetInteractionEnabled(true);
@@ -698,6 +704,88 @@ namespace DesktopPet
                 RefreshThreadList();
                 MessageBox.Focus();
             }
+        }
+
+        private void ShowTypingIndicator()
+        {
+            HideTypingIndicator();
+
+            var dots = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var dotBrush = new SolidColorBrush(
+                ((SolidColorBrush)FindResource("AccentBrush")).Color);
+
+            for (var index = 0; index < 3; index++)
+            {
+                var lift = new TranslateTransform();
+                var dot = new Ellipse
+                {
+                    Width = 7,
+                    Height = 7,
+                    Margin = new Thickness(2, 0, 2, 0),
+                    Fill = dotBrush,
+                    Opacity = 0.28,
+                    RenderTransform = lift,
+                    RenderTransformOrigin = new Point(0.5, 0.5)
+                };
+
+                var delay = TimeSpan.FromMilliseconds(index * 150);
+                dot.BeginAnimation(
+                    OpacityProperty,
+                    new DoubleAnimation
+                    {
+                        From = 0.28,
+                        To = 1,
+                        Duration = TimeSpan.FromMilliseconds(430),
+                        AutoReverse = true,
+                        RepeatBehavior = RepeatBehavior.Forever,
+                        BeginTime = delay,
+                        EasingFunction = new SineEase
+                        {
+                            EasingMode = EasingMode.EaseInOut
+                        }
+                    });
+                lift.BeginAnimation(
+                    TranslateTransform.YProperty,
+                    new DoubleAnimation
+                    {
+                        From = 1.5,
+                        To = -1.5,
+                        Duration = TimeSpan.FromMilliseconds(430),
+                        AutoReverse = true,
+                        RepeatBehavior = RepeatBehavior.Forever,
+                        BeginTime = delay,
+                        EasingFunction = new SineEase
+                        {
+                            EasingMode = EasingMode.EaseInOut
+                        }
+                    });
+                dots.Children.Add(dot);
+            }
+
+            _typingIndicator = new Border
+            {
+                Background = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#FFD9E8E6")),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(11, 9, 11, 9),
+                Margin = new Thickness(0, 5, 52, 5),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Child = dots,
+                ToolTip = _settings.PetName + " 正在输入"
+            };
+            ConversationPanel.Children.Add(_typingIndicator);
+            ConversationScroll.ScrollToEnd();
+        }
+
+        private void HideTypingIndicator()
+        {
+            if (_typingIndicator == null) return;
+            ConversationPanel.Children.Remove(_typingIndicator);
+            _typingIndicator = null;
         }
 
         private void SetInteractionEnabled(bool enabled)

@@ -11,11 +11,11 @@
         FontFamily="Microsoft YaHei UI">
     <Window.Resources>
         <Style x:Key="ScreenToggleStyle" TargetType="ToggleButton">
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Padding" Value="2,0"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="10"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -32,16 +32,16 @@
                                            Foreground="{TemplateBinding Foreground}"
                                            VerticalAlignment="Center"/>
                                 <Border x:Name="SwitchTrack"
-                                        Width="30"
-                                        Height="17"
-                                        Margin="8,0,0,0"
+                                        Width="24"
+                                        Height="14"
+                                        Margin="6,0,0,0"
                                         Background="{StaticResource SubtleSurfaceBrush}"
                                         BorderBrush="{StaticResource BorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="8">
                                     <Ellipse x:Name="SwitchThumb"
-                                             Width="11"
-                                             Height="11"
+                                             Width="8"
+                                             Height="8"
                                              Margin="2"
                                              HorizontalAlignment="Left"
                                              VerticalAlignment="Center"
@@ -77,7 +77,7 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetName="ThumbTranslate"
                                                              Storyboard.TargetProperty="X"
-                                                             To="13"
+                                                             To="10"
                                                              Duration="0:0:0.14"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -366,11 +366,12 @@
                     Style="{StaticResource ModernCardStyle}"
                     Padding="8">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     <TextBox x:Name="MessageBox"
+                             Grid.Column="0"
                              Style="{StaticResource ChatMessageInputStyle}"
                              Margin="0"
                              AcceptsReturn="True"
@@ -379,32 +380,28 @@
                              PreviewKeyDown="MessageBox_PreviewKeyDown"
                              ToolTip="Enter 发送，Shift+Enter 换行"/>
 
-                    <Grid Grid.Row="1" Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <ToggleButton x:Name="ScreenVisionToggle"
-                                          Style="{StaticResource ScreenToggleStyle}"
-                                          IsChecked="True"
-                                          Checked="ScreenVisionToggle_Changed"
-                                          Unchecked="ScreenVisionToggle_Changed"
-                                          ToolTip="开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。"/>
-                            <TextBlock x:Name="StatusText"
-                                       Visibility="Collapsed"/>
-                        </StackPanel>
-                        <Button x:Name="SendButton"
-                                Grid.Column="1"
-                                Content="发送"
-                                Width="72"
-                                Height="30"
-                                MinHeight="30"
-                                Padding="10,0"
+                    <StackPanel Grid.Column="1"
                                 Margin="8,0,0,0"
-                                VerticalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <Button x:Name="SendButton"
+                                Content="发送"
+                                Width="64"
+                                Height="26"
+                                MinHeight="26"
+                                Padding="8,0"
+                                HorizontalAlignment="Center"
                                 Click="SendButton_Click"/>
-                    </Grid>
+                        <ToggleButton x:Name="ScreenVisionToggle"
+                                      Margin="0,3,0,0"
+                                      HorizontalAlignment="Center"
+                                      Style="{StaticResource ScreenToggleStyle}"
+                                      IsChecked="True"
+                                      Checked="ScreenVisionToggle_Changed"
+                                      Unchecked="ScreenVisionToggle_Changed"
+                                      ToolTip="开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。"/>
+                        <TextBlock x:Name="StatusText"
+                                   Visibility="Collapsed"/>
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>
