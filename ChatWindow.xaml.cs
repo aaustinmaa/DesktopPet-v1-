@@ -185,9 +185,8 @@ namespace DesktopPet
                 thread.Id, _currentThreadId, StringComparison.OrdinalIgnoreCase);
             var border = new Border
             {
-                Background = selected
-                    ? FindBrush("AccentSoftBrush")
-                    : Brushes.Transparent,
+                Tag = thread.Id,
+                Background = CreateSidebarBackground(selected),
                 BorderBrush = selected
                     ? FindBrush("BorderBrush")
                     : Brushes.Transparent,
@@ -196,6 +195,8 @@ namespace DesktopPet
                 Margin = new Thickness(0, 2, 0, 2),
                 Padding = new Thickness(2)
             };
+            border.MouseEnter += ThreadRow_MouseEnter;
+            border.MouseLeave += ThreadRow_MouseLeave;
 
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition());
@@ -264,6 +265,38 @@ namespace DesktopPet
             return new SolidColorBrush(source.Color);
         }
 
+        private SolidColorBrush CreateSidebarBackground(bool selected)
+        {
+            var color = selected
+                ? ((SolidColorBrush)FindResource("SidebarSelectedBrush")).Color
+                : Colors.Transparent;
+            return new SolidColorBrush(color);
+        }
+
+        private void ThreadRow_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var row = sender as Border;
+            if (row == null) return;
+            AnimateSidebarBackground(
+                row,
+                IsCurrentThread(row.Tag)
+                    ? "SidebarSelectedHoverBrush"
+                    : "SidebarHoverBrush",
+                140);
+        }
+
+        private void ThreadRow_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var row = sender as Border;
+            if (row == null) return;
+            AnimateSidebarBackground(
+                row,
+                IsCurrentThread(row.Tag)
+                    ? "SidebarSelectedBrush"
+                    : null,
+                120);
+        }
+
         private void SidebarTextButton_MouseEnter(
             object sender,
             MouseEventArgs e)
@@ -271,6 +304,8 @@ namespace DesktopPet
             var button = sender as Button;
             if (button == null) return;
             AnimateSidebarForeground(button, "AccentHoverBrush", 140);
+            if (string.IsNullOrWhiteSpace(Convert.ToString(button.Tag)))
+                AnimateSidebarBackground(button, "SidebarHoverBrush", 140);
         }
 
         private void SidebarTextButton_MouseLeave(
@@ -288,6 +323,17 @@ namespace DesktopPet
                 button,
                 selected ? "AccentBrush" : "MutedBrush",
                 120);
+            if (string.IsNullOrWhiteSpace(Convert.ToString(button.Tag)))
+                AnimateSidebarBackground(button, null, 120);
+        }
+
+        private bool IsCurrentThread(object tag)
+        {
+            return !string.IsNullOrWhiteSpace(Convert.ToString(tag)) &&
+                string.Equals(
+                    Convert.ToString(tag),
+                    _currentThreadId,
+                    StringComparison.OrdinalIgnoreCase);
         }
 
         private void AnimateSidebarForeground(
@@ -308,6 +354,64 @@ namespace DesktopPet
             var targetColor =
                 ((SolidColorBrush)FindResource(targetBrushKey)).Color;
             currentBrush.BeginAnimation(
+                SolidColorBrush.ColorProperty,
+                new ColorAnimation
+                {
+                    To = targetColor,
+                    Duration = TimeSpan.FromMilliseconds(durationMilliseconds),
+                    EasingFunction = new QuadraticEase
+                    {
+                        EasingMode = EasingMode.EaseOut
+                    }
+                },
+                HandoffBehavior.SnapshotAndReplace);
+        }
+
+        private void AnimateSidebarBackground(
+            Border target,
+            string targetBrushKey,
+            int durationMilliseconds)
+        {
+            var brush = target.Background as SolidColorBrush;
+            if (brush == null || brush.IsFrozen)
+            {
+                brush = new SolidColorBrush(
+                    brush == null ? Colors.Transparent : brush.Color);
+                target.Background = brush;
+            }
+            AnimateBrushColor(
+                brush,
+                targetBrushKey,
+                durationMilliseconds);
+        }
+
+        private void AnimateSidebarBackground(
+            Button target,
+            string targetBrushKey,
+            int durationMilliseconds)
+        {
+            var brush = target.Background as SolidColorBrush;
+            if (brush == null || brush.IsFrozen)
+            {
+                brush = new SolidColorBrush(
+                    brush == null ? Colors.Transparent : brush.Color);
+                target.Background = brush;
+            }
+            AnimateBrushColor(
+                brush,
+                targetBrushKey,
+                durationMilliseconds);
+        }
+
+        private void AnimateBrushColor(
+            SolidColorBrush brush,
+            string targetBrushKey,
+            int durationMilliseconds)
+        {
+            var targetColor = string.IsNullOrWhiteSpace(targetBrushKey)
+                ? Colors.Transparent
+                : ((SolidColorBrush)FindResource(targetBrushKey)).Color;
+            brush.BeginAnimation(
                 SolidColorBrush.ColorProperty,
                 new ColorAnimation
                 {

@@ -11,8 +11,8 @@
         FontFamily="Microsoft YaHei UI">
     <Window.Resources>
         <Style x:Key="ScreenToggleStyle" TargetType="ToggleButton">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="4,0"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
             <Setter Property="FontSize" Value="11"/>
@@ -103,8 +103,8 @@
                TargetType="TextBox"
                BasedOn="{StaticResource ModernTextBoxStyle}">
             <Setter Property="Padding" Value="3,4"/>
-            <Setter Property="MinHeight" Value="64"/>
-            <Setter Property="MaxHeight" Value="132"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="MaxHeight" Value="96"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -168,6 +168,10 @@
             <Setter Property="FontWeight" Value="Normal"/>
         </Style>
 
+        <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFD9E9E6"/>
+        <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#FFC2DDD8"/>
+        <SolidColorBrush x:Key="SidebarSelectedHoverBrush" Color="#FFB2D2CC"/>
+
         <Style x:Key="SidebarHeaderButtonStyle"
                TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -189,7 +193,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="Transparent"
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="7"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter x:Name="ThreadContent"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -290,7 +295,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,2,0,14">
+            <Grid Grid.Row="0" Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -299,9 +304,10 @@
                 </Grid.ColumnDefinitions>
                 <Button x:Name="ExpandSidebarButton"
                         Grid.Column="0"
-                        Width="38"
-                        Height="38"
-                        Margin="0,0,10,0"
+                        Width="32"
+                        Height="32"
+                        MinHeight="32"
+                        Margin="0,0,8,0"
                         Padding="0"
                         Style="{StaticResource SecondaryButtonStyle}"
                         FontSize="16"
@@ -309,31 +315,35 @@
                         Visibility="Visible"
                         ToolTip="展开聊天列表"
                         Click="SidebarToggle_Click"/>
-                <StackPanel Grid.Column="1">
-                    <TextBlock x:Name="TitleText"
-                               TextTrimming="CharacterEllipsis"
-                               Style="{StaticResource PageTitleStyle}"/>
-                    <TextBlock x:Name="ModeText"
-                               Style="{StaticResource PageSubtitleStyle}"/>
-                    <Border Style="{StaticResource TitleRuleStyle}"/>
-                </StackPanel>
+                <TextBlock x:Name="TitleText"
+                           Grid.Column="1"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource InkBrush}"/>
+                <TextBlock x:Name="ModeText"
+                           Grid.Column="1"
+                           Visibility="Collapsed"/>
                 <Button x:Name="ArchiveCurrentButton"
                         Grid.Column="2"
-                        Margin="10,0,0,0"
-                        Height="38"
-                        Padding="10,0"
+                        Margin="8,0,0,0"
+                        Height="32"
+                        MinHeight="32"
+                        Padding="9,0"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Content="Archive"
                         ToolTip="把当前聊天移到归档"
                         Click="ArchiveCurrent_Click"/>
                 <Button x:Name="SettingsButton"
                         Grid.Column="3"
-                        Width="38"
-                        Height="38"
-                        Margin="8,0,0,0"
+                        Width="32"
+                        Height="32"
+                        MinHeight="32"
+                        Margin="6,0,0,0"
                         Padding="0"
                         Style="{StaticResource SecondaryButtonStyle}"
-                        FontSize="17"
+                        FontSize="15"
                         Content="⚙"
                         ToolTip="打开设置"
                         AutomationProperties.Name="打开设置"
@@ -342,7 +352,7 @@
 
             <Border Grid.Row="1"
                     Style="{StaticResource ModernCardStyle}"
-                    Padding="14">
+                    Padding="12">
                 <ScrollViewer x:Name="ConversationScroll"
                               Padding="0,0,4,0"
                               VerticalScrollBarVisibility="Auto"
@@ -352,9 +362,9 @@
             </Border>
 
             <Border Grid.Row="2"
-                    Margin="0,14,0,0"
+                    Margin="0,8,0,0"
                     Style="{StaticResource ModernCardStyle}"
-                    Padding="10">
+                    Padding="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -369,7 +379,7 @@
                              PreviewKeyDown="MessageBox_PreviewKeyDown"
                              ToolTip="Enter 发送，Shift+Enter 换行"/>
 
-                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid Grid.Row="1" Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -382,17 +392,17 @@
                                           Unchecked="ScreenVisionToggle_Changed"
                                           ToolTip="开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。"/>
                             <TextBlock x:Name="StatusText"
-                                       Margin="8,1,8,0"
-                                       Foreground="{StaticResource MutedBrush}"
-                                       FontSize="11"
-                                       TextWrapping="Wrap"/>
+                                       Visibility="Collapsed"/>
                         </StackPanel>
                         <Button x:Name="SendButton"
                                 Grid.Column="1"
-                                Content="发送  ↵"
-                                Width="98"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Bottom"
+                                Content="发送"
+                                Width="72"
+                                Height="30"
+                                MinHeight="30"
+                                Padding="10,0"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
                                 Click="SendButton_Click"/>
                     </Grid>
                 </Grid>

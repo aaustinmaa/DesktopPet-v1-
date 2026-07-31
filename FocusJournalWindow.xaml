@@ -12,6 +12,10 @@
         Foreground="{StaticResource InkBrush}"
         Closing="Window_Closing">
     <Window.Resources>
+        <SolidColorBrush x:Key="JournalHoverBrush" Color="#FFD9E9E6"/>
+        <SolidColorBrush x:Key="JournalSelectedBrush" Color="#FFC2DDD8"/>
+        <SolidColorBrush x:Key="JournalSelectedHoverBrush" Color="#FFB2D2CC"/>
+
         <Style x:Key="DayNavigationButtonStyle"
                TargetType="Button"
                BasedOn="{StaticResource SecondaryButtonStyle}">
@@ -30,8 +34,7 @@
         </Style>
 
         <Style x:Key="JournalDateButtonStyle"
-               TargetType="Button"
-               BasedOn="{StaticResource SecondaryButtonStyle}">
+               TargetType="Button">
             <Setter Property="Height" Value="44"/>
             <Setter Property="Width" Value="178"/>
             <Setter Property="Padding" Value="12,0"/>
@@ -45,6 +48,60 @@
                     Value="{StaticResource InkBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="7"/>
+                            <Border x:Name="HoverSurface"
+                                    Background="{StaticResource JournalHoverBrush}"
+                                    CornerRadius="7"
+                                    Opacity="0"
+                                    IsHitTestVisible="False"/>
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="HoverSurface"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0:0:0.14"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="HoverSurface"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0"
+                                                Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.78"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.42"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -192,21 +249,52 @@
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="{x:Type CalendarDayButton}">
-                                                        <Border x:Name="DayBorder"
-                                                                Background="{TemplateBinding Background}"
-                                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                                CornerRadius="8">
-                                                            <ContentPresenter
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center"/>
-                                                        </Border>
+                                                        <Grid>
+                                                            <Border x:Name="SelectedSurface"
+                                                                    Background="{StaticResource JournalSelectedBrush}"
+                                                                    CornerRadius="8"
+                                                                    Opacity="0"
+                                                                    IsHitTestVisible="False"/>
+                                                            <Border x:Name="HoverSurface"
+                                                                    Background="{StaticResource JournalHoverBrush}"
+                                                                    CornerRadius="8"
+                                                                    Opacity="0"
+                                                                    IsHitTestVisible="False"/>
+                                                            <Border x:Name="DayBorder"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    CornerRadius="8">
+                                                                <ContentPresenter
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver"
                                                                      Value="True">
-                                                                <Setter TargetName="DayBorder"
-                                                                        Property="Background"
-                                                                        Value="{StaticResource AccentSoftBrush}"/>
+                                                                <Trigger.EnterActions>
+                                                                    <BeginStoryboard>
+                                                                        <Storyboard>
+                                                                            <DoubleAnimation
+                                                                                Storyboard.TargetName="HoverSurface"
+                                                                                Storyboard.TargetProperty="Opacity"
+                                                                                To="1"
+                                                                                Duration="0:0:0.14"/>
+                                                                        </Storyboard>
+                                                                    </BeginStoryboard>
+                                                                </Trigger.EnterActions>
+                                                                <Trigger.ExitActions>
+                                                                    <BeginStoryboard>
+                                                                        <Storyboard>
+                                                                            <DoubleAnimation
+                                                                                Storyboard.TargetName="HoverSurface"
+                                                                                Storyboard.TargetProperty="Opacity"
+                                                                                To="0"
+                                                                                Duration="0:0:0.12"/>
+                                                                        </Storyboard>
+                                                                    </BeginStoryboard>
+                                                                </Trigger.ExitActions>
                                                             </Trigger>
                                                             <Trigger Property="IsToday"
                                                                      Value="True">
@@ -216,14 +304,25 @@
                                                             </Trigger>
                                                             <Trigger Property="IsSelected"
                                                                      Value="True">
-                                                                <Setter TargetName="DayBorder"
-                                                                        Property="Background"
-                                                                        Value="{StaticResource AccentBrush}"/>
+                                                                <Setter TargetName="SelectedSurface"
+                                                                        Property="Opacity"
+                                                                        Value="1"/>
                                                                 <Setter Property="Foreground"
-                                                                        Value="White"/>
+                                                                        Value="{StaticResource AccentBrush}"/>
                                                                 <Setter Property="FontWeight"
                                                                         Value="SemiBold"/>
                                                             </Trigger>
+                                                            <MultiTrigger>
+                                                                <MultiTrigger.Conditions>
+                                                                    <Condition Property="IsSelected"
+                                                                               Value="True"/>
+                                                                    <Condition Property="IsMouseOver"
+                                                                               Value="True"/>
+                                                                </MultiTrigger.Conditions>
+                                                                <Setter TargetName="HoverSurface"
+                                                                        Property="Background"
+                                                                        Value="{StaticResource JournalSelectedHoverBrush}"/>
+                                                            </MultiTrigger>
                                                             <Trigger Property="IsInactive"
                                                                      Value="True">
                                                                 <Setter Property="Opacity"
