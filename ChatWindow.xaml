@@ -229,7 +229,7 @@
                     <StackPanel VerticalAlignment="Center">
                         <ToggleButton x:Name="ScreenVisionToggle"
                                       Style="{StaticResource ScreenToggleStyle}"
-                                      IsChecked="False"
+                                      IsChecked="True"
                                       Checked="ScreenVisionToggle_Changed"
                                       Unchecked="ScreenVisionToggle_Changed"
                                       ToolTip="开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。"/>

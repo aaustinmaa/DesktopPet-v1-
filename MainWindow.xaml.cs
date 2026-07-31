@@ -1504,6 +1504,12 @@ namespace DesktopPet
             _animator.SetState(PetState.Waving, TimeSpan.FromSeconds(3));
         }
 
+        internal void SetScreenVisionEnabled(bool enabled)
+        {
+            _settings.ScreenVisionEnabled = enabled;
+            _settingsService.Save(_settings);
+        }
+
         private void WorkMode_Click(object sender, RoutedEventArgs e)
         {
             _workingMode = WorkModeItem.IsChecked;

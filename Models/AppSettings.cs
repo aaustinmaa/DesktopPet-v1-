@@ -5,7 +5,7 @@ namespace DesktopPet.Models
     [DataContract]
     public class AppSettings
     {
-        [DataMember] public int SettingsVersion { get; set; } = 6;
+        [DataMember] public int SettingsVersion { get; set; } = 7;
         [DataMember] public double WindowLeft { get; set; } = double.NaN;
         [DataMember] public double WindowTop { get; set; } = double.NaN;
         [DataMember] public double PetScale { get; set; } = 0.82;
@@ -31,6 +31,7 @@ namespace DesktopPet.Models
         [DataMember] public string CodexModel { get; set; } = "";
         [DataMember] public string CodexReasoningEffort { get; set; } = "";
         [DataMember] public bool MemoryEnabled { get; set; } = true;
+        [DataMember] public bool ScreenVisionEnabled { get; set; } = true;
         [DataMember] public bool FirstRunComplete { get; set; } = false;
 
         public AppSettings Clone()
@@ -66,7 +67,9 @@ namespace DesktopPet.Models
                 WanderMinIdleSeconds = 8;
                 WanderMaxIdleSeconds = 18;
             }
-            SettingsVersion = 6;
+            if (SettingsVersion < 7)
+                ScreenVisionEnabled = true;
+            SettingsVersion = 7;
             if (PetScale < 0.20) PetScale = 0.20;
             if (PetScale > 1.5) PetScale = 1.5;
             if (HydrationMinutes < 10) HydrationMinutes = 10;

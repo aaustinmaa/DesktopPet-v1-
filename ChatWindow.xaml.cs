@@ -18,6 +18,7 @@ namespace DesktopPet
         private readonly ScreenCaptureService _screenCaptureService;
         private AiService _aiService;
         private bool _isSending;
+        private bool _isUpdatingScreenVisionToggle;
 
         public ChatWindow(AppSettings settings, SecretService secrets, MainWindow petWindow)
         {
@@ -107,6 +108,11 @@ namespace DesktopPet
         {
             if (ScreenVisionToggle == null || StatusText == null) return;
             var enabled = ScreenVisionToggle.IsChecked == true;
+            if (!_isUpdatingScreenVisionToggle && _settings != null)
+            {
+                _settings.ScreenVisionEnabled = enabled;
+                _petWindow.SetScreenVisionEnabled(enabled);
+            }
             if (enabled)
             {
                 StatusText.Text =
@@ -123,16 +129,25 @@ namespace DesktopPet
             if (ScreenVisionToggle == null) return;
             var offline = string.Equals(
                 _settings.AiProvider, "offline", StringComparison.OrdinalIgnoreCase);
-            ScreenVisionToggle.IsEnabled = !offline;
-            if (offline)
+            _isUpdatingScreenVisionToggle = true;
+            try
             {
-                ScreenVisionToggle.IsChecked = false;
-                ScreenVisionToggle.ToolTip = "离线模式不会向模型发送截图。";
+                ScreenVisionToggle.IsEnabled = !offline;
+                ScreenVisionToggle.IsChecked =
+                    offline ? false : _settings.ScreenVisionEnabled;
+                if (offline)
+                {
+                    ScreenVisionToggle.ToolTip = "离线模式不会向模型发送截图。";
+                }
+                else
+                {
+                    ScreenVisionToggle.ToolTip =
+                        "开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。";
+                }
             }
-            else
+            finally
             {
-                ScreenVisionToggle.ToolTip =
-                    "开启后，每次点击发送只截取一张所有显示器画面；不会持续录屏。";
+                _isUpdatingScreenVisionToggle = false;
             }
         }
 
