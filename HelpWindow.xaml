@@ -9,6 +9,25 @@
         Background="{StaticResource SurfaceBrush}"
         FontFamily="Microsoft YaHei UI"
         Foreground="{StaticResource InkBrush}">
+    <Window.Resources>
+        <Style x:Key="HelpBodyTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="HelpMutedTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource HelpBodyTextStyle}">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+        </Style>
+        <Style x:Key="HelpFeatureTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -19,7 +38,7 @@
             <StackPanel Margin="28,25,28,28">
                 <TextBlock Text="苏无度使用说明书"
                            Style="{StaticResource PageTitleStyle}"/>
-                <TextBlock Text="从日常互动到专注、聊天和记录，这里只讲你真正会用到的操作。"
+                <TextBlock Text="先认识两个最好用的功能，再按自己的习惯慢慢探索。"
                            Margin="0,5,0,20"
                            FontSize="13"
                            Foreground="{StaticResource MutedBrush}"
@@ -29,29 +48,164 @@
 
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="一分钟上手" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run FontWeight="Bold">移动：</Run><Run>按住苏无度并拖到喜欢的位置。&#x0a;</Run>
-                            <Run FontWeight="Bold">单击：</Run><Run>和她互动；专注计时中还会显示剩余时间。&#x0a;</Run>
-                            <Run FontWeight="Bold">双击：</Run><Run>开始专注；计时中双击暂停，暂停后双击继续。&#x0a;</Run>
-                            <Run FontWeight="Bold">三击：</Run><Run>打开聊天窗口。&#x0a;</Run>
-                            <Run FontWeight="Bold">右键：</Run><Run>打开完整功能菜单。&#x0a;</Run>
-                            <Run FontWeight="Bold">睡觉时叫醒：</Run><Run>在 4 秒内完成两次分开的单击。不要快速双击，快速双击仍然是专注操作。&#x0a;</Run>
-                            <Run FontWeight="Bold">鼠标点不到她：</Run><Run>按 Ctrl + Alt + P，立即关闭鼠标穿透并把她叫回来。</Run>
-                        </TextBlock>
+                        <TextBlock Text="最值得先用的两个功能"
+                                   Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Margin="0,5,0,14"
+                                   Text="这也是苏无度和普通桌宠最不一样的地方。"
+                                   Style="{StaticResource HelpMutedTextStyle}"/>
+
+                        <Border Style="{StaticResource InfoCalloutStyle}"
+                                Padding="16,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        VerticalAlignment="Top"
+                                        Background="{StaticResource AccentBrush}"
+                                        CornerRadius="17">
+                                    <TextBlock Text="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="{StaticResource LightTextBrush}"
+                                               FontSize="16"
+                                               FontWeight="Bold"/>
+                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="聊天可以直接看屏幕"
+                                               Style="{StaticResource HelpFeatureTitleStyle}"/>
+                                    <TextBlock Margin="0,5,0,0"
+                                               Text="不用再截图、保存、上传。三击打开聊天，开启“看屏幕”，苏无度会把你的问题和发送瞬间的桌面画面一起看懂。"
+                                               Style="{StaticResource HelpBodyTextStyle}"/>
+                                    <TextBlock Margin="0,7,0,0"
+                                               Text="三击苏无度 → 开启“看屏幕” → 输入问题 → 发送"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock Margin="0,4,0,0"
+                                               Text="很适合直接问报错、网页、设计稿或文档排版。每次只看一张静态截图，不会持续录屏。"
+                                               FontSize="11"
+                                               Foreground="{StaticResource MutedBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Margin="0,10,0,0"
+                                Style="{StaticResource InnerPanelStyle}"
+                                Padding="16,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="34"
+                                        Height="34"
+                                        VerticalAlignment="Top"
+                                        Background="{StaticResource PaleJadeBrush}"
+                                        CornerRadius="17">
+                                    <TextBlock Text="2"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="{StaticResource InkBrush}"
+                                               FontSize="16"
+                                               FontWeight="Bold"/>
+                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="双击就开始专注"
+                                               Style="{StaticResource HelpFeatureTitleStyle}"/>
+                                    <TextBlock Margin="0,5,0,0"
+                                               Text="不需要另外打开计时器。双击开始，再双击暂停或继续；完成后会自动写进专注记录。"
+                                               Style="{StaticResource HelpBodyTextStyle}"/>
+                                    <TextBlock Margin="0,7,0,0"
+                                               Text="双击开始 → 双击暂停 → 双击继续"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="常用操作" Style="{StaticResource SectionTitleStyle}"/>
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="86"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" FontWeight="Bold" Text="移动"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Text="按住苏无度并拖到喜欢的位置。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="1" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="单击"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="和她互动；专注中还会显示剩余时间。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="2" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="右键"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="打开聊天、模式、计时、记录和设置等完整菜单。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="3" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="叫醒"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="睡觉时在 4 秒内完成两次分开的单击；快速双击仍然是专注操作。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="4" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="点不到她"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="按 Ctrl + Alt + P，立即关闭鼠标穿透并把她叫回来。"
+                                       TextWrapping="Wrap"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="专注计时" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run>在</Run><Run FontWeight="Bold">设置 → 专注与提醒</Run><Run>中选择默认时长和开始、结束铃声，然后双击苏无度即可开始。计时中单击她，会显示 4 秒动态倒计时。&#x0a;&#x0a;</Run>
-                            <Run FontWeight="Bold">暂停与继续：</Run><Run>直接双击，或使用右键菜单。暂停的时间不会算进专注分钟。&#x0a;</Run>
-                            <Run FontWeight="Bold">停止或重新开始：</Run><Run>在右键菜单或托盘菜单中操作。提前停止时，已经完成的整分钟仍会加入当天记录；不到 1 分钟则不记录。&#x0a;</Run>
-                            <Run FontWeight="Bold">意外退出或关机：</Run><Run>下次启动会找回未完成的计时，并以暂停状态等待你双击继续。&#x0a;</Run>
-                            <Run FontWeight="Bold">随机微休息：</Run><Run>开启后，专注期间会不定时播放休息提示音，短暂休息后再播放继续提示音；间隔、休息时长和声音都能在设置中修改。</Run>
-                        </TextBlock>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="在“设置 → 专注与提醒”中选择默认时长和开始、结束铃声。计时中单击苏无度，会显示 4 秒动态倒计时。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="暂停与继续"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="直接双击，或使用右键菜单。暂停时间不会算进专注分钟。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="停止或重新开始"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="在右键菜单或托盘菜单中操作。提前停止时，已经完成的整分钟仍会加入当天记录；不到 1 分钟则不记录。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="意外退出或关机"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="下次启动会找回未完成的计时，并以暂停状态等待你双击继续。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="随机微休息"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="开启后，专注期间会不定时提醒你短暂休息，再播放继续工作的声音。间隔、休息时长和两种声音都可以修改。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -60,41 +214,93 @@
                         <TextBlock Text="查看和整理专注记录" Style="{StaticResource SectionTitleStyle}"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="打开右键菜单、托盘菜单或启动面板中的“今日专注记录”。完成一个番茄钟后，它会自动出现在记录里。你可以切换日期、设置每日目标、补记或删除番茄钟、调整当天分钟数，并为当天或单次专注填写 Notes。"
-                                   TextWrapping="Wrap"
-                                   LineHeight="23"/>
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="需要分享或备份时，可以复制当天纯文本，也可以选择日期范围导出 Markdown。记录日以晚上 9 点为分界；跨过晚上 9 点的专注分钟会分别计入前后两个记录日。"
-                                   Foreground="{StaticResource MutedBrush}"
-                                   TextWrapping="Wrap"
-                                   LineHeight="22"/>
+                                   Style="{StaticResource HelpMutedTextStyle}"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="和苏无度聊天" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run>三击苏无度，或在右键菜单中选择</Run><Run FontWeight="Bold">和我聊聊</Run><Run>。输入后按 Enter 发送，按 Shift + Enter 换行；每条消息右上角都可以复制。聊天窗口右上角的齿轮可随时打开设置。&#x0a;&#x0a;</Run>
-                            <Run FontWeight="Bold">ChatGPT 登录：</Run><Run>推荐方式。在设置中点击“连接我的 ChatGPT”，按浏览器提示完成登录；模型和推理强度保持“自动选择”通常最省心。&#x0a;</Run>
-                            <Run FontWeight="Bold">API key：</Run><Run>适合使用 OpenAI 开发者 API 的用户，费用与 ChatGPT 订阅分开。&#x0a;</Run>
-                            <Run FontWeight="Bold">离线：</Run><Run>完全不联网，提供简单的陪伴式回复。&#x0a;</Run>
-                            <Run FontWeight="Bold">聊天记忆：</Run><Run>开启后会恢复最近聊天，也会记住你明确要求“记住”的内容；可以在设置中随时关闭或一键清除。</Run>
-                        </TextBlock>
+                        <TextBlock Text="更多聊天设置" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="三击苏无度，或在右键菜单中选择“和我聊聊”。输入后按 Enter 发送，按 Shift + Enter 换行；每条消息都可以复制。聊天窗口右上角的齿轮可随时打开设置。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="ChatGPT 登录（推荐）"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="在设置中点击“连接我的 ChatGPT”，按浏览器提示完成登录。模型和推理强度保持“自动选择”通常最省心。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="API key"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="适合使用 OpenAI 开发者 API 的用户，费用与 ChatGPT 订阅分开。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="离线"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="完全不联网，提供简单的陪伴式回复；离线模式不能使用“看屏幕”。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="聊天记忆"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="开启后会恢复最近聊天，也会记住你明确要求“记住”的内容；可以在设置中随时关闭或一键清除。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="日常陪伴与提醒" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run FontWeight="Bold">工作模式：</Run><Run>让苏无度安静保持工作状态。&#x0a;</Run>
-                            <Run FontWeight="Bold">睡眠模式：</Run><Run>让她手动休息；工作模式和睡眠模式不会同时开启。电脑约 5 分钟没有操作时，她也会自动睡觉，你回来后会自动醒来。&#x0a;</Run>
-                            <Run FontWeight="Bold">喝水提醒：</Run><Run>按你设置的间隔显示气泡和系统通知。&#x0a;</Run>
-                            <Run FontWeight="Bold">自动漫游：</Run><Run>让她偶尔在当前屏幕附近轻轻移动；等待时间可以在设置中调整。&#x0a;</Run>
-                            <Run FontWeight="Bold">始终置顶：</Run><Run>让她留在普通窗口上方。&#x0a;</Run>
-                            <Run FontWeight="Bold">鼠标穿透：</Run><Run>让点击落到她后面的窗口。开启后用 Ctrl + Alt + P 或托盘菜单恢复。&#x0a;</Run>
-                            <Run FontWeight="Bold">更多互动：</Run><Run>右键可让她比心、眨眼、挥手，或请她给你一句鼓励。</Run>
-                        </TextBlock>
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="96"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" FontWeight="Bold" Text="工作 / 睡眠"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Text="两种模式不会同时开启。电脑约 5 分钟没有操作时，她也会自动睡觉。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="1" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="喝水提醒"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="按设置的间隔显示气泡和系统通知。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="2" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="自动漫游"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="让她偶尔在当前屏幕附近轻轻移动。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="3" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="始终置顶"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="让她留在普通窗口上方。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="4" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="鼠标穿透"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="让点击落到她后面的窗口；用 Ctrl + Alt + P 恢复。"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="5" Margin="0,9,0,0"
+                                       FontWeight="Bold" Text="更多互动"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Margin="0,9,0,0"
+                                       Text="右键可让她比心、眨眼、挥手，或给你一句鼓励。"
+                                       TextWrapping="Wrap"/>
+                        </Grid>
                         <Border Margin="0,13,0,0"
                                 Style="{StaticResource InfoCalloutStyle}">
                             <TextBlock Text="随机眨眼、比心和挥手只是陪伴动画，不代表有新通知。真正的提醒通常会同时出现文字气泡或系统通知。"
@@ -107,13 +313,24 @@
                 <Border Style="{StaticResource ModernCardStyle}" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Text="收起来、叫回来和退出" Style="{StaticResource SectionTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="23">
-                            <Run FontWeight="Bold">暂时收起来：</Run><Run>右键选择“收起来”，她会隐藏到桌面右下角的系统托盘，但计时和提醒仍会继续。&#x0a;</Run>
-                            <Run FontWeight="Bold">叫回来：</Run><Run>双击托盘图标、点击启动面板中的“叫醒苏无度”，或再次启动苏无度。再次启动不会出现第二只。&#x0a;</Run>
-                            <Run FontWeight="Bold">启动面板：</Run><Run>用于聊天、设置、专注记录、创建桌面快捷方式和退出。关闭面板不会关闭桌宠。&#x0a;</Run>
-                            <Run FontWeight="Bold">完全退出：</Run><Run>使用右键菜单、托盘菜单或启动面板中的“退出”。&#x0a;</Run>
-                            <Run FontWeight="Bold">自动启动：</Run><Run>可在设置中选择登录 Windows 时自动启动。</Run>
-                        </TextBlock>
+                        <TextBlock Margin="0,10,0,0"
+                                   Text="暂时收起来"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="右键选择“收起来”，她会隐藏到系统托盘，但计时和提醒仍会继续。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="叫回来"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="双击托盘图标、点击启动面板中的“叫醒苏无度”，或再次启动苏无度。再次启动不会出现第二只。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
+                        <TextBlock Margin="0,9,0,0"
+                                   Text="启动面板与完全退出"
+                                   FontWeight="Bold"/>
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="启动面板可以进入聊天、设置和专注记录。关闭面板不会关闭桌宠；需要完全退出时，请使用菜单中的“退出”。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -121,26 +338,43 @@
                     <StackPanel>
                         <TextBlock Text="屏幕与隐私" Style="{StaticResource SectionTitleStyle}"/>
                         <TextBlock Margin="0,10,0,0"
-                                   Text="苏无度不会自己读取你的屏幕。只有你在聊天窗口手动开启“看屏幕”后，她才会在每次发送时截取一张所有显示器的静态画面；不会持续录屏，请在发送前移开密码、付款信息和私人聊天等敏感内容。临时截图会在本次请求结束后删除。"
-                                   TextWrapping="Wrap"
-                                   LineHeight="22"/>
+                                   Text="苏无度不会自己读取你的屏幕。只有你在聊天窗口手动开启“看屏幕”后，她才会在每次发送时截取一张所有显示器的静态画面。发送前请移开密码、付款信息和私人聊天等敏感内容；临时截图会在本次请求结束后删除。"
+                                   Style="{StaticResource HelpBodyTextStyle}"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="设置、专注记录和聊天记忆保存在当前电脑账户中，不会与 ChatGPT 网页版记忆同步。API key 会由 Windows 为当前账户加密保存；离线聊天不会发送任何内容。聊天与记忆可以在设置中随时清除。"
-                                   Foreground="{StaticResource MutedBrush}"
-                                   TextWrapping="Wrap"
-                                   LineHeight="22"/>
+                                   Style="{StaticResource HelpMutedTextStyle}"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
         </ScrollViewer>
 
         <Border Grid.Row="1"
-                Style="{StaticResource FooterBarStyle}">
-            <Button Content="知道啦"
-                    Width="105"
-                    HorizontalAlignment="Right"
-                    IsDefault="True"
-                    Click="Close_Click"/>
+                Style="{StaticResource FooterBarStyle}"
+                Background="{StaticResource AccentSoftBrush}"
+                Padding="24,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="三击聊天 · 双击专注"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource InkBrush}"/>
+                    <TextBlock Text="关掉说明书后，马上试试。"
+                               Margin="0,2,0,0"
+                               FontSize="11"
+                               Foreground="{StaticResource MutedBrush}"/>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="开始使用"
+                        Width="112"
+                        Margin="18,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsDefault="True"
+                        Click="Close_Click"/>
+            </Grid>
         </Border>
     </Grid>
 </Window>
