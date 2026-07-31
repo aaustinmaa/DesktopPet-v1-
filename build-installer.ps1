@@ -30,15 +30,90 @@ $stub = Join-Path $buildRoot 'SuWuDuInstallerStub.exe'
 $uninstaller = Join-Path $stageDirectory 'Uninstall.exe'
 $zipPath = Join-Path $buildRoot 'payload.zip'
 $outputDirectory = Join-Path $projectRoot 'dist'
+$assetRoot = Join-Path $projectRoot 'Assets'
+$assetClassificationPath = Join-Path $assetRoot 'asset-classification.json'
+$sourceAssetRoot = Join-Path $SourceDirectory 'Assets'
+$setupManifest = Join-Path $projectRoot 'Installer\SuWuDuSetup.manifest'
 $installerFileName = ([char]0x82CF).ToString() + ([char]0x65E0).ToString() + ([char]0x5EA6).ToString() +
     ([char]0x5B89).ToString() + ([char]0x88C5).ToString() + ([char]0x7A0B).ToString() + ([char]0x5E8F).ToString() + '.exe'
 $output = Join-Path $outputDirectory $installerFileName
+
+if (-not (Test-Path -LiteralPath $assetClassificationPath -PathType Leaf)) {
+    throw "Asset classification file is missing: $assetClassificationPath"
+}
+if (-not (Test-Path -LiteralPath $setupManifest -PathType Leaf)) {
+    throw "Installer application manifest is missing: $setupManifest"
+}
+
+$assetClassification = Get-Content -LiteralPath $assetClassificationPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$usedPatterns = @($assetClassification.used)
+$unusedPatterns = @($assetClassification.unused)
+if ($usedPatterns.Count -eq 0 -or $unusedPatterns.Count -eq 0) {
+    throw 'Asset classification must define non-empty used and unused pattern lists.'
+}
+
+$classifiedAssets = @{}
+$usedAssetPaths = New-Object System.Collections.Generic.List[string]
+$unusedAssetPaths = New-Object System.Collections.Generic.List[string]
+Get-ChildItem -LiteralPath $assetRoot -Recurse -File | ForEach-Object {
+    $relativePath = $_.FullName.Substring($assetRoot.Length).TrimStart('\')
+    $usedMatches = @($usedPatterns | Where-Object { $relativePath -like $_ })
+    $unusedMatches = @($unusedPatterns | Where-Object { $relativePath -like $_ })
+    $matchCount = $usedMatches.Count + $unusedMatches.Count
+    if ($matchCount -ne 1) {
+        throw "Asset must match exactly one used/unused classification: $relativePath (matches: $matchCount)"
+    }
+
+    if ($usedMatches.Count -eq 1) {
+        $usedAssetPaths.Add($relativePath)
+        $classifiedAssets[$relativePath.ToLowerInvariant()] = 'used'
+    }
+    else {
+        $unusedAssetPaths.Add($relativePath)
+        $classifiedAssets[$relativePath.ToLowerInvariant()] = 'unused'
+    }
+}
+
+if (-not (Test-Path -LiteralPath $sourceAssetRoot -PathType Container)) {
+    throw "The development output is missing its Assets directory: $sourceAssetRoot"
+}
+
+$sourceAssetPaths = @(
+    Get-ChildItem -LiteralPath $sourceAssetRoot -Recurse -File | ForEach-Object {
+        $_.FullName.Substring($sourceAssetRoot.Length).TrimStart('\')
+    }
+)
+$unexpectedSourceAssets = @($sourceAssetPaths | Where-Object {
+    -not $classifiedAssets.ContainsKey($_.ToLowerInvariant()) -or
+    $classifiedAssets[$_.ToLowerInvariant()] -ne 'used'
+})
+if ($unexpectedSourceAssets.Count -gt 0) {
+    throw "Development output contains unused or unclassified assets:`r`n$($unexpectedSourceAssets -join "`r`n")"
+}
+
+$missingUsedAssets = @($usedAssetPaths | Where-Object { $_ -notin $sourceAssetPaths })
+if ($missingUsedAssets.Count -gt 0) {
+    throw "Development output is missing used assets:`r`n$($missingUsedAssets -join "`r`n")"
+}
+
+Write-Host "Asset classification verified: $($usedAssetPaths.Count) used, $($unusedAssetPaths.Count) unused."
 
 if (Test-Path -LiteralPath $buildRoot) { Remove-Item -LiteralPath $buildRoot -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $stageDirectory | Out-Null
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
-Get-ChildItem -LiteralPath $SourceDirectory -Force | Copy-Item -Destination $stageDirectory -Recurse -Force
+Get-ChildItem -LiteralPath $SourceDirectory -Force |
+    Where-Object { $_.Name -ne 'Assets' } |
+    Copy-Item -Destination $stageDirectory -Recurse -Force
+$stageAssetRoot = Join-Path $stageDirectory 'Assets'
+New-Item -ItemType Directory -Force -Path $stageAssetRoot | Out-Null
+foreach ($relativePath in $usedAssetPaths) {
+    $sourcePath = Join-Path $sourceAssetRoot $relativePath
+    $destinationPath = Join-Path $stageAssetRoot $relativePath
+    $destinationParent = Split-Path -Parent $destinationPath
+    New-Item -ItemType Directory -Force -Path $destinationParent | Out-Null
+    Copy-Item -LiteralPath $sourcePath -Destination $destinationPath -Force
+}
 if (-not (Test-Path -LiteralPath (Join-Path $stageDirectory 'SuWuDu.exe'))) {
     Move-Item -LiteralPath (Join-Path $stageDirectory 'DesktopPet.exe') -Destination (Join-Path $stageDirectory 'SuWuDu.exe')
     $oldConfig = Join-Path $stageDirectory 'DesktopPet.exe.config'
@@ -56,9 +131,9 @@ $uninstallerSource = Join-Path $projectRoot 'Installer\SuWuDuUninstaller.cs'
 $icon = Join-Path $projectRoot 'Assets\app.ico'
 $iconArgument = if (Test-Path -LiteralPath $icon) { "/win32icon:$icon" } else { $null }
 
-& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/out:$stub" $references $iconArgument $installerSource
+& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/win32manifest:$setupManifest" "/out:$stub" $references $iconArgument $installerSource
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
-& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/out:$uninstaller" $references $iconArgument $uninstallerSource
+& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/win32manifest:$setupManifest" "/out:$uninstaller" $references $iconArgument $uninstallerSource
 if ($LASTEXITCODE -ne 0) { throw 'Uninstaller compilation failed.' }
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem

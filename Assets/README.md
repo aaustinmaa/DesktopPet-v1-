@@ -1,6 +1,20 @@
 # Asset structure
 
-The asset folders are organized by purpose rather than by filename version.
+Every file under `Assets` is classified by
+[`asset-classification.json`](asset-classification.json) as either `used` or
+`unused` for the shipped application.
+
+- `used`: `app.ico` and every PNG in `Sprites`. These are runtime assets and
+  are the only asset files allowed in the installer payload.
+- `unused`: source artwork, archived artwork, prompts, references, and asset
+  documentation. They remain in the repository for development but must never
+  be copied into the installer.
+
+The installer build validates that every asset matches exactly one category.
+It also fails when a used asset is missing from the development output or an
+unused asset appears there.
+
+The folders are organized by purpose rather than by filename version.
 
 ```text
 Assets/

@@ -34,52 +34,219 @@ namespace SuWuDu.Setup
 
             public InstallerForm()
             {
-                Text = "安装 " + ProductName;
+                Text = "安装 " + SuWuDuInstaller.ProductName;
                 FormBorderStyle = FormBorderStyle.FixedDialog;
                 MaximizeBox = false;
                 MinimizeBox = false;
                 StartPosition = FormStartPosition.CenterScreen;
-                ClientSize = new Size(520, 270);
-                Icon = SystemIcons.Information;
+                AutoScaleMode = AutoScaleMode.Dpi;
+                ClientSize = new Size(680, 430);
+                MinimumSize = new Size(696, 469);
+                BackColor = Color.FromArgb(246, 248, 251);
+                Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+                Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
+                var accent = new Panel
+                {
+                    BackColor = Color.FromArgb(25, 130, 102),
+                    Dock = DockStyle.Top,
+                    Height = 6
+                };
+
+                var layout = new TableLayoutPanel
+                {
+                    BackColor = BackColor,
+                    ColumnCount = 1,
+                    Dock = DockStyle.Fill,
+                    Padding = new Padding(38, 28, 38, 24),
+                    RowCount = 5
+                };
+                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 84F));
+                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
+                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 86F));
+                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+                layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+                var header = new TableLayoutPanel
+                {
+                    ColumnCount = 2,
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0)
+                };
+                header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72F));
+                header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+
+                var iconImage = new PictureBox
+                {
+                    Dock = DockStyle.Fill,
+                    Image = Icon.ToBitmap(),
+                    Margin = new Padding(0, 2, 18, 14),
+                    SizeMode = PictureBoxSizeMode.Zoom
+                };
+
+                var heading = new TableLayoutPanel
+                {
+                    ColumnCount = 1,
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0)
+                };
+                heading.RowStyles.Add(new RowStyle(SizeType.Absolute, 43F));
+                heading.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
                 var title = new Label
                 {
-                    Text = "欢迎安装苏无度桌宠",
-                    Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 15, FontStyle.Bold),
-                    AutoSize = true,
-                    Left = 28,
-                    Top = 26
+                    AutoEllipsis = true,
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Segoe UI Semibold", 20F, FontStyle.Regular, GraphicsUnit.Point),
+                    ForeColor = Color.FromArgb(28, 35, 43),
+                    Margin = new Padding(0),
+                    Text = "安装苏无度",
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    UseCompatibleTextRendering = false
                 };
+                var subtitle = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.FromArgb(94, 103, 114),
+                    Margin = new Padding(1, 0, 0, 0),
+                    Text = "把你的像素桌宠带到 Windows 桌面",
+                    TextAlign = ContentAlignment.TopLeft,
+                    UseCompatibleTextRendering = false
+                };
+                heading.Controls.Add(title, 0, 0);
+                heading.Controls.Add(subtitle, 0, 1);
+                header.Controls.Add(iconImage, 0, 0);
+                header.Controls.Add(heading, 1, 0);
+
                 var description = new Label
                 {
-                    Text = "安装后可在 Windows 开始菜单中搜索“苏无度”，也可以将它固定到任务栏。\r\n整个过程只安装给当前 Windows 用户，不需要管理员权限。",
-                    AutoSize = true,
-                    Left = 30,
-                    Top = 70
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.FromArgb(58, 67, 78),
+                    Margin = new Padding(1, 0, 0, 0),
+                    Text = "安装完成后，可以从 Windows 开始菜单搜索“苏无度”，也可以固定到任务栏。\r\n仅为当前用户安装，不需要管理员权限。",
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    UseCompatibleTextRendering = false
                 };
-                var location = new Label
+
+                var locationCard = new TableLayoutPanel
                 {
-                    Text = "安装位置：\r\n" + InstallDirectory,
-                    AutoSize = true,
-                    Left = 30,
-                    Top = 120
+                    BackColor = Color.White,
+                    CellBorderStyle = TableLayoutPanelCellBorderStyle.Single,
+                    ColumnCount = 1,
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0, 4, 0, 8),
+                    Padding = new Padding(16, 8, 16, 8),
+                    RowCount = 2
                 };
+                locationCard.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+                locationCard.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+                var locationCaption = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Segoe UI Semibold", 9F, FontStyle.Regular, GraphicsUnit.Point),
+                    ForeColor = Color.FromArgb(94, 103, 114),
+                    Margin = new Padding(0),
+                    Text = "安装位置",
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    UseCompatibleTextRendering = false
+                };
+                var locationValue = new Label
+                {
+                    AutoEllipsis = true,
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.FromArgb(28, 35, 43),
+                    Margin = new Padding(0),
+                    Text = InstallDirectory,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    UseCompatibleTextRendering = false
+                };
+                locationCard.Controls.Add(locationCaption, 0, 0);
+                locationCard.Controls.Add(locationValue, 0, 1);
+
                 _desktopShortcut = new CheckBox
                 {
                     Text = "创建桌面快捷方式",
                     Checked = true,
-                    AutoSize = true,
-                    Left = 30,
-                    Top = 180
+                    Dock = DockStyle.Fill,
+                    FlatStyle = FlatStyle.System,
+                    Margin = new Padding(1, 4, 0, 0),
+                    UseCompatibleTextRendering = false
                 };
-                _status = new Label { AutoSize = true, Left = 30, Top = 212, ForeColor = Color.DimGray };
-                _installButton = new Button { Text = "安装", Width = 95, Left = 302, Top = 222, DialogResult = DialogResult.None };
-                _cancelButton = new Button { Text = "取消", Width = 95, Left = 405, Top = 222, DialogResult = DialogResult.Cancel };
+
+                var footer = new TableLayoutPanel
+                {
+                    ColumnCount = 2,
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0)
+                };
+                footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                footer.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 244F));
+
+                _status = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.FromArgb(94, 103, 114),
+                    Margin = new Padding(1, 0, 12, 0),
+                    Text = "准备就绪",
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    UseCompatibleTextRendering = false
+                };
+
+                var buttons = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    FlowDirection = FlowDirection.RightToLeft,
+                    Margin = new Padding(0),
+                    Padding = new Padding(0, 10, 0, 0),
+                    WrapContents = false
+                };
+                _installButton = new Button
+                {
+                    BackColor = Color.FromArgb(25, 130, 102),
+                    Cursor = Cursors.Hand,
+                    DialogResult = DialogResult.None,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular, GraphicsUnit.Point),
+                    ForeColor = Color.White,
+                    Height = 40,
+                    Margin = new Padding(10, 0, 0, 0),
+                    Text = "安装",
+                    UseCompatibleTextRendering = false,
+                    Width = 112
+                };
+                _installButton.FlatAppearance.BorderSize = 0;
+                _cancelButton = new Button
+                {
+                    BackColor = Color.White,
+                    Cursor = Cursors.Hand,
+                    DialogResult = DialogResult.Cancel,
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(58, 67, 78),
+                    Height = 40,
+                    Margin = new Padding(0),
+                    Text = "取消",
+                    UseCompatibleTextRendering = false,
+                    Width = 112
+                };
+                _cancelButton.FlatAppearance.BorderColor = Color.FromArgb(198, 205, 214);
+                _cancelButton.FlatAppearance.BorderSize = 1;
+
                 _installButton.Click += InstallButton_Click;
                 _cancelButton.Click += delegate { Close(); };
                 AcceptButton = _installButton;
                 CancelButton = _cancelButton;
-                Controls.AddRange(new Control[] { title, description, location, _desktopShortcut, _status, _installButton, _cancelButton });
+                buttons.Controls.Add(_installButton);
+                buttons.Controls.Add(_cancelButton);
+                footer.Controls.Add(_status, 0, 0);
+                footer.Controls.Add(buttons, 1, 0);
+
+                layout.Controls.Add(header, 0, 0);
+                layout.Controls.Add(description, 0, 1);
+                layout.Controls.Add(locationCard, 0, 2);
+                layout.Controls.Add(_desktopShortcut, 0, 3);
+                layout.Controls.Add(footer, 0, 4);
+                Controls.Add(layout);
+                Controls.Add(accent);
             }
 
             private void InstallButton_Click(object sender, EventArgs e)
@@ -88,6 +255,7 @@ namespace SuWuDu.Setup
                 {
                     ToggleControls(false);
                     _status.Text = "正在准备安装…";
+                    _status.Refresh();
                     Install(_desktopShortcut.Checked);
                     MessageBox.Show("苏无度已经安装好了。\r\n\r\n以后请在开始菜单搜索“苏无度”，右键即可固定到任务栏。",
                         "安装完成", MessageBoxButtons.OK, MessageBoxIcon.Information);

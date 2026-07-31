@@ -1,0 +1,15 @@
+{
+  "used": [
+    "app.ico",
+    "Sprites\\*.png"
+  ],
+  "unused": [
+    "Source\\*",
+    "Archive\\*",
+    "README.md",
+    "SPRITE_PROMPT.md",
+    "ANIMATION_V2_PROMPTS.md",
+    "sprite-sheet-chroma.png",
+    "asset-classification.json"
+  ]
+}
