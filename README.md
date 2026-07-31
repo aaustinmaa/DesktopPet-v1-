@@ -1,117 +1,208 @@
 # 苏无度桌宠
 
-一个可直接运行的 Windows 原生 WPF 桌宠。角色基于 `v1image.png` 重新绘制成 12 帧透明像素动画，小巧、置顶、可拖动，也可以安静地待在托盘里。
+苏无度是一个 Windows 原生桌面伴侣：透明、置顶、可拖动的像素角色，结合了专注计时、专注记录、喝水提醒、轻量桌面漫游和可选 AI 聊天。
 
-## 推荐：像普通应用一样安装
+项目当前版本为 `1.2.0`，使用 C#、WPF 和 .NET Framework 4.8 开发。应用不依赖 NuGet 包；ChatGPT 登录模式所需的 OpenAI Codex 运行组件随成品一起分发。
 
-双击：
+## 当前功能
+
+### 桌面伴侣
+
+- 12 种运行时状态：待机、眨眼、开心、工作、疑问、成功、错误、睡觉、提醒、挥手、比心和点击反应。
+- 透明无边框窗口，可拖动、缩放、始终置顶或开启鼠标穿透。
+- 支持多显示器；位置恢复和自动漫游都以当前显示器的可用工作区域为边界。
+- 随机眨眼、挥手和比心；系统空闲约 5 分钟后自动睡觉。
+- 可手动切换互斥的工作模式与睡眠模式。
+- 可配置的低频自动漫游，默认在每次动作前随机等待 8–18 秒。
+- 独立的透明文字气泡，不改变角色窗口大小，气泡区域不拦截鼠标。
+- 系统托盘、启动面板、开始菜单入口、可选桌面快捷方式和开机启动。
+- 单实例运行：再次启动会叫回现有桌宠并打开启动面板，不会创建第二个实例。
+
+### 专注与记录
+
+- 可配置 1–120 分钟的专注计时，支持开始、暂停、继续、停止和重新开始。
+- 开始与完成铃声可独立选择、试听或静音。
+- 专注期间可启用随机微休息：每轮重新抽取间隔，分别播放“开始休息”和“继续工作”提示音。
+- 运行中的计时会定期持久化；应用或电脑重启后，以暂停状态恢复剩余时间。
+- 完整番茄钟自动写入专注记录；提前停止时，已经完成的整分钟会加入记录日的分钟调整。
+- 记录日以本地时间 21:00 为分界，跨界专注会按实际完成片段拆分到两个记录日。
+- 专注记录支持每日目标、分钟调整、手动补记、删除、每日 Notes、单次 Notes、当天纯文本复制和日期范围 Markdown 导出。
+- 可配置喝水提醒间隔，并同时显示托盘通知和角色气泡。
+
+### 聊天
+
+应用提供三种聊天方式：
+
+- **ChatGPT 登录**：通过随附的 Codex app-server 完成官方 OAuth 登录，动态读取账号可用的模型和推理强度。
+- **OpenAI API**：使用开发者 API key 和自定义模型；API key 通过 Windows DPAPI 加密，仅当前 Windows 用户可解密。
+- **离线陪伴**：不联网，提供简单的本地固定回复。
+
+聊天窗口支持：
+
+- `Enter` 发送，`Shift + Enter` 换行；
+- 复制任意一条消息；
+- 保存最近 100 条本地历史，并在新窗口恢复最近 20 条；
+- 最多保存 50 条用户明确要求“记住”的长期事实；
+- 识别“请记住……”“记住：……”和“请忘记……”；
+- 可选的单次屏幕查看：每次发送只截取一张所有显示器画面，请求结束后删除临时截图。
+
+聊天历史和长期事实只保存在本机，不与 ChatGPT 网页版 Memory 同步。
+
+## 交互约定
+
+| 操作 | 结果 |
+| --- | --- |
+| 按住并拖动 | 移动桌宠 |
+| 单击 | 播放点击互动；专注中显示 4 秒动态剩余时间 |
+| 双击 | 开始专注 → 暂停 → 继续 |
+| 三击 | 打开聊天窗口 |
+| 睡眠时两次分开的单击 | 4 秒内完成两次锤击后叫醒 |
+| 右键 | 打开完整功能菜单 |
+| `Ctrl + Alt + P` | 关闭鼠标穿透并叫回桌宠 |
+| 双击托盘图标 | 叫回桌宠 |
+
+快速双击在睡眠状态下仍属于专注手势，不计作两次分开的叫醒锤击。
+
+应用内的“使用说明书”面向最终用户，包含全部日常操作、专注记录、聊天设置和隐私说明。
+
+## 运行现有成品
+
+仓库中的两个输出属于不同的交付范围：
+
+- `dist\SuWuDu\SuWuDu.exe`：开发/便携版入口；
+- `dist\苏无度安装程序.exe`：当前用户范围的安装包。
+
+便携版也可以通过根目录的 `Start Desktop Pet.cmd` 启动。安装包不要求管理员权限，默认安装到：
 
 ```text
-dist\苏无度安装程序.exe
+%LocalAppData%\Programs\SuWuDuDesktopPet
 ```
 
-安装程序不需要管理员权限，会安装到当前 Windows 用户的应用目录，并创建：
+当前成品没有商业代码签名，因此 Windows 可能在首次运行时显示安全提示。
 
-- 开始菜单中的“苏无度”（Windows 搜索可以找到）
-- 可选的桌面快捷方式
-- Windows“已安装的应用”中的卸载入口
+## 从源码构建
 
-手动启动时会出现“苏无度启动面板”。这个面板会显示在任务栏，可以右键固定；关闭面板不会退出桌宠。桌宠本体仍然不占任务栏。苏无度已经运行时，再点固定图标、开始菜单或桌面快捷方式，会打开面板并叫回现有桌宠，不会启动第二只。
+### 环境要求
 
-## 便携运行
+- Windows 10 或 Windows 11；
+- .NET Framework 4.8；
+- Visual Studio 2022 Build Tools，包含 MSBuild 和 Roslyn C# 编译器；
+- PowerShell 5.1 或更高版本。
 
-双击：
+`build.ps1` 会通过 `vswhere.exe` 查找最新的 Visual Studio Build Tools，并使用 .NET Framework MSBuild 构建 x64 Release 输出。
 
-```text
-Start Desktop Pet.cmd
+### 开发版
+
+```powershell
+.\build.ps1
 ```
 
-已构建的便携版位于：
+输出：
 
 ```text
 dist\SuWuDu\SuWuDu.exe
 ```
 
-便携版不需要安装，也会尝试创建开始菜单入口；但如果移动或删除整个文件夹，快捷方式会失效。Windows 首次显示安全提示时，可以展开“更多信息”后选择运行；这是因为当前成品没有商业代码签名。
-
-## 主要功能
-
-- 12 个统一风格的透明像素状态：待机、眨眼、开心、工作、疑问、成功、错误、睡觉、提醒、挥手和心跳。
-- 透明无边框小窗口，默认约 170 × 195 px，可拖动、缩放、置顶。
-- 支持多显示器：可以停留在任意显示器，并按当前显示器的工作区域限制位置和自动漫游。
-- 对话气泡使用独立的透明穿透窗口显示在苏无度上方；气泡不会挤压或缩小人物，点击气泡区域也不会触发人物交互。
-- 点击弹跳、随机眨眼/挥手/心跳，长时间离开后自动睡觉。
-- 可选的轻量桌面漫游。
-- 系统托盘：叫醒、聊天、专注、设置、退出。
-- 鼠标穿透模式；任何时候按 `Ctrl + Alt + P` 都能恢复交互。
-- 登录 Windows 时自动启动。
-- 保存上次位置、大小和所有偏好；恢复时会检查位置是否仍在屏幕上。
-- 内置专注计时器和喝水提醒；番茄钟可暂停和继续，开始、结束均有提示音，可在设置中分别选择或静音。进行中的番茄钟会定期保存；关闭程序或电脑后再次启动，会恢复为暂停状态并保留剩余时间。
-- 番茄钟可启用随机微休息：每轮在自定义分钟区间内重新随机计时，第一声开始休息，自定义秒数后第二声继续；两次声音均可自由选择。
-- 完成番茄钟会自动写入本地专注记录；手动停止时，完整番茄钟正常记录，不完整的已完成整分钟自动加入每日分钟调整。记录日以晚上 9 点为分界，跨界分钟会准确拆分到前后两个记录日。
-- 可按记录日设置目标和统一分钟调整，编辑每日及单次 Notes、手动补记、复制当天纯文本，并按日期范围导出 Markdown。
-- 三击打开通用聊天窗口；默认可用官方 ChatGPT OAuth 登录，无需 API key。
-- 聊天内可临时开启“看屏幕”：每次点击发送只附带一张发送瞬间的静态全屏截图，不持续录屏。
-- 三种聊天方式：ChatGPT/Codex、OpenAI 开发者 API、完全离线。
-- 保存最近聊天，并持久记住用户明确要求“记住”的信息；可以随时关闭或清除。
-- OpenAI API key 使用 Windows DPAPI 加密保存在当前用户目录。
-- 可由 Codex、脚本或其它程序发送状态命令，实现“工作中 / 完成 / 出错 / 等待输入”等联动。
-
-## 操作
-
-- 单击：番茄钟进行中会显示 4 秒动态剩余时间。
-- 按住并拖动：移动桌宠。
-- 双击：没有番茄钟时开始，运行中暂停，暂停后继续。
-- 三击：打开聊天。
-- 睡眠状态：4 秒内完成两次分开的单击锤击即可叫醒；快速双击仍用于番茄钟。
-- 右键：打开完整菜单。
-- `Ctrl + Alt + P`：恢复鼠标交互并叫回隐藏的桌宠。
-- 双击托盘图标：叫醒桌宠。
-- 再次启动程序：不会创建第二只桌宠，而是打开启动面板并叫回现有桌宠。
-- 右键桌宠或托盘图标 → **使用说明书**：查看动作含义、应用入口和全部功能。
-- 右键桌宠、托盘图标或启动面板 → **今日专注记录**：查看和编辑每天的番茄钟记录。
-
-## AI 聊天与登录
-
-右键桌宠 → **设置**：
-
-1. 选择 **ChatGPT 登录**（推荐）。
-2. 点击 **连接我的 ChatGPT**，在浏览器中完成 OpenAI 官方 OAuth 登录。
-3. 回到设置，看到“已连接”后保存。
-4. 三击苏无度即可进行通用聊天。
-
-聊天窗口中的“看屏幕”开关默认关闭，而且只对当前聊天窗口生效。开启后，苏无度会在每次点击发送时短暂隐藏聊天窗口、截取所有显示器画面并随该条消息提交；请求结束后立即删除本机临时截图。关闭时只发送文字和已启用的本地聊天上下文。
-
-这条路径使用账号中可用的 Codex 订阅额度，不会把 ChatGPT 密码交给桌宠，也不需要 API key。模型下拉框会读取当前账号真正可用的选项；推理强度下拉框会进一步读取所选模型支持的级别和默认值。推荐保留两个“自动选择”，由 Codex 使用兼容默认值。旧版本保存的无效模型名或推理强度会自动回退，不再导致聊天 400 错误。
-
-另外两种方式：
-
-- **API key**：使用 OpenAI 开发者 API，和 ChatGPT 订阅分开计费；可自行填写模型名。
-- **离线**：完全不联网，只提供简单的陪伴式固定回复。
-
-苏无度随附经过官方 Release SHA-256 校验的 OpenAI Codex 0.144.4 Windows 组件，不修改 PATH，也不要求用户安装命令行工具。第三方组件信息见 `THIRD-PARTY-NOTICES.txt`。
-
-## 聊天记忆
-
-开启设置中的“聊天记忆”后：
-
-- 聊天窗口会恢复最近 20 条消息；
-- 本地最多保留最近 100 条消息；
-- 对苏无度说“请记住……”或“记住：……”会保存一条长期事实；
-- 对她说“请忘记……”可删除匹配的长期事实；
-- 设置中的“清除苏无度的聊天与记忆”会删除全部本地聊天记忆。
-
-这些内容只保存在本机，不与 ChatGPT 网页版的 Memory 同步。关闭聊天记忆后，新消息不会写入本地历史。
-
-## 和 Codex / 脚本联动
-
-应用每秒检查一次本地命令文件。使用便携版附带的控制脚本：
+构建并启动，或直接启动已有输出：
 
 ```powershell
-.\dist\SuWuDu\Scripts\PetControl.ps1 -State working -Message 'Codex 正在处理任务…'
-.\dist\SuWuDu\Scripts\PetControl.ps1 -State success -Message '任务完成！'
-.\dist\SuWuDu\Scripts\PetControl.ps1 -State question -Message '需要你的输入。'
-.\dist\SuWuDu\Scripts\PetControl.ps1 -State error -Message '构建失败，请检查日志。'
+.\run.ps1
+```
+
+需要 Debug 配置时：
+
+```powershell
+.\build.ps1 -Configuration Debug
+```
+
+### 安装包
+
+安装包是独立交付物。先生成最新开发版，再单独构建安装包：
+
+```powershell
+.\build.ps1
+.\build-installer.ps1
+```
+
+输出：
+
+```text
+dist\苏无度安装程序.exe
+```
+
+安装脚本会验证 `Assets\asset-classification.json`：所有运行时素材必须被标记为 `used`，源文件、提示词和归档素材必须被标记为 `unused`，未分类或错误进入成品的素材会使构建失败。
+
+## 代码结构
+
+```text
+DesktopPet.csproj             WPF/.NET Framework 4.8 项目定义
+App.xaml(.cs)                 全局样式、单实例启动、异常记录和唤醒事件
+MainWindow.xaml(.cs)          桌宠窗口、状态编排、手势、计时、托盘和菜单
+ChatWindow.xaml(.cs)          聊天界面、屏幕附图与消息展示
+SettingsWindow.xaml(.cs)      外观、提醒、专注、AI 与记忆设置
+HelpWindow.xaml(.cs)          面向最终用户的内置使用说明书
+LauncherWindow.xaml(.cs)      可固定到任务栏的启动与管理面板
+FocusJournalWindow.xaml(.cs)  专注记录浏览和编辑
+FocusExportWindow.xaml(.cs)   Markdown 导出范围选择
+Models/                       设置、命令、聊天记忆和专注记录数据结构
+Services/                     持久化、AI、声音、动画、屏幕、漫游等服务
+Assets/Sprites/               应用实际加载的运行时图片
+Assets/Source/                维护和重新生成当前素材所需的源文件
+Assets/Archive/               历史素材，不参与构建
+Scripts/                      素材生成与外部控制脚本
+Installer/                    自包含安装器和卸载器源码
+Tests/                        当前的 Codex 账号/模型集成烟雾测试源码
+Tools/Codex/package/          随成品分发的 Codex Windows 运行组件
+```
+
+### 主要运行关系
+
+`App` 负责单实例和 Shell 入口；`MainWindow` 是桌宠状态与交互的协调中心；具体能力由 `Services` 中的独立服务完成：
+
+- `SpriteAnimator` 和 `HammerAnimator` 管理角色动画与点击反馈；
+- `WanderController` 负责当前显示器内的低频移动；
+- `ActiveFocusStateService` 保存未完成计时；
+- `FocusJournalService` 与 `FocusTimeAccounting` 负责记录、21:00 分界和跨日分钟分配；
+- `AiService` 在 ChatGPT、OpenAI API 和离线三种 provider 之间路由；
+- `CodexAppServerClient` 管理 Codex app-server、OAuth 状态、模型列表和消息；
+- `ScreenCaptureService` 只在聊天窗口明确请求时生成临时截图；
+- `MemoryService` 管理本地聊天历史和长期事实；
+- `SettingsService`、`SecretService` 和 `StartupService` 分别处理普通设置、加密 key 和开机启动。
+
+## 本地数据
+
+运行时数据统一保存在：
+
+```text
+%LocalAppData%\PixelHeartDesktopPet
+```
+
+| 文件或目录 | 用途 |
+| --- | --- |
+| `settings.json` | 窗口位置、外观、提醒、专注和聊天方式等普通设置 |
+| `secret.dat` | 当前 Windows 用户可解密的 OpenAI API key |
+| `chat-memory.json` | 最近聊天和长期事实 |
+| `focus-journal.json` | 专注记录、目标、调整和 Notes |
+| `active-focus.json` | 未完成专注计时的恢复快照 |
+| `command.json` | 外部程序写入的一次性状态命令 |
+| `error.log` | 未处理异常诊断日志 |
+| `CompanionWorkspace\` | Codex 聊天使用的隔离工作目录 |
+| `ScreenCaptures\` | “看屏幕”产生的临时截图目录 |
+
+普通 JSON 状态写入会使用临时文件和备份文件降低损坏风险。进行中的专注计时恢复为暂停状态，因此关机、睡眠或应用未运行的时间不会被误算为专注时间。
+
+## 外部状态联动
+
+Codex、自动化脚本或其它本地工具可以发送一次性状态和气泡文字：
+
+```powershell
+.\dist\SuWuDu\Scripts\PetControl.ps1 `
+  -State working `
+  -Message '正在处理任务…'
+
+.\dist\SuWuDu\Scripts\PetControl.ps1 `
+  -State success `
+  -Message '任务完成！'
 ```
 
 可用状态：
@@ -120,7 +211,7 @@ dist\SuWuDu\SuWuDu.exe
 idle blink happy working question success error sleeping reminder waving heart
 ```
 
-任何工具只要写入以下 JSON 也能控制桌宠：
+也可以直接写入：
 
 ```text
 %LocalAppData%\PixelHeartDesktopPet\command.json
@@ -128,51 +219,34 @@ idle blink happy working question success error sleeping reminder waving heart
 
 ```json
 {
-  "state": "success",
-  "message": "全部完成！"
+  "state": "question",
+  "message": "需要你的输入。"
 }
 ```
 
-## 从源码构建
+应用每秒检查一次该文件，读取后删除。未知状态会回退为 `idle`；没有消息时只更新动画。
 
-要求：
+## 素材维护
 
-- Windows 10/11
-- Visual Studio 2022 Build Tools（包含 MSBuild 与 Roslyn C# 编译器）
-- Windows 自带 .NET Framework 4.x
+`Assets\Sprites` 是唯一参与运行和安装的图片目录。源图、生成中间文件和旧版本不要放入该目录。
 
-运行：
+当前素材脚本：
 
 ```powershell
-.\build.ps1
-.\build-installer.ps1
+.\Scripts\BuildStableWorkingAtlas.ps1
+.\Scripts\ExtractAnimationAtlases.ps1
+.\Scripts\BuildSleepingLayers.ps1
 ```
 
-项目不使用 NuGet 包。便携版包含官方 Codex 运行组件，用于 ChatGPT OAuth 与 app-server 通信。
+具体分类、归档和重新生成规则见 [`Assets\README.md`](Assets/README.md)。
 
-## 本地数据
+## 测试与验证
 
-设置、加密 key、聊天记忆、命令文件和错误日志都位于：
+- `.\build.ps1` 是当前开发版的基础编译验证。
+- `Tests\CodexSmokeTest.cs` 覆盖已登录 ChatGPT 账号的状态、模型列表、模型回退、推理强度和图片消息链路；它依赖真实账号登录，不是离线单元测试。
+- 仓库目前没有完整的自动化 UI 测试。透明、无边框和鼠标穿透相关交互仍应在 Windows 桌面环境中手动验证。
+- 安装包验证与开发版验证是两个独立范围；修改开发版后不会自动重建安装包。
 
-```text
-%LocalAppData%\PixelHeartDesktopPet
-```
+## 第三方组件
 
-删除该文件夹即可重置桌宠。开机启动项位于当前用户的 Windows `Run` 注册表项，可在设置中随时关闭。
-
-主要文件：
-
-```text
-settings.json       普通设置（聊天方式、模型、提醒、窗口位置等）
-secret.dat          DPAPI 加密的 OpenAI API key
-chat-memory.json    最近聊天和明确记住的内容
-error.log           崩溃诊断日志
-```
-
-## 素材
-
-- `Assets\Source\References\v1image.png`：用户提供的角色原型。
-- `Assets\Sprites\*.png`：应用当前真正加载的运行时帧。
-- `Assets\Source\`：用于重新生成当前资源的图集和原始素材。
-- `Assets\Archive\`：保留但不参与构建的历史图片与旧版本。
-- `Assets\README.md`：资源目录规则和维护方式。
+成品包含 OpenAI Codex `0.144.4` Windows 组件。版本与来源见 `Tools\Codex\package\codex-package.json` 和 `THIRD-PARTY-NOTICES.txt`，随附许可证正文见 `OPENAI-CODEX-LICENSE.txt`。
