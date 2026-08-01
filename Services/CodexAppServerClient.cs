@@ -38,10 +38,12 @@ namespace DesktopPet.Services
             if (string.IsNullOrWhiteSpace(executable))
                 throw new FileNotFoundException("未找到随应用附带的 Codex 组件，请重新下载完整版本。");
 
+            Directory.CreateDirectory(SettingsService.CodexHomeDirectory);
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = executable,
-                Arguments = "app-server --stdio",
+                Arguments = "app-server --stdio -c cli_auth_credentials_store=file",
                 WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
                 UseShellExecute = false,
                 RedirectStandardInput = true,
@@ -51,6 +53,10 @@ namespace DesktopPet.Services
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8
             };
+            startInfo.EnvironmentVariables["CODEX_HOME"] =
+                SettingsService.CodexHomeDirectory;
+            startInfo.EnvironmentVariables["CODEX_SQLITE_HOME"] =
+                SettingsService.CodexHomeDirectory;
 
             _process = new Process
             {

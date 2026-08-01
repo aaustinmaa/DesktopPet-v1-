@@ -192,7 +192,7 @@ namespace DesktopPet
             else
             {
                 CodexStatusText.Text = string.IsNullOrWhiteSpace(status.Error)
-                    ? "尚未连接 ChatGPT。"
+                    ? "尚未连接 ChatGPT。苏无度的登录与其他 Codex 客户端相互独立。"
                     : "连接检查失败：" + status.Error;
                 CodexConnectButton.Content = "连接我的 ChatGPT";
                 CodexConnectButton.Visibility = Visibility.Visible;
@@ -439,8 +439,10 @@ namespace DesktopPet
         private async void CodexLogout_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(
-                    "确定要让 Codex 退出当前 ChatGPT 账号吗？这也可能影响同一 Windows 用户下的其他 Codex 客户端。",
-                    "退出 ChatGPT", MessageBoxButton.YesNo, MessageBoxImage.Question) !=
+                    "确定断开苏无度与当前 ChatGPT 账号的连接吗？\n\n" +
+                    "这只会清除苏无度保存的授权，不会退出浏览器、ChatGPT 桌面端或其他 Codex 客户端。",
+                    "断开 ChatGPT 连接", MessageBoxButton.YesNo,
+                    MessageBoxImage.Question) !=
                 MessageBoxResult.Yes)
                 return;
 
@@ -452,7 +454,7 @@ namespace DesktopPet
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "退出 ChatGPT",
+                MessageBox.Show(ex.Message, "断开 ChatGPT 连接",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             finally

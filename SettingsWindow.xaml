@@ -315,7 +315,7 @@
                             <StackPanel>
                                 <TextBlock Text="用 ChatGPT 账号连接"
                                            FontWeight="Bold"/>
-                                <TextBlock Text="会打开浏览器完成官方 OAuth 登录；不读取密码，也不需要 API key。使用你账号中可用的 Codex 订阅额度。"
+                                <TextBlock Text="会打开浏览器完成官方 OAuth 登录；不读取密码，也不需要 API key。授权只保存在苏无度自己的本地空间，不与其他 Codex 客户端共用。"
                                            Margin="0,4,0,8"
                                            Foreground="{StaticResource MutedBrush}"
                                            TextWrapping="Wrap"
@@ -329,7 +329,7 @@
                                             Content="连接我的 ChatGPT"
                                             Click="CodexConnect_Click"/>
                                     <Button x:Name="CodexLogoutButton"
-                                            Content="退出登录"
+                                            Content="断开连接"
                                             Style="{StaticResource SecondaryButtonStyle}"
                                             Click="CodexLogout_Click"
                                             Visibility="Collapsed"/>

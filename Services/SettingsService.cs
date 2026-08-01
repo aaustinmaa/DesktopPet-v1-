@@ -11,6 +11,9 @@ namespace DesktopPet.Services
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "PixelHeartDesktopPet");
 
+        public static readonly string CodexHomeDirectory =
+            Path.Combine(DataDirectory, "CodexHome");
+
         public string SettingsPath => Path.Combine(DataDirectory, "settings.json");
 
         public AppSettings Load()
