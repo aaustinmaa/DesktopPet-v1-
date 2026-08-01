@@ -28,6 +28,8 @@ namespace SuWuDu.Setup
         private sealed class InstallerForm : Form
         {
             private readonly CheckBox _desktopShortcut;
+            private readonly TextBox _installPath;
+            private readonly Button _browseButton;
             private readonly Button _installButton;
             private readonly Button _cancelButton;
             private readonly Label _status;
@@ -150,18 +152,44 @@ namespace SuWuDu.Setup
                     TextAlign = ContentAlignment.MiddleLeft,
                     UseCompatibleTextRendering = false
                 };
-                var locationValue = new Label
+                var locationInput = new TableLayoutPanel
                 {
-                    AutoEllipsis = true,
+                    ColumnCount = 2,
                     Dock = DockStyle.Fill,
-                    ForeColor = Color.FromArgb(28, 35, 43),
                     Margin = new Padding(0),
-                    Text = InstallDirectory,
-                    TextAlign = ContentAlignment.MiddleLeft,
+                    RowCount = 1
+                };
+                locationInput.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                locationInput.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96F));
+
+                _installPath = new TextBox
+                {
+                    AutoCompleteMode = AutoCompleteMode.SuggestAppend,
+                    AutoCompleteSource = AutoCompleteSource.FileSystemDirectories,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point),
+                    Margin = new Padding(0, 3, 10, 3),
+                    Text = GetInitialInstallDirectory()
+                };
+                _browseButton = new Button
+                {
+                    BackColor = Color.White,
+                    Cursor = Cursors.Hand,
+                    Dock = DockStyle.Fill,
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(58, 67, 78),
+                    Margin = new Padding(0, 1, 0, 1),
+                    Text = "浏览…",
                     UseCompatibleTextRendering = false
                 };
+                _browseButton.FlatAppearance.BorderColor = Color.FromArgb(198, 205, 214);
+                _browseButton.FlatAppearance.BorderSize = 1;
+                _browseButton.Click += BrowseButton_Click;
+                locationInput.Controls.Add(_installPath, 0, 0);
+                locationInput.Controls.Add(_browseButton, 1, 0);
                 locationCard.Controls.Add(locationCaption, 0, 0);
-                locationCard.Controls.Add(locationValue, 0, 1);
+                locationCard.Controls.Add(locationInput, 0, 1);
 
                 _desktopShortcut = new CheckBox
                 {
@@ -249,6 +277,25 @@ namespace SuWuDu.Setup
                 Controls.Add(accent);
             }
 
+            private void BrowseButton_Click(object sender, EventArgs e)
+            {
+                try
+                {
+                    string selectedPath = FindExistingDirectory(_installPath.Text);
+                    string result = ShowModernFolderPicker(this, selectedPath);
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        _installPath.Text = result;
+                        _installPath.SelectionStart = _installPath.TextLength;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("无法打开文件夹选择窗口：\r\n" + ex.Message,
+                        "选择安装位置", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
             private void InstallButton_Click(object sender, EventArgs e)
             {
                 try
@@ -256,7 +303,7 @@ namespace SuWuDu.Setup
                     ToggleControls(false);
                     _status.Text = "正在准备安装…";
                     _status.Refresh();
-                    Install(_desktopShortcut.Checked);
+                    Install(_installPath.Text, _desktopShortcut.Checked);
                     MessageBox.Show("苏无度已经安装好了。\r\n\r\n以后请在开始菜单搜索“苏无度”，右键即可固定到任务栏。",
                         "安装完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Close();
@@ -274,11 +321,13 @@ namespace SuWuDu.Setup
                 _installButton.Enabled = enabled;
                 _cancelButton.Enabled = enabled;
                 _desktopShortcut.Enabled = enabled;
+                _installPath.Enabled = enabled;
+                _browseButton.Enabled = enabled;
                 UseWaitCursor = !enabled;
             }
         }
 
-        private static string InstallDirectory
+        private static string DefaultInstallDirectory
         {
             get
             {
@@ -286,9 +335,106 @@ namespace SuWuDu.Setup
             }
         }
 
-        private static void Install(bool createDesktopShortcut)
+        private static string GetInitialInstallDirectory()
         {
-            string installDirectory = GetValidatedInstallDirectory();
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Uninstall\" + ProductKey))
+                {
+                    string registeredPath = key == null ? null : key.GetValue("InstallLocation") as string;
+                    if (!string.IsNullOrWhiteSpace(registeredPath) && Path.IsPathRooted(registeredPath))
+                        return Path.GetFullPath(registeredPath);
+                }
+            }
+            catch
+            {
+            }
+
+            return DefaultInstallDirectory;
+        }
+
+        private static string FindExistingDirectory(string candidate)
+        {
+            try
+            {
+                string current = Environment.ExpandEnvironmentVariables(
+                    (candidate ?? string.Empty).Trim().Trim('"'));
+                if (string.IsNullOrWhiteSpace(current) || !Path.IsPathRooted(current))
+                    return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+                current = Path.GetFullPath(current);
+                while (!string.IsNullOrWhiteSpace(current) && !Directory.Exists(current))
+                {
+                    string parent = Path.GetDirectoryName(current);
+                    if (string.Equals(parent, current, StringComparison.OrdinalIgnoreCase)) break;
+                    current = parent;
+                }
+                return current;
+            }
+            catch
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            }
+        }
+
+        private static string ShowModernFolderPicker(IWin32Window owner, string initialDirectory)
+        {
+            const uint FosNoChangeDirectory = 0x00000008;
+            const uint FosPickFolders = 0x00000020;
+            const uint FosForceFileSystem = 0x00000040;
+            const uint FosPathMustExist = 0x00000800;
+            const uint SigdnFileSystemPath = 0x80058000;
+            const int HResultCancelled = unchecked((int)0x800704C7);
+
+            IFileDialog dialog = null;
+            IShellItem initialItem = null;
+            IShellItem selectedItem = null;
+            IntPtr selectedPathPointer = IntPtr.Zero;
+            try
+            {
+                dialog = (IFileDialog)new FileOpenDialog();
+                uint options;
+                ThrowIfFailed(dialog.GetOptions(out options));
+                ThrowIfFailed(dialog.SetOptions(options | FosNoChangeDirectory |
+                    FosPickFolders | FosForceFileSystem | FosPathMustExist));
+                ThrowIfFailed(dialog.SetTitle("选择苏无度的安装文件夹"));
+                ThrowIfFailed(dialog.SetOkButtonLabel("选择此文件夹"));
+
+                if (!string.IsNullOrWhiteSpace(initialDirectory) && Directory.Exists(initialDirectory))
+                {
+                    Guid shellItemId = typeof(IShellItem).GUID;
+                    if (SHCreateItemFromParsingName(initialDirectory, IntPtr.Zero,
+                            ref shellItemId, out initialItem) >= 0)
+                    {
+                        ThrowIfFailed(dialog.SetFolder(initialItem));
+                    }
+                }
+
+                int result = dialog.Show(owner == null ? IntPtr.Zero : owner.Handle);
+                if (result == HResultCancelled) return null;
+                ThrowIfFailed(result);
+                ThrowIfFailed(dialog.GetResult(out selectedItem));
+                ThrowIfFailed(selectedItem.GetDisplayName(SigdnFileSystemPath,
+                    out selectedPathPointer));
+                return Marshal.PtrToStringUni(selectedPathPointer);
+            }
+            finally
+            {
+                if (selectedPathPointer != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(selectedPathPointer);
+                if (selectedItem != null && Marshal.IsComObject(selectedItem))
+                    Marshal.FinalReleaseComObject(selectedItem);
+                if (initialItem != null && Marshal.IsComObject(initialItem))
+                    Marshal.FinalReleaseComObject(initialItem);
+                if (dialog != null && Marshal.IsComObject(dialog))
+                    Marshal.FinalReleaseComObject(dialog);
+            }
+        }
+
+        private static void Install(string requestedDirectory, bool createDesktopShortcut)
+        {
+            string installDirectory = GetValidatedInstallDirectory(requestedDirectory);
             EnsurePetIsClosed();
 
             string installParent = Path.GetDirectoryName(installDirectory);
@@ -325,14 +471,45 @@ namespace SuWuDu.Setup
             }
         }
 
-        private static string GetValidatedInstallDirectory()
+        private static string GetValidatedInstallDirectory(string candidate)
         {
-            string programsRoot = Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs"));
-            string destination = Path.GetFullPath(InstallDirectory);
-            string expected = Path.Combine(programsRoot, ProductKey);
-            if (!string.Equals(destination, expected, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("安装路径校验失败。");
+            if (string.IsNullOrWhiteSpace(candidate))
+                throw new InvalidOperationException("请选择安装位置。");
+
+            string expanded = Environment.ExpandEnvironmentVariables(candidate.Trim().Trim('"'));
+            if (!Path.IsPathRooted(expanded))
+                throw new InvalidOperationException("请输入完整的安装路径，例如 D:\\Apps\\SuWuDu。");
+
+            string destination = Path.GetFullPath(expanded);
+            string root = Path.GetPathRoot(destination);
+            if (string.Equals(destination.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    (root ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("不能直接安装到磁盘根目录，请选择一个专用文件夹。");
+
+            destination = destination.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (File.Exists(destination))
+                throw new InvalidOperationException("所选安装位置是一个文件，请选择文件夹。");
+
+            if (Directory.Exists(destination) && DirectoryHasEntries(destination) &&
+                !IsRecognizedInstallation(destination))
+            {
+                throw new InvalidOperationException(
+                    "所选文件夹不是空文件夹，也不是已有的苏无度安装目录。请新建或选择一个专用文件夹。");
+            }
             return destination;
+        }
+
+        private static bool DirectoryHasEntries(string directory)
+        {
+            using (var entries = Directory.EnumerateFileSystemEntries(directory).GetEnumerator())
+                return entries.MoveNext();
+        }
+
+        private static bool IsRecognizedInstallation(string directory)
+        {
+            return File.Exists(Path.Combine(directory, AppFileName)) &&
+                   File.Exists(Path.Combine(directory, "Uninstall.exe"));
         }
 
         private static void ExtractPayload(string destinationZip)
@@ -407,8 +584,7 @@ namespace SuWuDu.Setup
 
         private static void ReplaceInstallation(string extractedDirectory, string installDirectory)
         {
-            string previous = installDirectory + ".previous";
-            if (Directory.Exists(previous)) TryDeleteDirectory(previous);
+            string previous = installDirectory + ".previous-" + Guid.NewGuid().ToString("N");
             if (Directory.Exists(installDirectory)) Directory.Move(installDirectory, previous);
             try
             {
@@ -513,6 +689,92 @@ namespace SuWuDu.Setup
         private static void TryDeleteDirectory(string path)
         {
             if (Directory.Exists(path)) Directory.Delete(path, true);
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
+        private static extern int SHCreateItemFromParsingName(
+            [MarshalAs(UnmanagedType.LPWStr)] string path,
+            IntPtr bindingContext,
+            ref Guid shellItemId,
+            [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
+
+        [ComImport]
+        [Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
+        private class FileOpenDialog
+        {
+        }
+
+        [ComImport]
+        [Guid("42F85136-DB7E-439C-85F1-E4075D135FC8")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IFileDialog
+        {
+            [PreserveSig]
+            int Show(IntPtr parent);
+            [PreserveSig]
+            int SetFileTypes(uint count, IntPtr filterSpecifications);
+            [PreserveSig]
+            int SetFileTypeIndex(uint index);
+            [PreserveSig]
+            int GetFileTypeIndex(out uint index);
+            [PreserveSig]
+            int Advise(IntPtr events, out uint cookie);
+            [PreserveSig]
+            int Unadvise(uint cookie);
+            [PreserveSig]
+            int SetOptions(uint options);
+            [PreserveSig]
+            int GetOptions(out uint options);
+            [PreserveSig]
+            int SetDefaultFolder(IShellItem shellItem);
+            [PreserveSig]
+            int SetFolder(IShellItem shellItem);
+            [PreserveSig]
+            int GetFolder(out IShellItem shellItem);
+            [PreserveSig]
+            int GetCurrentSelection(out IShellItem shellItem);
+            [PreserveSig]
+            int SetFileName([MarshalAs(UnmanagedType.LPWStr)] string name);
+            [PreserveSig]
+            int GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string name);
+            [PreserveSig]
+            int SetTitle([MarshalAs(UnmanagedType.LPWStr)] string title);
+            [PreserveSig]
+            int SetOkButtonLabel([MarshalAs(UnmanagedType.LPWStr)] string text);
+            [PreserveSig]
+            int SetFileNameLabel([MarshalAs(UnmanagedType.LPWStr)] string label);
+            [PreserveSig]
+            int GetResult(out IShellItem shellItem);
+            [PreserveSig]
+            int AddPlace(IShellItem shellItem, uint alignment);
+            [PreserveSig]
+            int SetDefaultExtension([MarshalAs(UnmanagedType.LPWStr)] string extension);
+            [PreserveSig]
+            int Close(int result);
+            [PreserveSig]
+            int SetClientGuid(ref Guid clientGuid);
+            [PreserveSig]
+            int ClearClientData();
+            [PreserveSig]
+            int SetFilter(IntPtr filter);
+        }
+
+        [ComImport]
+        [Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IShellItem
+        {
+            [PreserveSig]
+            int BindToHandler(IntPtr bindingContext, ref Guid bindingHandler,
+                ref Guid interfaceId, out IntPtr result);
+            [PreserveSig]
+            int GetParent(out IShellItem parent);
+            [PreserveSig]
+            int GetDisplayName(uint displayNameType, out IntPtr name);
+            [PreserveSig]
+            int GetAttributes(uint attributeMask, out uint attributes);
+            [PreserveSig]
+            int Compare(IShellItem other, uint hint, out int order);
         }
 
         [ComImport]

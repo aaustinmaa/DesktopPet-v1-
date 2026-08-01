@@ -72,14 +72,38 @@ namespace SuWuDu.Setup
 
         private static string ValidateInstallDirectory(string candidate)
         {
-            string programsRoot = Path.GetFullPath(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Programs"));
-            string expected = Path.GetFullPath(Path.Combine(programsRoot, ProductKey));
+            if (string.IsNullOrWhiteSpace(candidate) || !Path.IsPathRooted(candidate))
+                throw new InvalidOperationException("卸载目录无效。");
+
             string actual = Path.GetFullPath(candidate ?? string.Empty);
-            if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("卸载目录不是苏无度的正式安装位置。");
+            string root = Path.GetPathRoot(actual);
+            if (string.Equals(actual.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    (root ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("卸载目录不能是磁盘根目录。");
+
+            actual = actual.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string registered = GetRegisteredInstallDirectory();
+            if (string.IsNullOrWhiteSpace(registered) ||
+                !string.Equals(actual, registered, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("卸载目录与苏无度的安装记录不一致。");
+
+            if (!File.Exists(Path.Combine(actual, "SuWuDu.exe")) ||
+                !File.Exists(Path.Combine(actual, "Uninstall.exe")))
+                throw new InvalidOperationException("所选目录中没有找到完整的苏无度安装文件。");
             return actual;
+        }
+
+        private static string GetRegisteredInstallDirectory()
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Uninstall\" + ProductKey))
+            {
+                string value = key == null ? null : key.GetValue("InstallLocation") as string;
+                if (string.IsNullOrWhiteSpace(value) || !Path.IsPathRooted(value)) return null;
+                return Path.GetFullPath(value).TrimEnd(
+                    Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
         }
 
         private static bool IsPetRunning()
