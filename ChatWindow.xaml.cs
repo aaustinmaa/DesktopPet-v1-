@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
@@ -732,37 +733,74 @@ namespace DesktopPet
                     RenderTransformOrigin = new Point(0.5, 0.5)
                 };
 
-                var delay = TimeSpan.FromMilliseconds(index * 150);
-                dot.BeginAnimation(
-                    OpacityProperty,
-                    new DoubleAnimation
-                    {
-                        From = 0.28,
-                        To = 1,
-                        Duration = TimeSpan.FromMilliseconds(430),
-                        AutoReverse = true,
-                        RepeatBehavior = RepeatBehavior.Forever,
-                        BeginTime = delay,
-                        EasingFunction = new SineEase
-                        {
-                            EasingMode = EasingMode.EaseInOut
-                        }
-                    });
+                var delay = TimeSpan.FromMilliseconds(index * 220);
+                var easing = new SineEase
+                {
+                    EasingMode = EasingMode.EaseInOut
+                };
+                var opacityWave = new DoubleAnimationUsingKeyFrames
+                {
+                    BeginTime = delay,
+                    Duration = TimeSpan.FromMilliseconds(1900),
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                opacityWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = 0.28,
+                    KeyTime = TimeSpan.Zero,
+                    EasingFunction = easing
+                });
+                opacityWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = 1,
+                    KeyTime = TimeSpan.FromMilliseconds(400),
+                    EasingFunction = easing
+                });
+                opacityWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = 0.28,
+                    KeyTime = TimeSpan.FromMilliseconds(800),
+                    EasingFunction = easing
+                });
+                opacityWave.KeyFrames.Add(new LinearDoubleKeyFrame
+                {
+                    Value = 0.28,
+                    KeyTime = TimeSpan.FromMilliseconds(1900)
+                });
+                dot.BeginAnimation(UIElement.OpacityProperty, opacityWave);
+
+                var liftWave = new DoubleAnimationUsingKeyFrames
+                {
+                    BeginTime = delay,
+                    Duration = TimeSpan.FromMilliseconds(1900),
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                liftWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = 1.5,
+                    KeyTime = TimeSpan.Zero,
+                    EasingFunction = easing
+                });
+                liftWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = -1.5,
+                    KeyTime = TimeSpan.FromMilliseconds(400),
+                    EasingFunction = easing
+                });
+                liftWave.KeyFrames.Add(new EasingDoubleKeyFrame
+                {
+                    Value = 1.5,
+                    KeyTime = TimeSpan.FromMilliseconds(800),
+                    EasingFunction = easing
+                });
+                liftWave.KeyFrames.Add(new LinearDoubleKeyFrame
+                {
+                    Value = 1.5,
+                    KeyTime = TimeSpan.FromMilliseconds(1900)
+                });
                 lift.BeginAnimation(
                     TranslateTransform.YProperty,
-                    new DoubleAnimation
-                    {
-                        From = 1.5,
-                        To = -1.5,
-                        Duration = TimeSpan.FromMilliseconds(430),
-                        AutoReverse = true,
-                        RepeatBehavior = RepeatBehavior.Forever,
-                        BeginTime = delay,
-                        EasingFunction = new SineEase
-                        {
-                            EasingMode = EasingMode.EaseInOut
-                        }
-                    });
+                    liftWave);
                 dots.Children.Add(dot);
             }
 
@@ -801,19 +839,45 @@ namespace DesktopPet
 
         private async Task<string> CaptureScreenForMessageAsync()
         {
-            Hide();
+            var windowHandle = new WindowInteropHelper(this).Handle;
+            var excludedFromCapture =
+                windowHandle != IntPtr.Zero &&
+                NativeMethods.SupportsExcludeFromCapture() &&
+                NativeMethods.SetWindowDisplayAffinity(
+                    windowHandle,
+                    NativeMethods.WdaExcludeFromCapture);
+
+            if (excludedFromCapture)
+            {
+                try
+                {
+                    NativeMethods.FlushDesktopComposition();
+                    return await Task.Run(() =>
+                        _screenCaptureService.CaptureVirtualDesktop());
+                }
+                finally
+                {
+                    NativeMethods.SetWindowDisplayAffinity(
+                        windowHandle,
+                        NativeMethods.WdaNone);
+                    NativeMethods.FlushDesktopComposition();
+                }
+            }
+
+            var originalOpacity = Opacity;
             try
             {
-                // Give the desktop compositor time to reveal the window behind
-                // the chat so the screenshot does not contain its own history.
-                await Task.Delay(140);
+                // Compatibility fallback: keep the same live, focused window
+                // and only remove its pixels for one compositor frame.
+                Opacity = 0;
+                NativeMethods.FlushDesktopComposition();
                 return await Task.Run(() =>
                     _screenCaptureService.CaptureVirtualDesktop());
             }
             finally
             {
-                Show();
-                Activate();
+                Opacity = originalOpacity;
+                NativeMethods.FlushDesktopComposition();
             }
         }
 
