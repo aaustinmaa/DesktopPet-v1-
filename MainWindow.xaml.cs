@@ -31,6 +31,7 @@ namespace DesktopPet
             FocusJournalService.Shared;
         private readonly ActiveFocusStateService _activeFocusStateService =
             new ActiveFocusStateService();
+        private readonly UpdateService _updateService = new UpdateService();
         private AppSettings _settings;
         private SpriteAnimator _animator;
         private HammerAnimator _hammerAnimator;
@@ -70,7 +71,9 @@ namespace DesktopPet
         private SpeechBubbleWindow _speechBubbleWindow;
         private LauncherWindow _launcherWindow;
         private FocusJournalWindow _focusJournalWindow;
+        private UpdateWindow _updateWindow;
         private WanderController _wanderController;
+        private bool _updateCheckInProgress;
         private Forms.ToolStripMenuItem _trayStartFocusItem;
         private Forms.ToolStripMenuItem _trayPauseFocusItem;
         private Forms.ToolStripMenuItem _trayStopFocusItem;
@@ -152,6 +155,7 @@ namespace DesktopPet
             }
 
             RestoreActiveFocusState();
+            BeginAutomaticUpdateCheck();
         }
 
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -1603,6 +1607,64 @@ namespace DesktopPet
             OpenSettings(this);
         }
 
+        private async void Update_Click(object sender, RoutedEventArgs e)
+        {
+            await CheckForUpdatesAsync(true);
+        }
+
+        private async void BeginAutomaticUpdateCheck()
+        {
+            await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(4));
+            if (!_allowExit) await CheckForUpdatesAsync(false);
+        }
+
+        private async System.Threading.Tasks.Task CheckForUpdatesAsync(bool manual)
+        {
+            if (_updateCheckInProgress) return;
+            _updateCheckInProgress = true;
+            try
+            {
+                if (manual) ShowBubble("正在检查更新…", 3);
+                UpdateCheckResult result = await _updateService.CheckAsync(manual);
+                if (result.HasUpdate)
+                {
+                    ShowUpdateWindow(result.Release);
+                    return;
+                }
+
+                if (manual && !result.Skipped)
+                    MessageBox.Show(this, result.Message, "苏无度更新",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            finally
+            {
+                _updateCheckInProgress = false;
+            }
+        }
+
+        private void ShowUpdateWindow(UpdateReleaseInfo release)
+        {
+            if (_updateWindow != null)
+            {
+                _updateWindow.Activate();
+                return;
+            }
+
+            _wanderController?.PauseForUserInteraction();
+            _updateWindow = new UpdateWindow(_updateService, release)
+            {
+                Owner = this,
+                Topmost = false
+            };
+            _updateWindow.Closed += (s, e) =>
+            {
+                _updateWindow = null;
+                _wanderController?.ResumeAfterUserInteraction(false);
+            };
+            _updateWindow.Show();
+            _updateWindow.Activate();
+        }
+
         private void FocusJournal_Click(object sender, RoutedEventArgs e)
         {
             ShowFocusJournal();
@@ -1791,6 +1853,7 @@ namespace DesktopPet
                 (s, e) => Dispatcher.Invoke(ShowFocusJournal));
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add("使用说明书", null, (s, e) => Dispatcher.Invoke(() => Help_Click(s, null)));
+            menu.Items.Add("检查更新", null, (s, e) => Dispatcher.Invoke(() => Update_Click(s, null)));
             menu.Items.Add("设置", null, (s, e) => Dispatcher.Invoke(() => Settings_Click(s, null)));
             menu.Items.Add("退出", null, (s, e) => Dispatcher.Invoke(ExitApplication));
             _trayIcon.ContextMenuStrip = menu;

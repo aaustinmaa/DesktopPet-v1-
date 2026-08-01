@@ -2,7 +2,7 @@
 
 苏无度是一个 Windows 原生桌面伴侣：透明、置顶、可拖动的像素角色，结合了专注计时、专注记录、喝水提醒、轻量桌面漫游和可选 AI 聊天。
 
-项目当前版本为 `1.2.0`，使用 C#、WPF 和 .NET Framework 4.8 开发。应用不依赖 NuGet 包；ChatGPT 登录模式所需的 OpenAI Codex 运行组件随成品一起分发。
+项目当前版本为 `1.3.0`，使用 C#、WPF 和 .NET Framework 4.8 开发。应用不依赖 NuGet 包；ChatGPT 登录模式所需的 OpenAI Codex 运行组件随成品一起分发。
 
 ## 当前功能
 
@@ -17,6 +17,7 @@
 - 独立的透明文字气泡，不改变角色窗口大小，气泡区域不拦截鼠标。
 - 系统托盘、启动面板、开始菜单入口、可选桌面快捷方式和开机启动。
 - 单实例运行：再次启动会叫回现有桌宠并打开启动面板，不会创建第二个实例。
+- 已安装版本会从 GitHub Releases 检查正式更新，下载完成后安全替换程序并自动重启。
 
 ### 专注与记录
 
@@ -93,6 +94,12 @@
 
 `build.ps1` 会通过 `vswhere.exe` 查找最新的 Visual Studio Build Tools，并使用 .NET Framework MSBuild 构建 x64 Release 输出。
 
+两个体积较大的 Codex Runtime EXE 不进入 Git；本地构建会校验现有文件，GitHub Actions 则会根据 `codex-package.json` 从 OpenAI 官方 GitHub Release 恢复并校验固定版本，避免云端产物缺少聊天组件。手动恢复命令：
+
+```powershell
+.\Scripts\RestoreCodexRuntime.ps1
+```
+
 ### 开发版
 
 ```powershell
@@ -134,6 +141,33 @@ dist\苏无度安装程序.exe
 
 安装脚本会验证 `Assets\asset-classification.json`：所有运行时素材必须被标记为 `used`，源文件、提示词和归档素材必须被标记为 `unused`，未分类或错误进入成品的素材会使构建失败。
 
+### 自动更新与发布
+
+自动更新只对安装版启用；`dist\SuWuDu` 开发/便携版不会覆盖自己的文件。安装版启动后最多每 6 小时静默检查一次，也可以从桌宠右键菜单或托盘菜单选择“检查更新”。用户设置、聊天记录、专注记录和离线数据位于 `%LocalAppData%\PixelHeartDesktopPet`，更新程序目录时不会被删除。
+
+每个正式 GitHub Release 必须包含同一版本的三个文件：
+
+```text
+苏无度安装程序.exe
+SuWuDu-update-v1.3.0.zip
+SuWuDu-update-v1.3.0.zip.sha256
+```
+
+本地生成完整发布产物：
+
+```powershell
+.\build-release.ps1 -Version 1.3.0
+```
+
+也可以推送符合 `v*.*.*` 格式的 tag，由 `.github\workflows\release.yml` 在 Windows runner 上构建并创建 GitHub Release：
+
+```powershell
+git tag v1.3.0
+git push origin v1.3.0
+```
+
+仓库必须保持公开，或者另行提供安全的认证更新服务；应用不会内置 GitHub token。第一批用户仍需手动安装包含更新器的 `1.3.0` 安装包，之后发布 `1.3.1` 或更高版本时即可在应用内升级。
+
 ## 代码结构
 
 ```text
@@ -146,6 +180,7 @@ HelpWindow.xaml(.cs)          面向最终用户的内置使用说明书
 LauncherWindow.xaml(.cs)      可固定到任务栏的启动与管理面板
 FocusJournalWindow.xaml(.cs)  专注记录浏览和编辑
 FocusExportWindow.xaml(.cs)   Markdown 导出范围选择
+UpdateWindow.xaml(.cs)        GitHub Release 更新提示、说明和下载进度
 Models/                       设置、命令、聊天记忆和专注记录数据结构
 Services/                     持久化、AI、声音、动画、屏幕、漫游等服务
 Assets/Sprites/               应用实际加载的运行时图片
@@ -153,6 +188,7 @@ Assets/Source/                维护和重新生成当前素材所需的源文�
 Assets/Archive/               历史素材，不参与构建
 Scripts/                      素材生成与外部控制脚本
 Installer/                    自包含安装器和卸载器源码
+Updater/                      主程序退出后验证、替换和回滚的独立更新器
 Tests/                        当前的 Codex 账号/模型集成烟雾测试源码
 Tools/Codex/package/          随成品分发的 Codex Windows 运行组件
 ```

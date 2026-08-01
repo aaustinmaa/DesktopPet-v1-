@@ -87,6 +87,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UpdateWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -116,6 +120,9 @@
     <Compile Include="FocusExportWindow.xaml.cs">
       <DependentUpon>FocusExportWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UpdateWindow.xaml.cs">
+      <DependentUpon>UpdateWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\AppSettings.cs" />
     <Compile Include="Models\ActiveFocusStateData.cs" />
     <Compile Include="Models\ChatMemoryData.cs" />
@@ -142,6 +149,7 @@
     <Compile Include="Services\SoundService.cs" />
     <Compile Include="Services\SpriteAnimator.cs" />
     <Compile Include="Services\StartupService.cs" />
+    <Compile Include="Services\UpdateService.cs" />
     <Compile Include="Services\WanderController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -645,7 +645,7 @@ namespace SuWuDu.Setup
             using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\" + ProductKey))
             {
                 key.SetValue("DisplayName", ProductName + " 桌宠");
-                key.SetValue("DisplayVersion", "1.2.0");
+                key.SetValue("DisplayVersion", SetupVersion.Current);
                 key.SetValue("Publisher", ProductName);
                 key.SetValue("InstallLocation", installDirectory);
                 key.SetValue("DisplayIcon", Path.Combine(installDirectory, AppFileName));

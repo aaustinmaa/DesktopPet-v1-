@@ -1,0 +1,46 @@
+name: Build and publish release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Restore bundled Codex runtime
+        shell: pwsh
+        run: .\Scripts\RestoreCodexRuntime.ps1
+
+      - name: Build application, updater, and installer
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v', 'V')
+          .\build-release.ps1 -Version $version
+
+      - name: Publish GitHub Release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v', 'V')
+          $assets = @(
+            "dist\苏无度安装程序.exe",
+            "dist\release-assets\SuWuDu-update-v$version.zip",
+            "dist\release-assets\SuWuDu-update-v$version.zip.sha256"
+          )
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag @assets --clobber
+          }
+          else {
+            gh release create $tag @assets --verify-tag --generate-notes --title "苏无度 v$version"
+          }

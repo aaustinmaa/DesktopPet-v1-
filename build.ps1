@@ -26,12 +26,27 @@ if (-not (Test-Path -LiteralPath (Join-Path $roslynPath 'csc.exe'))) {
     throw 'The Roslyn C# compiler was not found in Visual Studio Build Tools.'
 }
 
+& (Join-Path $projectRoot 'Scripts\RestoreCodexRuntime.ps1') -NoDownload
+
 & $frameworkMsBuild $projectPath /t:Rebuild /p:Configuration=$Configuration "/p:CscToolPath=$roslynPath" /p:CscToolExe=csc.exe /p:PlatformTarget=x64 /m /v:minimal
 if ($LASTEXITCODE -ne 0) {
     throw "Build failed with exit code $LASTEXITCODE."
 }
 
 $sourceOutput = Join-Path $projectRoot "bin\$Configuration"
+$updaterSource = Join-Path $projectRoot 'Updater\SuWuDuUpdater.cs'
+$updaterOutput = Join-Path $sourceOutput 'SuWuDuUpdater.exe'
+$updaterIcon = Join-Path $projectRoot 'Assets\app.ico'
+$updaterReferences = @(
+    '/r:System.dll', '/r:System.Core.dll', '/r:System.Windows.Forms.dll',
+    '/r:System.IO.Compression.dll', '/r:System.IO.Compression.FileSystem.dll'
+)
+$updaterIconArgument = if (Test-Path -LiteralPath $updaterIcon) { "/win32icon:$updaterIcon" } else { $null }
+& (Join-Path $roslynPath 'csc.exe') /nologo /codepage:65001 /target:winexe /optimize+ /langversion:7.3 "/out:$updaterOutput" $updaterReferences $updaterIconArgument $updaterSource
+if ($LASTEXITCODE -ne 0) {
+    throw "Updater build failed with exit code $LASTEXITCODE."
+}
+
 $distOutput = Join-Path $projectRoot 'dist\SuWuDu'
 if (Test-Path -LiteralPath $distOutput) {
     $resolvedProject = [System.IO.Path]::GetFullPath($projectRoot)

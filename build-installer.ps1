@@ -28,6 +28,7 @@ $buildRoot = Join-Path $projectRoot 'Installer\build'
 $stageDirectory = Join-Path $buildRoot 'payload'
 $stub = Join-Path $buildRoot 'SuWuDuInstallerStub.exe'
 $uninstaller = Join-Path $stageDirectory 'Uninstall.exe'
+$setupVersionSource = Join-Path $buildRoot 'SetupVersion.cs'
 $zipPath = Join-Path $buildRoot 'payload.zip'
 $outputDirectory = Join-Path $projectRoot 'dist'
 $assetRoot = Join-Path $projectRoot 'Assets'
@@ -102,6 +103,22 @@ if (Test-Path -LiteralPath $buildRoot) { Remove-Item -LiteralPath $buildRoot -Re
 New-Item -ItemType Directory -Force -Path $stageDirectory | Out-Null
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
+$payloadVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($appSource).FileVersion
+if ([string]::IsNullOrWhiteSpace($payloadVersion)) {
+    throw "Could not read the version from $appSource"
+}
+$payloadVersion = ([Version]$payloadVersion).ToString(3)
+$setupVersionCode = @"
+namespace SuWuDu.Setup
+{
+    internal static class SetupVersion
+    {
+        internal const string Current = "$payloadVersion";
+    }
+}
+"@
+[IO.File]::WriteAllText($setupVersionSource, $setupVersionCode, (New-Object Text.UTF8Encoding($false)))
+
 Get-ChildItem -LiteralPath $SourceDirectory -Force |
     Where-Object { $_.Name -ne 'Assets' } |
     Copy-Item -Destination $stageDirectory -Recurse -Force
@@ -131,7 +148,7 @@ $uninstallerSource = Join-Path $projectRoot 'Installer\SuWuDuUninstaller.cs'
 $icon = Join-Path $projectRoot 'Assets\app.ico'
 $iconArgument = if (Test-Path -LiteralPath $icon) { "/win32icon:$icon" } else { $null }
 
-& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/win32manifest:$setupManifest" "/out:$stub" $references $iconArgument $installerSource
+& $csc /nologo /codepage:65001 /target:winexe /optimize+ "/win32manifest:$setupManifest" "/out:$stub" $references $iconArgument $installerSource $setupVersionSource
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 & $csc /nologo /codepage:65001 /target:winexe /optimize+ "/win32manifest:$setupManifest" "/out:$uninstaller" $references $iconArgument $uninstallerSource
 if ($LASTEXITCODE -ne 0) { throw 'Uninstaller compilation failed.' }

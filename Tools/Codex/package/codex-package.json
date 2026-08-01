@@ -5,5 +5,9 @@
   "variant": "codex",
   "entrypoint": "bin/codex.exe",
   "resourcesDir": "codex-resources",
-  "pathDir": "codex-path"
+  "pathDir": "codex-path",
+  "requiredFiles": {
+    "bin/codex.exe": "51398051C2332B6AFE08DC3B9DBB4056085C197F35CA57A307EE303D450CADA5",
+    "bin/codex-code-mode-host.exe": "861588375BCCCEF20441C652C9B7498BA2F286F3DB5585501577E34EB34F3121"
+  }
 }
