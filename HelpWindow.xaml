@@ -71,10 +71,10 @@
                                     <TextBlock Text="聊天可以直接看屏幕"
                                                Style="{StaticResource HelpFeatureTitleStyle}"/>
                                     <TextBlock Margin="0,5,0,0"
-                                               Text="不用再截图、保存、上传。三击打开聊天，开启“看屏幕”，苏无度会把你的问题和发送瞬间的桌面画面一起看懂。"
+                                               Text="不用再截图、保存、上传。“看屏幕”首次默认开启并会记住上次选择；发送时，苏无度会把你的问题和发送瞬间的桌面画面一起看懂。"
                                                Style="{StaticResource HelpBodyTextStyle}"/>
                                     <TextBlock Margin="0,7,0,0"
-                                               Text="三击苏无度 → 开启“看屏幕” → 输入问题 → 发送"
+                                               Text="三击苏无度 → 确认“看屏幕” → 输入问题 → 发送"
                                                FontSize="12"
                                                FontWeight="Bold"
                                                Foreground="{StaticResource AccentBrush}"
@@ -213,7 +213,7 @@
                     <StackPanel>
                         <TextBlock Text="更多聊天设置" Style="{StaticResource SectionTitleStyle}"/>
                         <TextBlock Margin="0,10,0,0"
-                                   Text="三击苏无度，或在右键菜单中选择“和我聊聊”。输入后按 Enter 发送，按 Shift + Enter 换行；每条消息都可以复制。聊天窗口右上角的齿轮可随时打开设置。"
+                                   Text="三击苏无度，或在右键菜单中选择“和我聊聊”。每次打开默认开始新聊天；展开左侧列表可以继续已保存聊天、新建聊天，或归档和恢复聊天。标题会根据第一条消息自动生成。输入后按 Enter 发送，按 Shift + Enter 换行；每条消息都可以复制。聊天窗口右上角的齿轮可随时打开设置。"
                                    Style="{StaticResource HelpBodyTextStyle}"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="ChatGPT 登录（推荐）"
@@ -234,10 +234,10 @@
                                    Text="完全不联网，提供简单的陪伴式回复；离线模式不能使用“看屏幕”。"
                                    Style="{StaticResource HelpBodyTextStyle}"/>
                         <TextBlock Margin="0,9,0,0"
-                                   Text="聊天记忆"
+                                   Text="聊天保存与记忆"
                                    FontWeight="Bold"/>
                         <TextBlock Margin="0,3,0,0"
-                                   Text="开启后会恢复最近聊天，也会记住你明确要求“记住”的内容；可以在设置中随时关闭或一键清除。"
+                                   Text="所有非空聊天都会自动保存在本机，归档只整理列表，不会删除内容。“开启记忆功能”控制苏无度是否跨聊天使用精简摘要和你明确要求“记住”的内容；关闭记忆不会停止保存聊天。可以在设置中一键清除所有聊天与记忆。"
                                    Style="{StaticResource HelpBodyTextStyle}"/>
                     </StackPanel>
                 </Border>
@@ -326,7 +326,7 @@
                     <StackPanel>
                         <TextBlock Text="屏幕与隐私" Style="{StaticResource SectionTitleStyle}"/>
                         <TextBlock Margin="0,10,0,0"
-                                   Text="苏无度不会自己读取你的屏幕。只有你在聊天窗口手动开启“看屏幕”后，她才会在每次发送时截取一张所有显示器的静态画面。发送前请移开密码、付款信息和私人聊天等敏感内容；临时截图会在本次请求结束后删除。"
+                                   Text="“看屏幕”首次默认开启并会保留你上次的开关选择；只有它开启时，苏无度才会在发送瞬间截取一张所有显示器的静态画面。聊天窗口本身不会出现在截图里，窗口后面的原始桌面内容仍会保留。发送前请移开密码、付款信息和私人聊天等敏感内容；临时截图会在本次请求结束后删除。"
                                    Style="{StaticResource HelpBodyTextStyle}"/>
                         <TextBlock Margin="0,10,0,0"
                                    Text="设置、专注记录和聊天记忆保存在当前电脑账户中，不会与 ChatGPT 网页版记忆同步。API key 会由 Windows 为当前账户加密保存；离线聊天不会发送任何内容。聊天与记忆可以在设置中随时清除。"

@@ -41,10 +41,12 @@
 
 - `Enter` 发送，`Shift + Enter` 换行；
 - 复制任意一条消息；
-- 保存最近 100 条本地历史，并在新窗口恢复最近 20 条；
+- 每次打开默认创建新聊天；可从左侧列表继续任意已保存聊天；
+- 所有非空聊天自动保存在本机，并根据第一条用户消息生成标题；聊天可以归档和恢复，归档不会删除内容；
+- “开启记忆功能”控制跨聊天精简记忆和明确要求记住的事实；关闭后仍会保存每个聊天；
 - 最多保存 50 条用户明确要求“记住”的长期事实；
 - 识别“请记住……”“记住：……”和“请忘记……”；
-- 可选的单次屏幕查看：每次发送只截取一张所有显示器画面，请求结束后删除临时截图。
+- “看屏幕”首次默认开启并记住上次选择；开启时每次发送只截取一张所有显示器画面，聊天窗口不会出现在截图中，请求结束后删除临时截图。
 
 聊天历史和长期事实只保存在本机，不与 ChatGPT 网页版 Memory 同步。
 
@@ -165,8 +167,8 @@ Tools/Codex/package/          随成品分发的 Codex Windows 运行组件
 - `FocusJournalService` 与 `FocusTimeAccounting` 负责记录、21:00 分界和跨日分钟分配；
 - `AiService` 在 ChatGPT、OpenAI API 和离线三种 provider 之间路由；
 - `CodexAppServerClient` 管理 Codex app-server、OAuth 状态、模型列表和消息；
-- `ScreenCaptureService` 只在聊天窗口明确请求时生成临时截图；
-- `MemoryService` 管理本地聊天历史和长期事实；
+- `ScreenCaptureService` 只在“看屏幕”开启时生成临时截图，并在捕获时排除聊天窗口；
+- `MemoryService` 管理本地聊天 thread、标题、归档、精简摘要和长期事实；
 - `SettingsService`、`SecretService` 和 `StartupService` 分别处理普通设置、加密 key 和开机启动。
 
 ## 本地数据
@@ -181,7 +183,7 @@ Tools/Codex/package/          随成品分发的 Codex Windows 运行组件
 | --- | --- |
 | `settings.json` | 窗口位置、外观、提醒、专注和聊天方式等普通设置 |
 | `secret.dat` | 当前 Windows 用户可解密的 OpenAI API key |
-| `chat-memory.json` | 最近聊天和长期事实 |
+| `chat-memory.json` | 所有聊天 thread、标题、归档状态、精简摘要和长期事实 |
 | `focus-journal.json` | 专注记录、目标、调整和 Notes |
 | `active-focus.json` | 未完成专注计时的恢复快照 |
 | `command.json` | 外部程序写入的一次性状态命令 |
