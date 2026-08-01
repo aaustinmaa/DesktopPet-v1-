@@ -734,17 +734,30 @@ namespace DesktopPet.Services
         {
             if (_disposed) return;
             _disposed = true;
+            var process = _process;
             try
             {
-                if (_process != null && !_process.HasExited)
-                    _process.Kill();
+                if (process != null && !process.HasExited)
+                {
+                    try
+                    {
+                        process.StandardInput.Close();
+                    }
+                    catch { }
+
+                    if (!process.WaitForExit(2000))
+                    {
+                        process.Kill();
+                        process.WaitForExit(2000);
+                    }
+                }
             }
             catch { }
-            if (_process != null)
+            if (process != null)
             {
-                _process.Dispose();
-                _process = null;
+                process.Dispose();
             }
+            _process = null;
         }
     }
 }

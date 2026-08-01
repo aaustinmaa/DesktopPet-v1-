@@ -450,7 +450,12 @@ namespace DesktopPet
             try
             {
                 await CodexService.LogoutAsync();
-                await RefreshCodexStatusAsync();
+                ShowCodexStatus(new CodexAccountStatus
+                {
+                    IsAvailable = CodexService.IsAvailable,
+                    IsSignedIn = false
+                });
+                ResetCodexModelList("连接 ChatGPT 后会显示当前账号可用的模型。");
             }
             catch (Exception ex)
             {
