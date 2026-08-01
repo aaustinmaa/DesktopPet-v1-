@@ -1617,14 +1617,35 @@ namespace DesktopPet
             var dialog = new SettingsWindow(_settings.Clone(), _secretService)
             {
                 Owner = owner ?? this,
-                Topmost = Topmost
+                Topmost = false
             };
             dialog.PetScalePreviewChanged += scale =>
             {
                 ApplyPetScale(scale);
                 KeepOnScreen();
             };
-            if (dialog.ShowDialog() == true)
+
+            var topmostStates = Application.Current.Windows
+                .Cast<Window>()
+                .ToDictionary(window => window, window => window.Topmost);
+            foreach (var window in topmostStates.Keys)
+                window.Topmost = false;
+
+            bool? dialogResult;
+            try
+            {
+                dialogResult = dialog.ShowDialog();
+            }
+            finally
+            {
+                foreach (var state in topmostStates)
+                {
+                    if (state.Key.IsLoaded)
+                        state.Key.Topmost = state.Value;
+                }
+            }
+
+            if (dialogResult == true)
             {
                 _settings = dialog.ResultSettings;
                 _settingsService.Save(_settings);
