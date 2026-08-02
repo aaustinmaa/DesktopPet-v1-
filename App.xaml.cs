@@ -43,8 +43,8 @@ namespace DesktopPet
             {
                 if (!SignalExistingInstance(manualLaunch ? LauncherEventName : WakeEventName))
                 {
-                    MessageBox.Show("苏无度已经在运行，但暂时无法唤醒。请双击桌面右下角托盘图标。",
-                        "苏无度桌宠", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("苏无度沈青已经在运行，但暂时无法唤醒。请双击桌面右下角托盘图标。",
+                        "苏无度沈青桌宠", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 Shutdown();
                 return;
@@ -58,7 +58,7 @@ namespace DesktopPet
             {
                 LogError(args.Exception);
                 MessageBox.Show("桌宠遇到了一个问题，已经写入日志：\n" + args.Exception.Message,
-                    "苏无度桌宠", MessageBoxButton.OK, MessageBoxImage.Error);
+                    "苏无度沈青桌宠", MessageBoxButton.OK, MessageBoxImage.Error);
                 args.Handled = true;
             };
 
@@ -73,9 +73,9 @@ namespace DesktopPet
             if (Array.IndexOf(e.Args, "--preview") >= 0)
             {
                 window.ShowInTaskbar = true;
-                window.Title = "苏无度桌宠 Preview";
+                window.Title = "苏无度沈青桌宠 Preview";
                 window.Loaded += (sender, args) =>
-                    window.ShowBubble("气泡测试：苏无度的大小不会改变，气泡区域可以鼠标穿透。", 10);
+                    window.ShowBubble("气泡测试：桌宠的大小不会改变，气泡区域可以鼠标穿透。", 10);
             }
             MainWindow = window;
             window.Show();

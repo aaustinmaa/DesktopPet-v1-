@@ -34,8 +34,8 @@ namespace DesktopPet
             {
                 ApplicationIntegrationService.CreateDesktopShortcut();
                 MessageBox.Show(this,
-                    "桌面快捷方式已经创建好了。以后双击“苏无度”就可以启动或叫醒她。",
-                    "苏无度",
+                    "桌面快捷方式已经创建好了。以后双击“苏无度沈青”就可以启动或叫醒桌宠。",
+                    "苏无度沈青",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -43,7 +43,7 @@ namespace DesktopPet
             {
                 MessageBox.Show(this,
                     "暂时无法创建桌面快捷方式：\n" + exception.Message,
-                    "苏无度",
+                    "苏无度沈青",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }

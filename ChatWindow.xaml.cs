@@ -689,7 +689,7 @@ namespace DesktopPet
                 AddMessage(
                     "系统",
                     exception.Message +
-                    "\n可以在苏无度的“设置 → AI 与记忆”中检查连接。",
+                    "\n可以在苏无度沈青的“设置 → AI 与记忆”中检查连接。",
                     false,
                     true);
                 _petWindow.SetPetState(PetState.Error, 6);

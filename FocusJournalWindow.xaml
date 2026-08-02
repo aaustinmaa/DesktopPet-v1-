@@ -1,7 +1,7 @@
 <Window x:Class="DesktopPet.FocusJournalWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="苏无度 · 专注记录"
+        Title="苏无度沈青 · 专注记录"
         Width="820" Height="800"
         MinWidth="680" MinHeight="620"
         WindowStartupLocation="CenterScreen"

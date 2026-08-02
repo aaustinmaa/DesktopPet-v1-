@@ -5,7 +5,7 @@ namespace DesktopPet.Models
     [DataContract]
     public class AppSettings
     {
-        [DataMember] public int SettingsVersion { get; set; } = 7;
+        [DataMember] public int SettingsVersion { get; set; } = 8;
         [DataMember] public double WindowLeft { get; set; } = double.NaN;
         [DataMember] public double WindowTop { get; set; } = double.NaN;
         [DataMember] public double PetScale { get; set; } = 0.82;
@@ -26,6 +26,7 @@ namespace DesktopPet.Models
         [DataMember] public string RandomCueBreakSound { get; set; } = "bell";
         [DataMember] public string RandomCueResumeSound { get; set; } = "pixel";
         [DataMember] public string PetName { get; set; } = "苏无度";
+        [DataMember] public string PetSkin { get; set; } = "suwudu";
         [DataMember] public string AiProvider { get; set; } = "codex";
         [DataMember] public string AiModel { get; set; } = "gpt-5.6-sol";
         [DataMember] public string CodexModel { get; set; } = "";
@@ -69,7 +70,9 @@ namespace DesktopPet.Models
             }
             if (SettingsVersion < 7)
                 ScreenVisionEnabled = true;
-            SettingsVersion = 7;
+            if (SettingsVersion < 8)
+                PetSkin = "suwudu";
+            SettingsVersion = 8;
             if (PetScale < 0.20) PetScale = 0.20;
             if (PetScale > 1.5) PetScale = 1.5;
             if (HydrationMinutes < 10) HydrationMinutes = 10;
@@ -98,6 +101,9 @@ namespace DesktopPet.Models
                 RandomCueResumeSound = "pixel";
             if (string.IsNullOrWhiteSpace(PetName) || PetName == "小心心")
                 PetName = "苏无度";
+            PetSkin = (PetSkin ?? string.Empty).Trim().ToLowerInvariant();
+            if (PetSkin != "suwudu" && PetSkin != "shenqing")
+                PetSkin = "suwudu";
             AiProvider = (AiProvider ?? string.Empty).Trim().ToLowerInvariant();
             if (AiProvider != "codex" && AiProvider != "openai" && AiProvider != "offline")
                 AiProvider = "codex";

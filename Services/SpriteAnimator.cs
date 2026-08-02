@@ -27,6 +27,7 @@ namespace DesktopPet.Services
         private bool _loopFrames = true;
         private bool _returnToBaseWhenFinished;
         private bool _returnToBaseAtLoopEnd;
+        private string _petSkin;
 
         private static readonly string[] IdleFrames =
         {
@@ -205,6 +206,25 @@ namespace DesktopPet.Services
             "idle-hit-v1-16.png"
         };
 
+        private static readonly string[] ShenQingIdleFrames =
+            BuildFrames("shenqing-idle", 1, 8);
+        private static readonly string[] ShenQingBlinkFrames =
+            BuildFrames("shenqing-blink", 1, 8);
+        private static readonly string[] ShenQingWaveFrames =
+            BuildFrames("shenqing-wave", 1, 8);
+        private static readonly string[] ShenQingHeartFrames =
+            BuildFrames("shenqing-heart", 1, 8);
+        private static readonly string[] ShenQingWorkingFrames =
+            BuildFrames("shenqing-working", 1, 16);
+        private static readonly string[] ShenQingSuccessFrames =
+            BuildFrames("shenqing-success", 1, 8);
+        private static readonly string[] ShenQingErrorFrames =
+            BuildFrames("shenqing-error", 1, 8);
+        private static readonly string[] ShenQingReminderFrames =
+            BuildFrames("shenqing-reminder", 1, 8);
+        private static readonly string[] ShenQingSleepingFrames =
+            BuildFrames("shenqing-sleeping", 1, 8);
+
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
         public SpriteAnimator(
@@ -213,7 +233,8 @@ namespace DesktopPet.Services
             Image[] sleepZzzImages,
             ScaleTransform[] sleepZzzScales,
             TranslateTransform[] sleepZzzTranslations,
-            Func<PetState> baseStateResolver)
+            Func<PetState> baseStateResolver,
+            string petSkin)
         {
             _image = image;
             _sleepZzzLayer = sleepZzzLayer;
@@ -221,6 +242,7 @@ namespace DesktopPet.Services
             _sleepZzzScales = sleepZzzScales;
             _sleepZzzTranslations = sleepZzzTranslations;
             _baseStateResolver = baseStateResolver;
+            _petSkin = NormalizeSkin(petSkin);
             _sleepZzzImages[0].Source = LoadImage("sleeping-z-small.png");
             _sleepZzzImages[1].Source = LoadImage("sleeping-z-medium.png");
             _sleepZzzImages[2].Source = LoadImage("sleeping-z-large.png");
@@ -241,6 +263,18 @@ namespace DesktopPet.Services
             _frameTimer.Start();
         }
 
+        public void SetSkin(string petSkin)
+        {
+            var normalized = NormalizeSkin(petSkin);
+            if (string.Equals(_petSkin, normalized, StringComparison.Ordinal))
+                return;
+
+            _petSkin = normalized;
+            SetState(_baseStateResolver == null
+                ? PetState.Idle
+                : _baseStateResolver());
+        }
+
         public void SetState(PetState state, TimeSpan? revertAfter = null)
         {
             CurrentState = state;
@@ -255,66 +289,72 @@ namespace DesktopPet.Services
             switch (state)
             {
                 case PetState.Blinking:
-                    _frames = BlinkFrames;
+                    _frames = IsShenQing ? ShenQingBlinkFrames : BlinkFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(165);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Happy:
-                    _frames = new[] { "happy.png" };
+                    _frames = IsShenQing
+                        ? new[] { ShenQingSuccessFrames[2] }
+                        : new[] { "happy.png" };
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Working:
-                    _frames = WorkingFrames;
+                    _frames = IsShenQing ? ShenQingWorkingFrames : WorkingFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(50);
                     break;
                 case PetState.Question:
-                    _frames = new[] { "question.png" };
+                    _frames = IsShenQing
+                        ? new[] { ShenQingIdleFrames[0] }
+                        : new[] { "question.png" };
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Success:
-                    _frames = SuccessFrames;
+                    _frames = IsShenQing ? ShenQingSuccessFrames : SuccessFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(95);
                     break;
                 case PetState.Error:
-                    _frames = ErrorFrames;
+                    _frames = IsShenQing ? ShenQingErrorFrames : ErrorFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(125);
                     break;
                 case PetState.Sleeping:
-                    _frames = new[] { "sleeping-base.png" };
+                    _frames = IsShenQing
+                        ? ShenQingSleepingFrames
+                        : new[] { "sleeping-base.png" };
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Reminder:
-                    _frames = ReminderFrames;
+                    _frames = IsShenQing ? ShenQingReminderFrames : ReminderFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(90);
                     break;
                 case PetState.Waving:
-                    _frames = WaveFrames;
+                    _frames = IsShenQing ? ShenQingWaveFrames : WaveFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(105);
                     break;
                 case PetState.HeartPulse:
-                    _frames = HeartFrames;
+                    _frames = IsShenQing ? ShenQingHeartFrames : HeartFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Hit:
-                    _frames = HitFrames;
+                    _frames = IsShenQing ? ShenQingErrorFrames : HitFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 default:
-                    _frames = IdleFrames;
+                    _frames = IsShenQing ? ShenQingIdleFrames : IdleFrames;
                     _frameTimer.Interval = TimeSpan.FromMilliseconds(170);
                     break;
             }
 
             ShowFrame(_frames[0]);
-            if (state == PetState.Sleeping)
+            if (state == PetState.Sleeping && !IsShenQing)
                 StartSleepZzzAnimation();
             if (_frames.Length > 1)
                 _frameTimer.Start();
@@ -357,6 +397,35 @@ namespace DesktopPet.Services
             SetState(_baseStateResolver == null
                 ? PetState.Idle
                 : _baseStateResolver());
+        }
+
+        private bool IsShenQing =>
+            string.Equals(_petSkin, "shenqing", StringComparison.Ordinal);
+
+        private static string NormalizeSkin(string petSkin)
+        {
+            return string.Equals(
+                (petSkin ?? string.Empty).Trim(),
+                "shenqing",
+                StringComparison.OrdinalIgnoreCase)
+                ? "shenqing"
+                : "suwudu";
+        }
+
+        private static string[] BuildFrames(
+            string prefix,
+            int startNumber,
+            int count)
+        {
+            var frames = new string[count];
+            for (var index = 0; index < count; index++)
+            {
+                frames[index] = string.Format(
+                    "{0}-{1:D2}.png",
+                    prefix,
+                    startNumber + index);
+            }
+            return frames;
         }
 
         private void ShowFrame(string filename)

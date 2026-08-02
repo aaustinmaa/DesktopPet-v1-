@@ -73,7 +73,7 @@ namespace DesktopPet.Services
         {
             if (!CodexService.IsAvailable)
                 throw new InvalidOperationException(
-                    "未找到 Codex 运行组件，请重新下载完整的苏无度桌宠文件夹。");
+                    "未找到 Codex 运行组件，请重新下载完整的苏无度沈青桌宠文件夹。");
 
             if (_codexClient == null)
                 _codexClient = new CodexAppServerClient();

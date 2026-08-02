@@ -19,7 +19,7 @@ namespace DesktopPet
             VersionText.Text = "当前版本 v" + Format(updateService.CurrentVersion) +
                 "  →  新版本 v" + release.VersionText;
             NotesText.Text = release.Notes;
-            StatusText.Text = "更新完成后，苏无度会自动重新出现。";
+            StatusText.Text = "更新完成后，苏无度沈青会自动重新出现。";
         }
 
         private async void Update_Click(object sender, RoutedEventArgs e)
@@ -50,7 +50,7 @@ namespace DesktopPet
                 LaterButton.IsEnabled = true;
                 ReleasePageButton.IsEnabled = true;
                 StatusText.Text = "更新失败，请稍后重试。";
-                MessageBox.Show(this, ex.Message, "苏无度更新",
+                MessageBox.Show(this, ex.Message, "苏无度沈青更新",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }

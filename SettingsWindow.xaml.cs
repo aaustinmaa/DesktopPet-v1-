@@ -30,6 +30,7 @@ namespace DesktopPet
             _secretService = secretService;
 
             PetNameBox.Text = settings.PetName;
+            PetSkinBox.SelectedValue = settings.PetSkin;
             ScaleSlider.Value = settings.PetScale;
             TopmostBox.IsChecked = settings.Topmost;
             WanderBox.IsChecked = settings.AutoWander;
@@ -192,7 +193,7 @@ namespace DesktopPet
             else
             {
                 CodexStatusText.Text = string.IsNullOrWhiteSpace(status.Error)
-                    ? "尚未连接 ChatGPT。苏无度的登录与其他 Codex 客户端相互独立。"
+                    ? "尚未连接 ChatGPT。苏无度沈青的登录与其他 Codex 客户端相互独立。"
                     : "连接检查失败：" + status.Error;
                 CodexConnectButton.Content = "连接我的 ChatGPT";
                 CodexConnectButton.Visibility = Visibility.Visible;
@@ -412,7 +413,7 @@ namespace DesktopPet
             UpdateProviderPanels();
             CodexConnectButton.IsEnabled = false;
             CodexLogoutButton.IsEnabled = false;
-            CodexStatusText.Text = "浏览器即将打开。登录后请回到这里，苏无度会自动确认。";
+            CodexStatusText.Text = "浏览器即将打开。登录后请回到这里，苏无度沈青会自动确认。";
             try
             {
                 var status = await CodexService.LoginAsync();
@@ -439,8 +440,8 @@ namespace DesktopPet
         private async void CodexLogout_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(
-                    "确定断开苏无度与当前 ChatGPT 账号的连接吗？\n\n" +
-                    "这只会清除苏无度保存的授权，不会退出浏览器、ChatGPT 桌面端或其他 Codex 客户端。",
+                    "确定断开苏无度沈青与当前 ChatGPT 账号的连接吗？\n\n" +
+                    "这只会清除苏无度沈青保存的授权，不会退出浏览器、ChatGPT 桌面端或其他 Codex 客户端。",
                     "断开 ChatGPT 连接", MessageBoxButton.YesNo,
                     MessageBoxImage.Question) !=
                 MessageBoxResult.Yes)
@@ -471,14 +472,14 @@ namespace DesktopPet
         private void ClearMemory_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(
-                    "确定清除苏无度保存的所有聊天、归档和记忆吗？此操作无法撤销。",
+                    "确定清除苏无度沈青保存的所有聊天、归档和记忆吗？此操作无法撤销。",
                     "清除所有聊天与记忆",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning) !=
                 MessageBoxResult.Yes)
                 return;
             _memoryService.ClearAll();
-            MessageBox.Show("苏无度的所有本地聊天、归档与记忆已经清除。",
+            MessageBox.Show("苏无度沈青的所有本地聊天、归档与记忆已经清除。",
                 "清除完成", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -549,7 +550,28 @@ namespace DesktopPet
                 return;
             }
 
-            ResultSettings.PetName = PetNameBox.Text.Trim();
+            var selectedPetSkin = Convert.ToString(PetSkinBox.SelectedValue);
+            var petName = PetNameBox.Text.Trim();
+            if (!string.Equals(
+                    ResultSettings.PetSkin,
+                    selectedPetSkin,
+                    StringComparison.Ordinal))
+            {
+                if (ResultSettings.PetSkin == "suwudu" &&
+                    selectedPetSkin == "shenqing" &&
+                    petName == "苏无度")
+                {
+                    petName = "沈青";
+                }
+                else if (ResultSettings.PetSkin == "shenqing" &&
+                    selectedPetSkin == "suwudu" &&
+                    petName == "沈青")
+                {
+                    petName = "苏无度";
+                }
+            }
+            ResultSettings.PetName = petName;
+            ResultSettings.PetSkin = selectedPetSkin;
             ResultSettings.PetScale = ScaleSlider.Value;
             ResultSettings.Topmost = TopmostBox.IsChecked == true;
             ResultSettings.AutoWander = WanderBox.IsChecked == true;

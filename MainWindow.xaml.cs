@@ -129,7 +129,8 @@ namespace DesktopPet
                     SleepZMediumTranslate,
                     SleepZLargeTranslate
                 },
-                GetBasePetState);
+                GetBasePetState,
+                _settings.PetSkin);
             _hammerAnimator = new HammerAnimator(HammerImage);
             _hammerAnimator.Completed += HammerAnimator_Completed;
             _wanderController = new WanderController(
@@ -191,6 +192,7 @@ namespace DesktopPet
             TopmostItem.IsChecked = _settings.Topmost;
             WanderItem.IsChecked = _settings.AutoWander;
             _wanderController?.SetEnabled(_settings.AutoWander);
+            _animator?.SetSkin(_settings.PetSkin);
             if (StartupService.IsEnabled() != _settings.StartWithWindows)
                 StartupService.SetEnabled(_settings.StartWithWindows);
             ConfigureHydrationTimer();
@@ -832,7 +834,7 @@ namespace DesktopPet
             ShowBubble(
                 "已恢复上次的番茄钟，目前为暂停状态，还剩 " +
                 FormatFocusRemaining(remaining) +
-                "。双击苏无度即可继续。",
+                "。双击桌宠即可继续。",
                 9);
             return true;
         }
@@ -1418,7 +1420,7 @@ namespace DesktopPet
                 Owner = this,
                 Topmost = Topmost,
                 ShowInTaskbar = ShowInTaskbar,
-                Title = ShowInTaskbar ? "苏无度气泡 Preview" : "苏无度气泡"
+                Title = ShowInTaskbar ? "苏无度沈青气泡 Preview" : "苏无度沈青气泡"
             };
             PositionSpeechBubble();
         }
@@ -1633,7 +1635,7 @@ namespace DesktopPet
                 }
 
                 if (manual && !result.Skipped)
-                    MessageBox.Show(this, result.Message, "苏无度更新",
+                    MessageBox.Show(this, result.Message, "苏无度沈青更新",
                         MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally
@@ -1810,7 +1812,7 @@ namespace DesktopPet
         {
             _trayIcon = new Forms.NotifyIcon
             {
-                Text = "苏无度桌宠",
+                Text = "苏无度沈青桌宠",
                 Visible = true
             };
             var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "app.ico");

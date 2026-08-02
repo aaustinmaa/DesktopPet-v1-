@@ -46,6 +46,7 @@ Assets/
 ```powershell
 .\Scripts\BuildStableWorkingAtlas.ps1
 .\Scripts\ExtractAnimationAtlases.ps1
+.\Scripts\ExtractShenQingAtlases.ps1
 .\Scripts\BuildSleepingLayers.ps1
 ```
 

@@ -7,7 +7,7 @@ namespace DesktopPet.Services
 {
     public static class ApplicationIntegrationService
     {
-        private const string ShortcutFileName = "苏无度.lnk";
+        private const string ShortcutFileName = "苏无度沈青.lnk";
 
         public static string StartMenuShortcutPath =>
             Path.Combine(
@@ -47,7 +47,7 @@ namespace DesktopPet.Services
                 shortcut = (IShellLinkW)new ShellLink();
                 ThrowIfFailed(shortcut.SetPath(executablePath));
                 ThrowIfFailed(shortcut.SetArguments("--launcher"));
-                ThrowIfFailed(shortcut.SetDescription("启动或叫醒苏无度桌宠"));
+                ThrowIfFailed(shortcut.SetDescription("启动或叫醒苏无度沈青桌宠"));
                 ThrowIfFailed(shortcut.SetWorkingDirectory(Path.GetDirectoryName(executablePath)));
                 ThrowIfFailed(shortcut.SetIconLocation(executablePath, 0));
                 ((IPersistFile)shortcut).Save(shortcutPath, true);

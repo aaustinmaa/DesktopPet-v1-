@@ -71,7 +71,7 @@ namespace DesktopPet.Services
                 return new UpdateCheckResult
                 {
                     IsInstalledCopy = false,
-                    Message = "自动更新只用于已经安装的苏无度。你现在运行的是开发版或便携版，请先安装最新版安装包。"
+                    Message = "自动更新只用于已经安装的苏无度沈青。你现在运行的是开发版或便携版，请先安装最新版安装包。"
                 };
             }
 

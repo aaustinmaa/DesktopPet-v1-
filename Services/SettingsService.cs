@@ -24,15 +24,21 @@ namespace DesktopPet.Services
                     return new AppSettings();
 
                 AppSettings settings;
+                int previousVersion;
                 string previousName;
+                string previousSkin;
                 using (var stream = File.OpenRead(SettingsPath))
                 {
                     var serializer = new DataContractJsonSerializer(typeof(AppSettings));
                     settings = serializer.ReadObject(stream) as AppSettings ?? new AppSettings();
+                    previousVersion = settings.SettingsVersion;
                     previousName = settings.PetName;
+                    previousSkin = settings.PetSkin;
                     settings.Normalize();
                 }
-                if (!string.Equals(previousName, settings.PetName, StringComparison.Ordinal))
+                if (previousVersion != settings.SettingsVersion ||
+                    !string.Equals(previousName, settings.PetName, StringComparison.Ordinal) ||
+                    !string.Equals(previousSkin, settings.PetSkin, StringComparison.Ordinal))
                     Save(settings);
                 return settings;
             }

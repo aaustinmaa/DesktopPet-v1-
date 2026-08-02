@@ -96,7 +96,7 @@ namespace DesktopPet
                     _displayCulture);
                 JournalCalendar.SelectedDate = _selectedDate;
                 JournalCalendar.DisplayDate = _selectedDate;
-                Title = "苏无度 · " +
+                Title = "苏无度沈青 · " +
                     _selectedDate.ToString("yyyy年M月d日", _displayCulture) +
                     " 专注记录";
                 var journalToday =

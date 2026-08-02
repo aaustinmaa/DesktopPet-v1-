@@ -1,7 +1,7 @@
 <Window x:Class="DesktopPet.UpdateWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="苏无度更新"
+        Title="苏无度沈青更新"
         Width="520" Height="490"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <TextBlock Text="苏无度有新版本啦"
+            <TextBlock Text="苏无度沈青有新版本啦"
                        FontSize="25" FontWeight="SemiBold"
                        Foreground="{StaticResource InkBrush}"/>
             <TextBlock x:Name="VersionText" Margin="0,7,0,0"
