@@ -41,6 +41,7 @@ namespace DesktopPet
         private readonly DispatcherTimer _specialActionTimer = new DispatcherTimer();
         private readonly DispatcherTimer _hydrationTimer = new DispatcherTimer();
         private readonly DispatcherTimer _focusTimer = new DispatcherTimer();
+        private readonly DispatcherTimer _breakTimer = new DispatcherTimer();
         private readonly DispatcherTimer _focusCountdownTimer = new DispatcherTimer();
         private readonly DispatcherTimer _commandTimer = new DispatcherTimer();
         private readonly DispatcherTimer _bubbleTimer = new DispatcherTimer();
@@ -48,6 +49,7 @@ namespace DesktopPet
         private readonly List<FocusTimeSegment> _activeFocusSegments =
             new List<FocusTimeSegment>();
         private DateTime? _focusEnds;
+        private DateTime? _breakEnds;
         private DateTime? _activeFocusStartedAt;
         private DateTime? _activeFocusSegmentStartedAt;
         private DateTime _lastFocusStateSavedAt = DateTime.MinValue;
@@ -100,6 +102,8 @@ namespace DesktopPet
             _hydrationTimer.Tick += HydrationTimer_Tick;
             _focusTimer.Interval = TimeSpan.FromSeconds(1);
             _focusTimer.Tick += FocusTimer_Tick;
+            _breakTimer.Interval = TimeSpan.FromSeconds(1);
+            _breakTimer.Tick += BreakTimer_Tick;
             _focusCountdownTimer.Interval = TimeSpan.FromMilliseconds(100);
             _focusCountdownTimer.Tick += FocusCountdownTimer_Tick;
             _commandTimer.Interval = TimeSpan.FromSeconds(1);
@@ -247,7 +251,7 @@ namespace DesktopPet
 
         private void BehaviorTimer_Tick(object sender, EventArgs e)
         {
-            if (_focusEnds.HasValue || _workingMode) return;
+            if (_focusEnds.HasValue || _breakEnds.HasValue || _workingMode) return;
 
             if (_manualRestMode)
             {
@@ -287,6 +291,7 @@ namespace DesktopPet
                    _settings.AutoWander &&
                    IsVisible &&
                    !_focusEnds.HasValue &&
+                   !_breakEnds.HasValue &&
                    !_workingMode &&
                    !_manualRestMode &&
                    NativeMethods.GetSystemIdleTime() <= TimeSpan.FromMinutes(5) &&
@@ -296,6 +301,8 @@ namespace DesktopPet
 
         private PetState GetBasePetState()
         {
+            if (_breakEnds.HasValue)
+                return PetState.Sleeping;
             if (_focusEnds.HasValue)
             {
                 if (_focusPaused) return _focusPauseBaseState;
@@ -373,6 +380,7 @@ namespace DesktopPet
 
         private void StartFocus_Click(object sender, RoutedEventArgs e)
         {
+            var skippedBreak = CancelBreak();
             var hadActiveFocus = _focusEnds.HasValue;
             if (!hadActiveFocus)
                 _focusPauseBaseState = CaptureFocusPauseBaseState();
@@ -394,12 +402,15 @@ namespace DesktopPet
             _soundService.PlayFocusStart(_settings.FocusStartSound);
             PersistActiveFocusState(true);
             ShowBubble(
+                (skippedBreak ? "休息已提前结束。" : string.Empty) +
                 (string.IsNullOrWhiteSpace(interruptedMessage)
                     ? string.Empty
                     : "上一个番茄钟：" + interruptedMessage + " ") +
                 "专注 " + _settings.FocusMinutes +
                 " 分钟，开始！我陪你一起。",
-                string.IsNullOrWhiteSpace(interruptedMessage) ? 5 : 8);
+                string.IsNullOrWhiteSpace(interruptedMessage) && !skippedBreak
+                    ? 5
+                    : 8);
         }
 
         private void FocusTimer_Tick(object sender, EventArgs e)
@@ -534,13 +545,55 @@ namespace DesktopPet
             ResetFocusPauseState();
             ResetRandomCues();
             ClearPersistedActiveFocusState();
-            UpdateFocusMenuState();
             _animator.SetState(PetState.Success, TimeSpan.FromSeconds(8));
             _soundService.PlayFocusComplete(_settings.FocusCompleteSound);
-            Notify("专注完成", recordMessage + " 做得好，起来活动一下吧。");
+            StartBreak(completedAt);
+            Notify(
+                "专注完成，开始休息",
+                recordMessage + " 休息 " + _settings.BreakMinutes +
+                " 分钟；也可以提前开始下一轮。");
             ShowBubble(
-                "专注完成！" + recordMessage + " 做得好，起来活动一下吧。",
+                "专注完成！" + recordMessage + " 现在休息 " +
+                _settings.BreakMinutes +
+                " 分钟。想提前继续时，双击我或点“开始专注”。",
                 8);
+        }
+
+        private void StartBreak(DateTime startedAt)
+        {
+            _breakEnds = startedAt.AddMinutes(_settings.BreakMinutes);
+            _breakTimer.Start();
+            UpdateFocusMenuState();
+        }
+
+        private void BreakTimer_Tick(object sender, EventArgs e)
+        {
+            if (!_breakEnds.HasValue) return;
+            if (DateTime.Now < _breakEnds.Value) return;
+            CompleteBreak();
+        }
+
+        private void CompleteBreak()
+        {
+            _breakTimer.Stop();
+            _breakEnds = null;
+            StopFocusCountdownDisplay();
+            UpdateFocusMenuState();
+            ApplyBasePetState();
+            _soundService.PlayBreakComplete(_settings.BreakCompleteSound);
+            Notify("休息结束", "休息完成。准备好后，请手动开始下一个番茄钟。");
+            ShowBubble("休息结束啦。准备好后，点击开始下一个番茄钟。", 7);
+        }
+
+        private bool CancelBreak()
+        {
+            if (!_breakEnds.HasValue) return false;
+            _breakTimer.Stop();
+            _breakEnds = null;
+            StopFocusCountdownDisplay();
+            UpdateFocusMenuState();
+            ApplyBasePetState();
+            return true;
         }
 
         private string RecordCompletedFocus(DateTime completedAt)
@@ -1104,9 +1157,9 @@ namespace DesktopPet
                 if (shouldPlayIdleHitReaction)
                     _animator.SetState(PetState.Hit);
                 PlayHammerStrike();
-                if (wasSleeping)
+                if (wasSleeping && !_breakEnds.HasValue)
                     RegisterSleepingHammerHit();
-                if (_focusEnds.HasValue)
+                if (_focusEnds.HasValue || _breakEnds.HasValue)
                     ShowFocusCountdown();
             }
         }
@@ -1351,7 +1404,7 @@ namespace DesktopPet
 
         private void ShowFocusCountdown()
         {
-            if (!_focusEnds.HasValue) return;
+            if (!_focusEnds.HasValue && !_breakEnds.HasValue) return;
             if (_speechBubbleWindow == null)
                 CreateSpeechBubbleWindow();
 
@@ -1366,7 +1419,7 @@ namespace DesktopPet
 
         private void FocusCountdownTimer_Tick(object sender, EventArgs e)
         {
-            if (!_focusEnds.HasValue ||
+            if ((!_focusEnds.HasValue && !_breakEnds.HasValue) ||
                 !_focusCountdownVisibleUntil.HasValue ||
                 DateTime.Now >= _focusCountdownVisibleUntil.Value)
             {
@@ -1380,6 +1433,17 @@ namespace DesktopPet
 
         private void UpdateFocusCountdownBubble()
         {
+            if (_breakEnds.HasValue)
+            {
+                if (_speechBubbleWindow == null) return;
+                _speechBubbleWindow.SetMessage(
+                    "休息剩余：" +
+                    FormatFocusRemaining(
+                        ClampRemaining(_breakEnds.Value - DateTime.Now)) +
+                    "\n双击可提前开始下一轮");
+                return;
+            }
+
             var remaining = GetCurrentFocusRemaining();
             if (!remaining.HasValue || _speechBubbleWindow == null) return;
             _speechBubbleWindow.SetMessage(
@@ -1865,9 +1929,12 @@ namespace DesktopPet
         private void UpdateFocusMenuState()
         {
             var hasFocus = _focusEnds.HasValue;
-            StartFocusItem.Header = hasFocus
-                ? "↻ 重新开始专注计时"
-                : "⏱ 开始专注计时";
+            var isOnBreak = _breakEnds.HasValue;
+            StartFocusItem.Header = isOnBreak
+                ? "▶ 跳过休息并开始专注"
+                : hasFocus
+                    ? "↻ 重新开始专注计时"
+                    : "⏱ 开始专注计时";
             PauseFocusItem.IsEnabled = hasFocus;
             PauseFocusItem.Header = _focusPaused
                 ? "▶ 继续专注计时"
@@ -1875,7 +1942,9 @@ namespace DesktopPet
             StopFocusItem.IsEnabled = hasFocus;
 
             if (_trayStartFocusItem != null)
-                _trayStartFocusItem.Text = hasFocus ? "重新开始专注" : "开始专注";
+                _trayStartFocusItem.Text = isOnBreak
+                    ? "跳过休息并开始专注"
+                    : hasFocus ? "重新开始专注" : "开始专注";
             if (_trayPauseFocusItem != null)
             {
                 _trayPauseFocusItem.Enabled = hasFocus;
@@ -1966,6 +2035,7 @@ namespace DesktopPet
             _specialActionTimer.Stop();
             _hydrationTimer.Stop();
             _focusTimer.Stop();
+            _breakTimer.Stop();
             _focusCountdownTimer.Stop();
             _commandTimer.Stop();
             _bubbleTimer.Stop();

@@ -58,6 +58,11 @@ namespace DesktopPet.Services
             Play(soundId, true);
         }
 
+        public void PlayBreakComplete(string soundId)
+        {
+            Play(soundId, true);
+        }
+
         public void PlayRandomBreak(string soundId)
         {
             Play(soundId, true);

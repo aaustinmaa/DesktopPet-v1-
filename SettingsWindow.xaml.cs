@@ -42,10 +42,13 @@ namespace DesktopPet
             HydrationBox.IsChecked = settings.HydrationEnabled;
             HydrationBoxMinutes.Text = settings.HydrationMinutes.ToString(CultureInfo.InvariantCulture);
             FocusBoxMinutes.Text = settings.FocusMinutes.ToString(CultureInfo.InvariantCulture);
+            BreakBoxMinutes.Text = settings.BreakMinutes.ToString(CultureInfo.InvariantCulture);
             FocusStartSoundBox.ItemsSource = SoundService.Options;
             FocusStartSoundBox.SelectedValue = settings.FocusStartSound;
             FocusCompleteSoundBox.ItemsSource = SoundService.Options;
             FocusCompleteSoundBox.SelectedValue = settings.FocusCompleteSound;
+            BreakCompleteSoundBox.ItemsSource = SoundService.Options;
+            BreakCompleteSoundBox.SelectedValue = settings.BreakCompleteSound;
             RandomCueEnabledBox.IsChecked = settings.RandomCueEnabled;
             RandomCueMinMinutesBox.Text =
                 settings.RandomCueMinMinutes.ToString(CultureInfo.InvariantCulture);
@@ -78,6 +81,12 @@ namespace DesktopPet
         private void PreviewFocusCompleteSound_Click(object sender, RoutedEventArgs e)
         {
             _soundService.PlayFocusComplete(Convert.ToString(FocusCompleteSoundBox.SelectedValue));
+        }
+
+        private void PreviewBreakCompleteSound_Click(object sender, RoutedEventArgs e)
+        {
+            _soundService.PlayBreakComplete(
+                Convert.ToString(BreakCompleteSoundBox.SelectedValue));
         }
 
         private void RandomCueEnabled_Changed(object sender, RoutedEventArgs e)
@@ -495,6 +504,7 @@ namespace DesktopPet
         {
             int hydrationMinutes;
             int focusMinutes;
+            int breakMinutes;
             int randomCueMinMinutes;
             int randomCueMaxMinutes;
             int randomCueBreakSeconds;
@@ -528,6 +538,13 @@ namespace DesktopPet
                 focusMinutes < 1 || focusMinutes > 120)
             {
                 MessageBox.Show("专注时长请输入 1–120 分钟。", "设置",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!int.TryParse(BreakBoxMinutes.Text, out breakMinutes) ||
+                breakMinutes < 1 || breakMinutes > 120)
+            {
+                MessageBox.Show("休息时长请输入 1–120 分钟。", "设置",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -581,10 +598,13 @@ namespace DesktopPet
             ResultSettings.HydrationEnabled = HydrationBox.IsChecked == true;
             ResultSettings.HydrationMinutes = hydrationMinutes;
             ResultSettings.FocusMinutes = focusMinutes;
+            ResultSettings.BreakMinutes = breakMinutes;
             ResultSettings.FocusStartSound =
                 Convert.ToString(FocusStartSoundBox.SelectedValue);
             ResultSettings.FocusCompleteSound =
                 Convert.ToString(FocusCompleteSoundBox.SelectedValue);
+            ResultSettings.BreakCompleteSound =
+                Convert.ToString(BreakCompleteSoundBox.SelectedValue);
             ResultSettings.RandomCueEnabled = RandomCueEnabledBox.IsChecked == true;
             ResultSettings.RandomCueMinMinutes = randomCueMinMinutes;
             ResultSettings.RandomCueMaxMinutes = randomCueMaxMinutes;

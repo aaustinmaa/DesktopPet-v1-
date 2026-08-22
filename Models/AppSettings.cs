@@ -5,7 +5,7 @@ namespace DesktopPet.Models
     [DataContract]
     public class AppSettings
     {
-        [DataMember] public int SettingsVersion { get; set; } = 8;
+        [DataMember] public int SettingsVersion { get; set; } = 9;
         [DataMember] public double WindowLeft { get; set; } = double.NaN;
         [DataMember] public double WindowTop { get; set; } = double.NaN;
         [DataMember] public double PetScale { get; set; } = 0.82;
@@ -17,8 +17,10 @@ namespace DesktopPet.Models
         [DataMember] public bool HydrationEnabled { get; set; } = true;
         [DataMember] public int HydrationMinutes { get; set; } = 45;
         [DataMember] public int FocusMinutes { get; set; } = 25;
+        [DataMember] public int BreakMinutes { get; set; } = 5;
         [DataMember] public string FocusStartSound { get; set; } = "gentle";
         [DataMember] public string FocusCompleteSound { get; set; } = "bell";
+        [DataMember] public string BreakCompleteSound { get; set; } = "bell";
         [DataMember] public bool RandomCueEnabled { get; set; } = true;
         [DataMember] public int RandomCueMinMinutes { get; set; } = 3;
         [DataMember] public int RandomCueMaxMinutes { get; set; } = 5;
@@ -72,7 +74,12 @@ namespace DesktopPet.Models
                 ScreenVisionEnabled = true;
             if (SettingsVersion < 8)
                 PetSkin = "suwudu";
-            SettingsVersion = 8;
+            if (SettingsVersion < 9)
+            {
+                BreakMinutes = 5;
+                BreakCompleteSound = "bell";
+            }
+            SettingsVersion = 9;
             if (PetScale < 0.20) PetScale = 0.20;
             if (PetScale > 1.5) PetScale = 1.5;
             if (HydrationMinutes < 10) HydrationMinutes = 10;
@@ -84,6 +91,8 @@ namespace DesktopPet.Models
             if (WanderMaxIdleSeconds > 300) WanderMaxIdleSeconds = 300;
             if (FocusMinutes < 1) FocusMinutes = 1;
             if (FocusMinutes > 120) FocusMinutes = 120;
+            if (BreakMinutes < 1) BreakMinutes = 1;
+            if (BreakMinutes > 120) BreakMinutes = 120;
             if (RandomCueMinMinutes < 1) RandomCueMinMinutes = 1;
             if (RandomCueMinMinutes > 120) RandomCueMinMinutes = 120;
             if (RandomCueMaxMinutes < RandomCueMinMinutes)
@@ -95,6 +104,8 @@ namespace DesktopPet.Models
                 FocusStartSound = "gentle";
             if (!Services.SoundService.IsValidSoundId(FocusCompleteSound))
                 FocusCompleteSound = "bell";
+            if (!Services.SoundService.IsValidSoundId(BreakCompleteSound))
+                BreakCompleteSound = "bell";
             if (!Services.SoundService.IsValidSoundId(RandomCueBreakSound))
                 RandomCueBreakSound = "bell";
             if (!Services.SoundService.IsValidSoundId(RandomCueResumeSound))
