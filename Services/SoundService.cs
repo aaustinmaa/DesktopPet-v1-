@@ -27,8 +27,31 @@ namespace DesktopPet.Services
                 new SoundOption("bell", "清亮钟声"),
                 new SoundOption("pixel", "像素提示"),
                 new SoundOption("classic", "经典铃铃"),
+                new SoundOption("custom_done", "Done"),
+                new SoundOption("custom_piano", "Piano"),
+                new SoundOption("custom_rock", "Rock"),
+                new SoundOption("custom_bell", "Bell（导入）"),
                 new SoundOption("silent", "静音")
             }.AsReadOnly();
+        private static readonly IReadOnlyList<SoundOption> RandomCueOptionsValue =
+            new List<SoundOption>
+            {
+                new SoundOption("gentle", "柔和木琴"),
+                new SoundOption("bell", "清亮钟声"),
+                new SoundOption("pixel", "像素提示"),
+                new SoundOption("classic", "经典铃铃"),
+                new SoundOption("custom_done", "Done"),
+                new SoundOption("custom_bell", "Bell（导入）"),
+                new SoundOption("silent", "静音")
+            }.AsReadOnly();
+        private static readonly IDictionary<string, string> CustomSoundFiles =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "custom_done", Path.Combine("Assets", "Sounds", "Done.wav") },
+                { "custom_piano", Path.Combine("Assets", "Sounds", "Piano.wav") },
+                { "custom_rock", Path.Combine("Assets", "Sounds", "Rock.wav") },
+                { "custom_bell", Path.Combine("Assets", "Sounds", "Bell.wav") }
+            };
 
         private SoundPlayer _player;
         private MemoryStream _stream;
@@ -38,9 +61,26 @@ namespace DesktopPet.Services
             get { return OptionsValue; }
         }
 
+        public static IReadOnlyList<SoundOption> RandomCueOptions
+        {
+            get { return RandomCueOptionsValue; }
+        }
+
         public static bool IsValidSoundId(string soundId)
         {
-            foreach (var option in OptionsValue)
+            return ContainsSoundId(OptionsValue, soundId);
+        }
+
+        public static bool IsValidRandomCueSoundId(string soundId)
+        {
+            return ContainsSoundId(RandomCueOptionsValue, soundId);
+        }
+
+        private static bool ContainsSoundId(
+            IReadOnlyList<SoundOption> options,
+            string soundId)
+        {
+            foreach (var option in options)
             {
                 if (string.Equals(option.Id, soundId, StringComparison.OrdinalIgnoreCase))
                     return true;
@@ -87,9 +127,20 @@ namespace DesktopPet.Services
             try
             {
                 Stop();
-                var wave = BuildWave(soundId, isComplete);
-                _stream = new MemoryStream(wave, false);
-                _player = new SoundPlayer(_stream);
+                string customSoundFile;
+                if (CustomSoundFiles.TryGetValue(soundId, out customSoundFile))
+                {
+                    var customSoundPath = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        customSoundFile);
+                    _player = new SoundPlayer(customSoundPath);
+                }
+                else
+                {
+                    var wave = BuildWave(soundId, isComplete);
+                    _stream = new MemoryStream(wave, false);
+                    _player = new SoundPlayer(_stream);
+                }
                 _player.Load();
                 _player.Play();
             }

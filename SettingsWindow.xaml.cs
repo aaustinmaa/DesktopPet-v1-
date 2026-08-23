@@ -56,9 +56,9 @@ namespace DesktopPet
                 settings.RandomCueMaxMinutes.ToString(CultureInfo.InvariantCulture);
             RandomCueBreakSecondsBox.Text =
                 settings.RandomCueBreakSeconds.ToString(CultureInfo.InvariantCulture);
-            RandomCueBreakSoundBox.ItemsSource = SoundService.Options;
+            RandomCueBreakSoundBox.ItemsSource = SoundService.RandomCueOptions;
             RandomCueBreakSoundBox.SelectedValue = settings.RandomCueBreakSound;
-            RandomCueResumeSoundBox.ItemsSource = SoundService.Options;
+            RandomCueResumeSoundBox.ItemsSource = SoundService.RandomCueOptions;
             RandomCueResumeSoundBox.SelectedValue = settings.RandomCueResumeSound;
             UpdateRandomCueControls();
             ModelBox.Text = settings.AiModel;

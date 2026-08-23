@@ -106,9 +106,9 @@ namespace DesktopPet.Models
                 FocusCompleteSound = "bell";
             if (!Services.SoundService.IsValidSoundId(BreakCompleteSound))
                 BreakCompleteSound = "bell";
-            if (!Services.SoundService.IsValidSoundId(RandomCueBreakSound))
+            if (!Services.SoundService.IsValidRandomCueSoundId(RandomCueBreakSound))
                 RandomCueBreakSound = "bell";
-            if (!Services.SoundService.IsValidSoundId(RandomCueResumeSound))
+            if (!Services.SoundService.IsValidRandomCueSoundId(RandomCueResumeSound))
                 RandomCueResumeSound = "pixel";
             if (string.IsNullOrWhiteSpace(PetName) || PetName == "小心心")
                 PetName = "苏无度";
