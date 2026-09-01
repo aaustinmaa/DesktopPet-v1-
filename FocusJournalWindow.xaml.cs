@@ -328,11 +328,43 @@ namespace DesktopPet
                 currentIds.Add(external.Id);
             }
 
-            _currentDay.TargetCount = target;
-            _currentDay.MinuteAdjustment = checked(
+            var mergedAdjustment = checked(
                 adjustment +
                 latest.MinuteAdjustment -
                 _loadedMinuteAdjustment);
+            var convertedCount = mergedAdjustment > 0
+                ? mergedAdjustment / _defaultFocusMinutes
+                : 0;
+            if (convertedCount > 0)
+            {
+                var completion = _selectedDate ==
+                    FocusTimeAccounting.GetJournalDate(DateTime.Now)
+                    ? DateTime.Now
+                    : _selectedDate.AddHours(12);
+                completion = DateTime.SpecifyKind(completion, DateTimeKind.Local);
+
+                for (var index = 0; index < convertedCount; index++)
+                {
+                    records.Add(new FocusSessionRecord
+                    {
+                        Id = Guid.NewGuid().ToString("D"),
+                        Source = FocusSessionRecord.ManualSource,
+                        StartedAt = new DateTimeOffset(
+                            completion.AddMinutes(-_defaultFocusMinutes)).ToString(
+                                "o", CultureInfo.InvariantCulture),
+                        CompletedAt = new DateTimeOffset(completion).ToString(
+                            "o", CultureInfo.InvariantCulture),
+                        PlannedMinutes = _defaultFocusMinutes,
+                        CountsTowardGoal = true,
+                        Notes = "由今日分钟调整自动换算"
+                    });
+                }
+
+                mergedAdjustment %= _defaultFocusMinutes;
+            }
+
+            _currentDay.TargetCount = target;
+            _currentDay.MinuteAdjustment = mergedAdjustment;
             _currentDay.DailyNotes = DailyNotesBox.Text ?? string.Empty;
             _currentDay.Sessions = records;
 
@@ -343,7 +375,11 @@ namespace DesktopPet
                 _dirty = false;
                 LoadDay(_selectedDate);
                 if (showFeedback)
-                    StatusText.Text = "已保存。";
+                    StatusText.Text = convertedCount > 0
+                        ? "已保存，并把 " +
+                          (convertedCount * _defaultFocusMinutes) +
+                          " 分钟换算为 " + convertedCount + " 个番茄钟。"
+                        : "已保存。";
                 return true;
             }
             catch (Exception exception)

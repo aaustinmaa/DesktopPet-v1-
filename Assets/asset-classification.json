@@ -1,7 +1,8 @@
 {
   "used": [
     "app.ico",
-    "Sprites\\*.png"
+    "Sprites\\*.png",
+    "Sounds\\*.wav"
   ],
   "unused": [
     "Source\\*",
