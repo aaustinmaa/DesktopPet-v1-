@@ -681,7 +681,8 @@ namespace DesktopPet
                 else
                 {
                     _focusJournalService.AddMinuteAdjustments(
-                        minuteAllocations);
+                        minuteAllocations,
+                        plannedMinutes);
                     result = "已完成 " + completedMinutes +
                         " 分钟，" +
                         FormatMinuteAdjustmentResult(minuteAllocations);

@@ -332,36 +332,6 @@ namespace DesktopPet
                 adjustment +
                 latest.MinuteAdjustment -
                 _loadedMinuteAdjustment);
-            var convertedCount = mergedAdjustment > 0
-                ? mergedAdjustment / _defaultFocusMinutes
-                : 0;
-            if (convertedCount > 0)
-            {
-                var completion = _selectedDate ==
-                    FocusTimeAccounting.GetJournalDate(DateTime.Now)
-                    ? DateTime.Now
-                    : _selectedDate.AddHours(12);
-                completion = DateTime.SpecifyKind(completion, DateTimeKind.Local);
-
-                for (var index = 0; index < convertedCount; index++)
-                {
-                    records.Add(new FocusSessionRecord
-                    {
-                        Id = Guid.NewGuid().ToString("D"),
-                        Source = FocusSessionRecord.ManualSource,
-                        StartedAt = new DateTimeOffset(
-                            completion.AddMinutes(-_defaultFocusMinutes)).ToString(
-                                "o", CultureInfo.InvariantCulture),
-                        CompletedAt = new DateTimeOffset(completion).ToString(
-                            "o", CultureInfo.InvariantCulture),
-                        PlannedMinutes = _defaultFocusMinutes,
-                        CountsTowardGoal = true,
-                        Notes = "由今日分钟调整自动换算"
-                    });
-                }
-
-                mergedAdjustment %= _defaultFocusMinutes;
-            }
 
             _currentDay.TargetCount = target;
             _currentDay.MinuteAdjustment = mergedAdjustment;
@@ -371,15 +341,13 @@ namespace DesktopPet
             try
             {
                 _saving = true;
-                _service.SaveDay(_currentDay);
+                var settlement = _service.SaveDay(
+                    _currentDay,
+                    _defaultFocusMinutes);
                 _dirty = false;
                 LoadDay(_selectedDate);
                 if (showFeedback)
-                    StatusText.Text = convertedCount > 0
-                        ? "已保存，并把 " +
-                          (convertedCount * _defaultFocusMinutes) +
-                          " 分钟换算为 " + convertedCount + " 个番茄钟。"
-                        : "已保存。";
+                    StatusText.Text = FormatSettlementStatus(settlement);
                 return true;
             }
             catch (Exception exception)
@@ -396,6 +364,36 @@ namespace DesktopPet
             {
                 _saving = false;
             }
+        }
+
+        private string FormatSettlementStatus(
+            FocusJournalSettlementResult settlement)
+        {
+            if (settlement.RemovedCompletedCount == 0 &&
+                settlement.AddedCompletedCount == 0)
+            {
+                return settlement.RemainingMinuteAdjustment < 0
+                    ? "已保存；当天没有可回退的番茄钟，负数分钟暂时保留。"
+                    : "已保存。";
+            }
+
+            var changes = new List<string>();
+            if (settlement.RemovedCompletedCount > 0)
+            {
+                changes.Add(
+                    "已回退 " + settlement.RemovedCompletedCount +
+                    " 个已完成番茄钟");
+            }
+            if (settlement.AddedCompletedCount > 0)
+            {
+                changes.Add(
+                    "已换算 " + settlement.AddedCompletedCount +
+                    " 个番茄钟");
+            }
+
+            return "已保存；" + string.Join("；", changes) +
+                   "，分钟调整剩余 " +
+                   settlement.RemainingMinuteAdjustment + " 分钟。";
         }
 
         private void ShowValidationMessage(string message)

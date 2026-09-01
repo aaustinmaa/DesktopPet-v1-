@@ -8,6 +8,15 @@ using DesktopPet.Models;
 
 namespace DesktopPet.Services
 {
+    public sealed class FocusJournalSettlementResult
+    {
+        public int AddedCompletedCount { get; internal set; }
+
+        public int RemovedCompletedCount { get; internal set; }
+
+        public int RemainingMinuteAdjustment { get; internal set; }
+    }
+
     public sealed class FocusJournalService
     {
         private const string DateFormat = "yyyy-MM-dd";
@@ -51,11 +60,21 @@ namespace DesktopPet.Services
 
         public void SaveDay(DailyFocusRecord day)
         {
+            SaveDay(day, 0);
+        }
+
+        public FocusJournalSettlementResult SaveDay(
+            DailyFocusRecord day,
+            int pomodoroMinutes)
+        {
             if (day == null)
                 throw new ArgumentNullException(nameof(day));
 
             var savedDay = CloneDay(day);
             NormalizeDay(savedDay, true);
+            var settlement = pomodoroMinutes > 0
+                ? SettleMinuteAdjustment(savedDay, pomodoroMinutes)
+                : CreateSettlementResult(savedDay);
 
             lock (_sync)
             {
@@ -71,6 +90,7 @@ namespace DesktopPet.Services
             }
 
             RaiseJournalChanged();
+            return settlement;
         }
 
         public FocusSessionRecord RecordCompletedSession(
@@ -123,6 +143,10 @@ namespace DesktopPet.Services
                     day.Sessions[existingIndex] = savedSession;
                 else
                     day.Sessions.Add(savedSession);
+
+                SettleMinuteAdjustment(
+                    day,
+                    Math.Max(1, savedSession.PlannedMinutes));
 
                 SortDaysUnsafe();
                 SaveUnsafe();
@@ -178,6 +202,19 @@ namespace DesktopPet.Services
                     completionDay.MinuteAdjustment -
                     savedSession.PlannedMinutes);
 
+                var affectedDateKeys = new HashSet<string>(
+                    allocations.Keys,
+                    StringComparer.Ordinal)
+                {
+                    completionDateKey
+                };
+                foreach (var affectedDateKey in affectedDateKeys)
+                {
+                    SettleMinuteAdjustment(
+                        GetOrCreateDayUnsafe(affectedDateKey),
+                        Math.Max(1, savedSession.PlannedMinutes));
+                }
+
                 SortDaysUnsafe();
                 SaveUnsafe();
             }
@@ -187,8 +224,12 @@ namespace DesktopPet.Services
         }
 
         public void AddMinuteAdjustments(
-            IDictionary<string, int> minuteAllocations)
+            IDictionary<string, int> minuteAllocations,
+            int pomodoroMinutes)
         {
+            if (pomodoroMinutes < 1)
+                throw new ArgumentOutOfRangeException(nameof(pomodoroMinutes));
+
             var allocations = NormalizeMinuteAllocations(minuteAllocations);
             if (allocations.Count == 0)
                 return;
@@ -200,6 +241,7 @@ namespace DesktopPet.Services
                     var day = GetOrCreateDayUnsafe(allocation.Key);
                     day.MinuteAdjustment = checked(
                         day.MinuteAdjustment + allocation.Value);
+                    SettleMinuteAdjustment(day, pomodoroMinutes);
                 }
                 SortDaysUnsafe();
                 SaveUnsafe();
@@ -388,6 +430,94 @@ namespace DesktopPet.Services
                 session.PlannedMinutes = 0;
             if (session.Notes == null)
                 session.Notes = string.Empty;
+        }
+
+        private static FocusJournalSettlementResult SettleMinuteAdjustment(
+            DailyFocusRecord day,
+            int pomodoroMinutes)
+        {
+            if (pomodoroMinutes < 1)
+                throw new ArgumentOutOfRangeException(nameof(pomodoroMinutes));
+
+            var result = new FocusJournalSettlementResult();
+            while (day.MinuteAdjustment < 0)
+            {
+                var countedSessions = day.Sessions
+                    .Where(session =>
+                        session != null &&
+                        session.CountsTowardGoal &&
+                        session.PlannedMinutes > 0)
+                    .Reverse()
+                    .ToList();
+                var sessionToRemove = countedSessions.FirstOrDefault(session =>
+                    session.PlannedMinutes == pomodoroMinutes) ??
+                    countedSessions.FirstOrDefault();
+                if (sessionToRemove == null)
+                    break;
+
+                sessionToRemove.CountsTowardGoal = false;
+                day.MinuteAdjustment = checked(
+                    day.MinuteAdjustment + sessionToRemove.PlannedMinutes);
+                result.RemovedCompletedCount++;
+            }
+
+            if (day.MinuteAdjustment >= pomodoroMinutes)
+            {
+                var convertedCount =
+                    day.MinuteAdjustment / pomodoroMinutes;
+                var completion = GetSettlementCompletionTime(day.Date);
+                for (var index = 0; index < convertedCount; index++)
+                {
+                    day.Sessions.Add(new FocusSessionRecord
+                    {
+                        Id = Guid.NewGuid().ToString("D"),
+                        Source = FocusSessionRecord.ManualSource,
+                        StartedAt = new DateTimeOffset(
+                            completion.AddMinutes(-pomodoroMinutes)).ToString(
+                                "o", CultureInfo.InvariantCulture),
+                        CompletedAt = new DateTimeOffset(completion).ToString(
+                            "o", CultureInfo.InvariantCulture),
+                        PlannedMinutes = pomodoroMinutes,
+                        CountsTowardGoal = true,
+                        Notes = "由今日分钟调整自动换算"
+                    });
+                }
+
+                day.MinuteAdjustment %= pomodoroMinutes;
+                result.AddedCompletedCount = convertedCount;
+            }
+
+            result.RemainingMinuteAdjustment = day.MinuteAdjustment;
+            return result;
+        }
+
+        private static FocusJournalSettlementResult CreateSettlementResult(
+            DailyFocusRecord day)
+        {
+            return new FocusJournalSettlementResult
+            {
+                RemainingMinuteAdjustment = day.MinuteAdjustment
+            };
+        }
+
+        private static DateTime GetSettlementCompletionTime(string dateKey)
+        {
+            DateTime date;
+            if (!DateTime.TryParseExact(
+                    dateKey,
+                    DateFormat,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out date))
+            {
+                date = DateTime.Today;
+            }
+
+            var journalToday = FocusTimeAccounting.GetJournalDate(DateTime.Now);
+            var completion = date.Date == journalToday
+                ? DateTime.Now
+                : date.Date.AddHours(12);
+            return DateTime.SpecifyKind(completion, DateTimeKind.Local);
         }
 
         private static string NormalizeOptionalTimestamp(string value)
