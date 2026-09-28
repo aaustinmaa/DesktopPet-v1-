@@ -28,6 +28,11 @@ recordings; Mac builds copy only runtime assets.
    Open the DMG, drag `SuWuDu.app` to Applications, and launch it. Its heart menu-bar
    icon remains available when other windows are closed.
 
+The app also appears in the Dock and Command–Tab. Click its Dock icon to recall
+the pet and open the control panel. To pin it, secondary-click its Dock icon and
+choose Options → Keep in Dock. Closing a control window leaves the pet running;
+use Quit to exit the app.
+
 The installed application does not need Xcode, Python, or a separately installed
 Codex CLI. Full builds bundle a pinned native Codex runtime. A deliberately smaller
 build is available using `bash scripts/build.sh --without-codex`; its ChatGPT login

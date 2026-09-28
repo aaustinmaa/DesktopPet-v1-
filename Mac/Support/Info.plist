@@ -11,7 +11,7 @@
     <key>CFBundleVersion</key><string>1</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
-    <key>LSUIElement</key><true/>
+    <key>LSUIElement</key><false/>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>NSScreenCaptureUsageDescription</key><string>开启“看屏幕”时，截取当前显示器画面作为聊天附件发送给你选择的 AI 服务。</string>
