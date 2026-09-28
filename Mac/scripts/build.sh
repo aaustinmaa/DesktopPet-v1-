@@ -64,10 +64,13 @@ if [[ "$WITH_CODEX" == 1 ]]; then
 fi
 ICONSET="$MAC_ROOT/output/$ARCH/AppIcon.iconset"
 mkdir -p "$ICONSET"
+# Use the actual Windows application icon, not a pet animation frame.
+ICON_SOURCE="$MAC_ROOT/output/$ARCH/windows-app-icon.png"
+sips -s format png "$REPO_ROOT/Assets/app.ico" --out "$ICON_SOURCE" >/dev/null
 for size in 16 32 128 256 512; do
-    sips -z "$size" "$size" "$REPO_ROOT/Assets/Sprites/happy.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+    sips -z "$size" "$size" "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
     double=$((size * 2))
-    sips -z "$double" "$double" "$REPO_ROOT/Assets/Sprites/happy.png" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+    sips -z "$double" "$double" "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 if [[ -n "${UPDATE_FEED_URL:-}" || -n "${UPDATE_PUBLIC_KEY:-}" ]]; then
