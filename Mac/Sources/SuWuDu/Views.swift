@@ -332,10 +332,13 @@ import UniformTypeIdentifiers
                                         HStack {
                                             Text(message.role == "user" ? "你" : model.data.settings.petName).font(.caption.bold())
                                             Spacer()
-                                            Button("复制") { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(message.content, forType: .string) }
-                                                .buttonStyle(.plain).font(.caption).opacity(0.75)
+                                            ChatCopyButton(content: message.content, onDark: message.role == "user")
                                         }
-                                        Text(message.content).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                                        if message.role == "user" {
+                                            Text(message.content).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                                        } else {
+                                            ChatMessageBody(content: message.content)
+                                        }
                                     }.padding(12).foregroundStyle(message.role == "user" ? Color.white : PetTheme.ink)
                                         .background(message.role == "user" ? PetTheme.accent : PetTheme.soft, in: RoundedRectangle(cornerRadius: 10))
                                     if message.role != "user" { Spacer(minLength: 25) }

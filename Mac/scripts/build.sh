@@ -49,6 +49,7 @@ if [[ "$APP" != "$MAC_ROOT/output/$ARCH/SuWuDu.app" ]]; then exit 1; fi
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Assets" "$APP/Contents/Frameworks" "$APP/Contents/Helpers"
 cp "$BIN/SuWuDu" "$APP/Contents/MacOS/SuWuDu"
+cp -R "$BIN/SuWuDuMac_SuWuDu.bundle" "$APP/Contents/Resources/"
 cp Support/Info.plist "$APP/Contents/Info.plist"
 cp -R "$REPO_ROOT/Assets/Sprites" "$APP/Contents/Resources/Assets/"
 cp -R "$REPO_ROOT/Assets/Sounds" "$APP/Contents/Resources/Assets/"

@@ -8,6 +8,7 @@ let package = Package(
     dependencies: [.package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.0")],
     targets: [
         .executableTarget(name: "SuWuDu", dependencies: [.product(name: "Sparkle", package: "Sparkle")],
+                          resources: [.copy("Resources/ChatRenderer")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
         .testTarget(name: "SuWuDuTests", dependencies: ["SuWuDu"])
     ],
