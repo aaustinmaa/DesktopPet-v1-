@@ -244,24 +244,24 @@ struct AnimationSpec {
             sequence(shen ? "shenqing-" + shenName : mac, shen ? shenCount : count)
         }
         switch state {
-        case .idle: return .init(frames: frames("idle-open-close-v5", 16, "idle", 8), interval: 0.170)
+        case .idle: return .init(frames: frames("idle-open-close-v5", 16, "idle", 8), interval: shen ? 0.240 : 0.170)
         case .blink: return .init(frames: frames("blink-v2", 8, "blink", 8), interval: 0.165, once: true)
         case .happy: return .init(frames: [shen ? "shenqing-success-03.png" : "happy.png"], interval: 0.15)
-        case .question: return .init(frames: [shen ? "shenqing-idle-01.png" : "question.png"], interval: 0.15)
+        case .question: return .init(frames: shen ? sequence("shenqing-question", 8) : ["question.png"], interval: shen ? 0.240 : 0.15)
         case .working:
-            var list = frames("working-float-v3", 16, "working", 16)
+            var list = frames("working-float-v3", 16, "working", 8)
             if !shen { list += sequence("working-float-v3", 15).dropFirst().reversed() }
-            return .init(frames: list, interval: 0.05)
-        case .success: return .init(frames: frames("success-v2", 16, "success", 8), interval: 0.095)
-        case .error: return .init(frames: frames("error-v4", 16, "error", 8), interval: 0.125)
-        case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 8) : ["sleeping-base.png"], interval: 0.15)
-        case .reminder: return .init(frames: frames("reminder-v2", 16, "reminder", 8), interval: 0.09)
-        case .waving: return .init(frames: frames("wave-v2", 8, "wave", 8), interval: 0.105)
+            return .init(frames: list, interval: shen ? 0.140 : 0.05)
+        case .success: return .init(frames: frames("success-v2", 16, "success", 8), interval: shen ? 0.160 : 0.095)
+        case .error: return .init(frames: frames("error-v4", 16, "error", 8), interval: shen ? 0.180 : 0.125)
+        case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 8) : ["sleeping-base.png"], interval: shen ? 0.500 : 0.15)
+        case .reminder: return .init(frames: frames("reminder-v2", 16, "reminder", 8), interval: shen ? 0.180 : 0.09)
+        case .waving: return .init(frames: frames("wave-v2", 8, "wave", 8), interval: shen ? 0.160 : 0.105)
         case .heart:
             var list = frames("heart-lift-v3", 8, "heart", 8)
             if !shen { list += sequence("heart-lift-v3", 7).reversed() }
-            return .init(frames: list, interval: 0.115, once: true)
-        case .hit: return .init(frames: frames("idle-hit-v1", 16, "error", 8), interval: 0.075, once: true)
+            return .init(frames: list, interval: shen ? 0.180 : 0.115, once: true)
+        case .hit: return .init(frames: frames("idle-hit-v1", 16, "hit", 8), interval: shen ? 0.090 : 0.075, once: true)
         }
     }
 }

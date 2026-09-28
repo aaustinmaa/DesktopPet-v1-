@@ -54,3 +54,17 @@ These scripts read active source art from `Source` and write only current
 runtime images to `Sprites`. The stable working-atlas script must use fixed
 362-by-362 cells so the character and laptop pixels are never rescaled or
 recentered between frames.
+
+Shen Qing uses the approved coarse-pixel `shenqing-idle-v3-source.png` master.
+The eleven v3 sheets cover all twelve states (Happy holds Success frame 3).
+Each normalized sheet is 1448 by 724 with eight fixed 362-by-362 cells.
+`ExtractShenQingAtlases.ps1` slices these normalized sheets without resizing.
+To rebuild them from the imagegen source sheets, run
+`python Scripts/BuildShenQingAtlases.py` with Pillow and NumPy installed.
+This uses one nearest-neighbor scale per sheet and registers the blue crown,
+so moving props never affect character centering. Old Shen Qing frames and
+v1 atlases are preserved in `Archive`.
+
+Open `Source/AnimationAtlases/shenqing-v3-preview.html` to play or step through
+all twelve states. The imagegen prompts are saved alongside it in
+`shenqing-actions-v3-prompts.md`.

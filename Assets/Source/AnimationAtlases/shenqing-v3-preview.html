@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>沈青 · 动作预览</title>
+<style>
+  :root { color-scheme: dark; font: 16px system-ui, sans-serif; background: #182321; color: #e9f2e9; }
+  body { max-width: 1080px; margin: auto; padding: 32px; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  p { color: #b4c9bf; }
+  nav { display: flex; gap: 12px; align-items: center; margin: 24px 0; flex-wrap: wrap; }
+  button, select { font: inherit; background: #30443d; color: inherit; border: 1px solid #678171; border-radius: 8px; padding: 8px 16px; }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 16px; }
+  article { background: #26362f; border-radius: 16px; padding: 14px; text-align: center; }
+  article img { width: 100%; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; }
+  h2 { font-size: 17px; margin: 0 0 8px; }
+  small { color: #b4c9bf; }
+</style>
+<h1>沈青 · 动作预览</h1>
+<p>同一个沈青，12 种状态。支持暂停、逐帧查看和慢速播放。</p>
+<nav><button id="toggle">暂停</button><button id="step">下一帧</button>
+<label>播放速度 <select id="speed"><option value="1">正常</option><option value="0.5">半速</option></select></label>
+<label>背景 <select id="background"><option value="#26362f">深绿</option><option value="#eee8d8">米白</option><option value="#657786">灰蓝</option></select></label></nav>
+<main></main>
+<script>
+const specs = [
+  ['idle','待机',240], ['blink','眨眼',165], ['happy','开心',150],
+  ['working','工作',140], ['question','疑问',240], ['success','成功',160],
+  ['error','失落',180], ['sleeping','睡觉',500], ['reminder','铃声提醒',180],
+  ['wave','挥手',160], ['heart','比心',180], ['hit','被敲反应',90]
+];
+const cards = specs.map(([action,title,interval]) => {
+  const paths = action === 'happy' ? ['../../Sprites/shenqing-success-03.png'] :
+    Array.from({length:8}, (_,i) => `../../Sprites/shenqing-${action}-${String(i+1).padStart(2,'0')}.png`);
+  paths.forEach(path => { const image = new Image(); image.src = path; });
+  const card = document.createElement('article');
+  const image = document.createElement('img'); image.alt = title; image.src = paths[0];
+  const heading = document.createElement('h2'); heading.textContent = title;
+  const label = document.createElement('small');
+  card.append(image, heading, label); document.querySelector('main').append(card);
+  return {card, image, label, paths, interval, index:0, elapsed:0};
+});
+let playing = true, last = performance.now();
+function paint(card) { card.image.src = card.paths[card.index]; card.label.textContent = `${card.index+1} / ${card.paths.length}`; }
+cards.forEach(paint);
+document.querySelector('#toggle').onclick = event => { playing = !playing; event.target.textContent = playing ? '暂停' : '播放'; };
+document.querySelector('#step').onclick = () => { playing = false; document.querySelector('#toggle').textContent = '播放'; cards.forEach(card => { card.index = (card.index+1)%card.paths.length; card.elapsed = 0; paint(card); }); };
+document.querySelector('#background').onchange = event => cards.forEach(({card}) => card.style.background = event.target.value);
+function tick(now) {
+  const delta = Math.min(now-last, 100); last = now;
+  if (playing) cards.forEach(card => {
+    card.elapsed += delta * Number(document.querySelector('#speed').value);
+    if (card.elapsed >= card.interval) { card.elapsed %= card.interval; card.index = (card.index+1)%card.paths.length; paint(card); }
+  });
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script>
+</html>

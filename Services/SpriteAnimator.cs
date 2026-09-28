@@ -215,7 +215,7 @@ namespace DesktopPet.Services
         private static readonly string[] ShenQingHeartFrames =
             BuildFrames("shenqing-heart", 1, 8);
         private static readonly string[] ShenQingWorkingFrames =
-            BuildFrames("shenqing-working", 1, 16);
+            BuildFrames("shenqing-working", 1, 8);
         private static readonly string[] ShenQingSuccessFrames =
             BuildFrames("shenqing-success", 1, 8);
         private static readonly string[] ShenQingErrorFrames =
@@ -224,6 +224,10 @@ namespace DesktopPet.Services
             BuildFrames("shenqing-reminder", 1, 8);
         private static readonly string[] ShenQingSleepingFrames =
             BuildFrames("shenqing-sleeping", 1, 8);
+        private static readonly string[] ShenQingQuestionFrames =
+            BuildFrames("shenqing-question", 1, 8);
+        private static readonly string[] ShenQingHitFrames =
+            BuildFrames("shenqing-hit", 1, 8);
 
         public PetState CurrentState { get; private set; } = PetState.Idle;
 
@@ -303,53 +307,53 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Working:
                     _frames = IsShenQing ? ShenQingWorkingFrames : WorkingFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(50);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 140 : 50);
                     break;
                 case PetState.Question:
                     _frames = IsShenQing
-                        ? new[] { ShenQingIdleFrames[0] }
+                        ? ShenQingQuestionFrames
                         : new[] { "question.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 240 : 150);
                     break;
                 case PetState.Success:
                     _frames = IsShenQing ? ShenQingSuccessFrames : SuccessFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(95);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 160 : 95);
                     break;
                 case PetState.Error:
                     _frames = IsShenQing ? ShenQingErrorFrames : ErrorFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(125);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 180 : 125);
                     break;
                 case PetState.Sleeping:
                     _frames = IsShenQing
                         ? ShenQingSleepingFrames
                         : new[] { "sleeping-base.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 500 : 150);
                     break;
                 case PetState.Reminder:
                     _frames = IsShenQing ? ShenQingReminderFrames : ReminderFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(90);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 180 : 90);
                     break;
                 case PetState.Waving:
                     _frames = IsShenQing ? ShenQingWaveFrames : WaveFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(105);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 160 : 105);
                     break;
                 case PetState.HeartPulse:
                     _frames = IsShenQing ? ShenQingHeartFrames : HeartFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 180 : 115);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Hit:
-                    _frames = IsShenQing ? ShenQingErrorFrames : HitFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
+                    _frames = IsShenQing ? ShenQingHitFrames : HitFrames;
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 90 : 75);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 default:
                     _frames = IsShenQing ? ShenQingIdleFrames : IdleFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(170);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 240 : 170);
                     break;
             }
 

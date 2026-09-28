@@ -5,3 +5,4 @@ dist/
 *.user
 *.suo
 Assets/sprite-sheet-chroma.png
+__pycache__/
