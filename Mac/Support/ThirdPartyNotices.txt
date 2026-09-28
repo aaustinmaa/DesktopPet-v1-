@@ -1,0 +1,16 @@
+SuWuDu for macOS
+
+OpenAI Codex
+Copyright OpenAI. Licensed under Apache License 2.0.
+Source: https://github.com/openai/codex
+Pinned build: 0.144.4. The Mac runtime is fetched from official Darwin release
+assets and verified using GitHub's published SHA-256 digests. See the included
+OPENAI-CODEX-LICENSE.txt. runtime-manifest.json records hashes before app signing.
+
+Sparkle
+Source: https://github.com/sparkle-project/Sparkle
+Copyright Sparkle contributors. Licensed under the MIT license.
+The distributed Sparkle framework retains its bundled license and notices.
+See https://github.com/sparkle-project/Sparkle/blob/2.10.0/LICENSE
+
+Character images and sound recordings reuse this repository's existing assets.
