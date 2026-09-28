@@ -16,12 +16,13 @@ final class PetPanel: NSPanel {
     private var down = NSPoint.zero
     private var origin = NSPoint.zero
     private var dragged = false
+    private var contextClickInProgress = false
     private var pendingClick: DispatchWorkItem?
     var onClick: ((Int) -> Void)?
     var onMove: (() -> Void)?
     var onInteractionStart: (() -> Void)?
     var onDragEnd: (() -> Void)?
-    var makeMenu: (() -> NSMenu)?
+    var onContextMenu: ((NSEvent) -> Void)?
     var onAnimationEnd: (() -> Void)?
 
     override init(frame: NSRect) {
@@ -150,6 +151,8 @@ final class PetPanel: NSPanel {
     }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func mouseDown(with event: NSEvent) {
+        contextClickInProgress = event.modifierFlags.contains(.control)
+        if contextClickInProgress { rightMouseDown(with: event); return }
         pendingClick?.cancel()
         onInteractionStart?()
         down = NSEvent.mouseLocation
@@ -163,6 +166,7 @@ final class PetPanel: NSPanel {
         if dragged { window?.setFrameOrigin(NSPoint(x: origin.x + dx, y: origin.y + dy)); onMove?() }
     }
     override func mouseUp(with event: NSEvent) {
+        if contextClickInProgress { contextClickInProgress = false; return }
         guard !dragged else { onDragEnd?(); return }
         let count = event.clickCount
         // Windows responds to the first strike immediately; only defer the double
@@ -177,7 +181,7 @@ final class PetPanel: NSPanel {
     override func rightMouseDown(with event: NSEvent) {
         pendingClick?.cancel()
         onInteractionStart?()
-        if let menu = makeMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
+        onContextMenu?(event)
     }
 }
 
@@ -186,7 +190,8 @@ final class PetPanel: NSPanel {
     let panel: PetPanel
     let view: PetView
     let bubble: PetPanel
-    private let label = NSTextField(wrappingLabelWithString: "")
+    private let speechView = SpeechBubbleView(frame: .zero)
+    private let contextMenu = PetContextMenuController()
     private var movementGeneration = 0
     private var positionSave: DispatchWorkItem?
     var onChat: (() -> Void)?
@@ -209,17 +214,7 @@ final class PetPanel: NSPanel {
         }
         panel.contentView = view
         bubble.ignoresMouseEvents = true
-        let background = NSVisualEffectView()
-        background.material = .popover
-        background.state = .active
-        background.wantsLayer = true
-        background.layer?.cornerRadius = 12
-        background.layer?.masksToBounds = true
-        label.font = NSFont.systemFont(ofSize: 14)
-        label.maximumNumberOfLines = 8
-        label.lineBreakMode = .byTruncatingTail
-        background.addSubview(label)
-        bubble.contentView = background
+        bubble.contentView = speechView
         view.onClick = { [weak self] count in
             guard let self else { return }
             switch count {
@@ -233,7 +228,11 @@ final class PetPanel: NSPanel {
         view.onMove = { [weak self] in self?.moved() }
         view.onInteractionStart = { [weak self] in self?.movementGeneration += 1 }
         view.onDragEnd = { [weak self] in self?.clamp(); self?.moved() }
-        view.makeMenu = { [weak self] in self?.makeMenu?() ?? NSMenu() }
+        view.onContextMenu = { [weak self] event in
+            guard let self, let menu = self.makeMenu?() else { return }
+            let point = self.panel.convertPoint(toScreen: event.locationInWindow)
+            self.contextMenu.show(menu, at: point)
+        }
         view.onAnimationEnd = { [weak model] in model?.restoreAnimation() }
         model.onStateChanged = { [weak self] state in self?.view.play(state, skin: model.data.settings.skin) }
         model.onSettingsChanged = { [weak self] in self?.applySettings() }
@@ -267,7 +266,7 @@ final class PetPanel: NSPanel {
         panel.orderFrontRegardless()
         moved()
     }
-    func hide() { movementGeneration += 1; panel.orderOut(nil); bubble.orderOut(nil) }
+    func hide() { contextMenu.dismiss(); movementGeneration += 1; panel.orderOut(nil); bubble.orderOut(nil) }
     func toggleClickThrough() {
         model.clickThrough.toggle()
         panel.ignoresMouseEvents = model.clickThrough
@@ -291,19 +290,18 @@ final class PetPanel: NSPanel {
     }
     private func showBubble(_ text: String) {
         guard !text.isEmpty, panel.isVisible else { bubble.orderOut(nil); return }
-        label.stringValue = text
-        let size = label.cell?.cellSize(forBounds: NSRect(x: 0, y: 0, width: 260, height: 160)) ?? NSSize(width: 260, height: 60)
-        let height = min(170, max(24, size.height))
-        bubble.setContentSize(NSSize(width: 284, height: height + 24))
-        label.frame = NSRect(x: 12, y: 12, width: 260, height: height)
+        bubble.setContentSize(NSSize(width: max(184, panel.frame.width), height: 96))
+        speechView.setMessage(text)
         positionBubble()
         bubble.orderFrontRegardless()
     }
     private func positionBubble() {
         guard let screen = panel.screen ?? NSScreen.main else { return }
         let area = screen.visibleFrame
+        bubble.setContentSize(NSSize(width: max(184, panel.frame.width), height: 96))
         let x = min(max(area.minX, panel.frame.midX - bubble.frame.width / 2), area.maxX - bubble.frame.width)
-        let y = min(area.maxY - bubble.frame.height, panel.frame.maxY - panel.frame.height * 0.15)
+        speechView.tailX = panel.frame.midX - x
+        let y = min(area.maxY - bubble.frame.height, panel.frame.maxY - 6)
         bubble.setFrameOrigin(NSPoint(x: x, y: max(area.minY, y)))
     }
     private func wander() {

@@ -50,6 +50,13 @@ import UniformTypeIdentifiers
         self.model = model; self.close = close
         _draft = State(initialValue: SettingsDraft(model.data.settings))
     }
+    private enum Category: String, CaseIterable {
+        case appearance = "外观与行为", focus = "专注与提醒", chat = "AI 与记忆", storage = "本地数据"
+        var icon: String {
+            switch self { case .appearance: return "pawprint"; case .focus: return "timer"; case .chat: return "bubble.left.and.bubble.right"; case .storage: return "externaldrive" }
+        }
+    }
+    @State private var category: Category = .appearance
     @State private var key = ""
     @State private var startup = SMAppService.mainApp.status == .enabled
     @State private var status = ""
@@ -58,15 +65,28 @@ import UniformTypeIdentifiers
     }
     var body: some View {
         VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 18) {
+                PetHeading(title: "桌宠设置", subtitle: "调整苏无度或沈青的外观、陪伴方式和可选 AI。")
+                HStack(spacing: 8) {
+                    ForEach(Category.allCases, id: \.self) { item in
+                        Button { category = item } label: {
+                            Label(item.rawValue, systemImage: item.icon).frame(maxWidth: .infinity)
+                        }.buttonStyle(PetButtonStyle(primary: category == item))
+                            .accessibilityAddTraits(category == item ? .isSelected : [])
+                    }
+                }
+            }.padding(24)
+            Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    PetHeading(title: "桌宠设置", subtitle: "调整苏无度或沈青的外观、陪伴方式和可选 AI。")
-                    appearance
-                    focus
-                    chat
-                    storage
-                }.padding(26)
-            }
+                    switch category {
+                    case .appearance: appearance
+                    case .focus: focus
+                    case .chat: chat
+                    case .storage: storage
+                    }
+                }.padding(24)
+            }.id(category)
             Divider()
             HStack {
                 Text(status).font(.caption).foregroundStyle(PetTheme.muted)
@@ -75,7 +95,7 @@ import UniformTypeIdentifiers
                 Button("保存", action: save).buttonStyle(PetButtonStyle(primary: true)).keyboardShortcut(.defaultAction)
                     .disabled(model.busy)
             }.padding(18).background(PetTheme.card)
-        }.frame(minWidth: 540, minHeight: 580).petPage()
+        }.frame(minWidth: 610, minHeight: 580).petPage()
     }
     private func save() {
         guard draft.value.wanderMin <= draft.value.wanderMax, draft.value.microMin <= draft.value.microMax else {

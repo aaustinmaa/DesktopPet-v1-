@@ -51,7 +51,7 @@ import Sparkle
             let (loaded, warning) = try store.load()
             model = AppModel(store: store, loaded: loaded)
             desktop = DesktopController(model: model)
-            desktop.makeMenu = { [weak self] in self?.makeMenu() ?? NSMenu() }
+            desktop.makeMenu = { [weak self] in self?.makeMenu(forPet: true) ?? NSMenu() }
             desktop.onChat = { [weak self] in self?.openChat() }
             setupMenuBar()
             setupMainMenu()
@@ -135,40 +135,41 @@ import Sparkle
         bar.addItem(editItem)
         NSApp.mainMenu = bar
     }
-    private func makeMenu() -> NSMenu {
+    private func makeMenu(forPet: Bool = false) -> NSMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
         func add(_ title: String, checked: Bool = false, enabled: Bool = true, _ action: @escaping () -> Void) {
             menu.addItem(MenuAction(title, checked: checked, enabled: enabled, handler: action))
         }
-        add("叫回桌宠（⌃⌥P）") { [weak self] in self?.desktop.recover() }
+        if !forPet { add("叫回桌宠（⌃⌥P）") { [weak self] in self?.desktop.recover() } }
         add("💬 和我聊聊") { [weak self] in self?.openChat() }
         add("💚 给我一点鼓励") { [weak self] in self?.model.animate(.heart); self?.model.say("慢慢来，我会一直陪着你。") }
         let actions = NSMenu()
-        for (title, state) in [("比心", PetState.heart), ("眨眼", .blink), ("挥手", .waving)] {
+        for (title, state) in [("💚 比心", PetState.heart), ("😉 眨眼", .blink), ("👋 挥手", .waving)] {
             actions.addItem(MenuAction(title) { [weak self] in self?.model.animate(state) })
         }
         let actionsItem = NSMenuItem(title: "🎭 命令她做动作", action: nil, keyEquivalent: "")
         actionsItem.submenu = actions
         menu.addItem(actionsItem)
         menu.addItem(.separator())
-        add(model.focusLabel, enabled: false) {}
+        if !forPet { add(model.focusLabel, enabled: false) {} }
         add("💻 工作模式", checked: model.manualMode == .working) { [weak self] in self?.model.setMode(.working) }
         add("😴 睡眠模式", checked: model.manualMode == .sleeping) { [weak self] in self?.model.setMode(.sleeping) }
-        add("开始 / 重新开始专注") { [weak self] in self?.model.startFocus() }
-        add(model.paused ? "继续专注" : "暂停专注", enabled: model.data.focus != nil) { [weak self] in self?.model.toggleFocus() }
-        add("停止专注 / 结束休息", enabled: model.data.focus != nil || model.breakRemaining > 0) { [weak self] in self?.model.stopFocus() }
-        add("📊 专注记录") { [weak self] in self?.openJournal() }
+        add(model.breakRemaining > 0 ? "▶ 跳过休息并开始专注" : model.data.focus != nil ? "↻ 重新开始专注计时" : "⏱ 开始专注计时") { [weak self] in self?.model.startFocus() }
+        add(model.paused ? "▶ 继续专注计时" : "⏸ 暂停专注计时", enabled: model.data.focus != nil) { [weak self] in self?.model.toggleFocus() }
+        add(model.breakRemaining > 0 ? "■ 结束休息" : "■ 停止专注计时", enabled: model.data.focus != nil || model.breakRemaining > 0) { [weak self] in self?.model.stopFocus() }
+        add("📊 今日专注记录") { [weak self] in self?.openJournal() }
         menu.addItem(.separator())
         add("🐾 自动漫游", checked: model.data.settings.wander) { [weak self] in self?.model.changeSettings { $0.wander.toggle() } }
         add("📌 始终置顶", checked: model.data.settings.topmost) { [weak self] in self?.model.changeSettings { $0.topmost.toggle() } }
-        add("👻 鼠标穿透", checked: model.clickThrough) { [weak self] in self?.desktop.toggleClickThrough() }
-        add("🏠 启动面板") { [weak self] in self?.openLauncher() }
+        add("👻 鼠标穿透（⌃⌥P 恢复）", checked: model.clickThrough) { [weak self] in self?.desktop.toggleClickThrough() }
+        menu.addItem(.separator())
+        add("🏠 打开启动面板") { [weak self] in self?.openLauncher() }
+        add("📖 使用说明书") { [weak self] in self?.show("help", title: "使用说明", view: HelpView(), size: NSSize(width: 640, height: 650)) }
+        add("⬆ 检查更新", enabled: updater?.updater.canCheckForUpdates == true) { [weak self] in self?.updater?.checkForUpdates(nil) }
         add("⚙ 设置") { [weak self] in self?.openSettings() }
-        add("📖 使用说明") { [weak self] in self?.show("help", title: "使用说明", view: HelpView(), size: NSSize(width: 640, height: 650)) }
-        add("检查更新…", enabled: updater?.updater.canCheckForUpdates == true) { [weak self] in self?.updater?.checkForUpdates(nil) }
         add("🌙 收起来") { [weak self] in self?.desktop.hide() }
-        add("退出") { NSApp.terminate(nil) }
+        add("✕ 退出") { NSApp.terminate(nil) }
         return menu
     }
     private func show<V: View>(_ id: String, title: String, view: V, size: NSSize, replace: Bool = false) {

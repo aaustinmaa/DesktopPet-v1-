@@ -13,14 +13,39 @@ enum PetTheme {
 
 struct PetButtonStyle: ButtonStyle {
     var primary = false
-    @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
+        AnimatedPetButton(configuration: configuration, primary: primary)
+    }
+}
+private struct AnimatedPetButton: View {
+    let configuration: ButtonStyle.Configuration
+    let primary: Bool
+    @Environment(\.isEnabled) private var enabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hovered = false
+    private var active: Bool { hovered && enabled }
+    private var fill: Color {
+        if configuration.isPressed { return PetTheme.ink }
+        return active ? Color(red: 41/255, green: 93/255, blue: 101/255) : primary ? PetTheme.accent : PetTheme.card
+    }
+    var body: some View {
         configuration.label.font(.system(size: 13, weight: .semibold))
             .padding(.horizontal, 13).padding(.vertical, 9)
-            .foregroundStyle(primary ? Color.white : PetTheme.ink)
-            .background(primary ? PetTheme.accent : PetTheme.card, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(primary ? PetTheme.accent : PetTheme.border))
-            .opacity(enabled ? (configuration.isPressed ? 0.65 : 1) : 0.42)
+            .foregroundStyle(active || primary ? Color.white : PetTheme.ink)
+            .background {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(active ? PetTheme.accent : Color.clear, lineWidth: 1)
+                        .scaleEffect(active ? 1 : 0.7)
+                    RoundedRectangle(cornerRadius: 6).fill(fill)
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(primary || active ? PetTheme.accent : PetTheme.border))
+                        .scaleEffect(active ? 0.7 : 1)
+                }
+                .animation(reduceMotion ? nil : .timingCurve(0.25, 0, 0.3, 1, duration: 0.3), value: active)
+            }
+            .contentShape(Rectangle())
+            .opacity(enabled ? 1 : 0.42)
+            .onHover { hovered = $0 }
     }
 }
 struct PetCard<Content: View>: View {

@@ -128,3 +128,25 @@ acceptance requirements; no Intel, notarization or authenticated AI pass is clai
 - Native macOS title bars, pickers, steppers, file dialogs and login controls remain.
   This pass compares the checked-in Windows XAML; no live Windows screenshot
   or pixel-perfect cross-platform claim is made.
+
+## UI detail parity and settings categories (2026-09-27)
+
+- Buttons now reproduce the Windows 0.3-second (0.25, 0, 0.3, 1) hover curve:
+  outline expands from 0.7 to 1 while the fill shrinks from 1 to 0.7; labels and
+  hit areas stay fixed. Reduce Motion disables the interpolation.
+- SpeechBubbleView reproduces the 96-point canvas, minimum 184-point width,
+  12-point semibold centered text, 14-point corners, 1.5-point pale-jade outline,
+  shadow and 16 × 9 tail from SpeechBubbleWindow.xaml. A local AppKit render was
+  visually inspected; the bubble stays click-through and follows the pet.
+- Desktop secondary-click uses a custom celadon menu with Windows item ordering,
+  separators, checkmarks and a side submenu. Native menu-bar commands stay native.
+  UI checks passed for opening the desktop menu, keyboard submenu navigation,
+  Escape dismissal and dispatching the encouragement command. Global/local outside
+  clicks and app deactivation dismiss the popup. Control-click has a regression
+  test covering modifier release before mouse-up without a pet interaction.
+- Settings retain the new palette and Save/Cancel draft behavior, but restore four
+  category buttons: appearance, focus, AI/memory and local data. All four category
+  switches were checked in the running app; only the selected section is displayed.
+- Final development build and all 26 Swift tests passed. No DMG or Windows output
+  was rebuilt. Physical hover timing and trackpad gestures remain user acceptance
+  checks; the animation parameters match the checked-in Windows source.

@@ -11,6 +11,25 @@ import Testing
 }
 
 struct BehaviorTests {
+    @Test @MainActor func controlClickOpensContextMenuWithoutTriggeringPetInteraction() throws {
+        let view = PetView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        var menus = 0
+        var clicks = 0
+        view.onContextMenu = { _ in menus += 1 }
+        view.onClick = { _ in clicks += 1 }
+        let down = try #require(NSEvent.mouseEvent(with: .leftMouseDown, location: .zero,
+            modifierFlags: .control, timestamp: 0, windowNumber: 0, context: nil,
+            eventNumber: 1, clickCount: 1, pressure: 1))
+        // Releasing Control before the mouse must still suppress the left click.
+        let up = try #require(NSEvent.mouseEvent(with: .leftMouseUp, location: .zero,
+            modifierFlags: [], timestamp: 0, windowNumber: 0, context: nil,
+            eventNumber: 1, clickCount: 1, pressure: 0))
+        view.mouseDown(with: down)
+        view.mouseUp(with: up)
+        #expect(menus == 1)
+        #expect(clicks == 0)
+    }
+
     @Test @MainActor func tripleClickCancelsDoubleClickAndFourthClickDoesNotReopenChat() async throws {
         let view = PetView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
         var clicks: [Int] = []

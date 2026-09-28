@@ -105,3 +105,13 @@ the matching celadon palette and shared controls. Settings drafts preserve unrel
 live settings; journal drafts merge new automatic sessions before saving. See the
 UI alignment section in `VALIDATION.md` for the 25-test build and native UI checks.
 The existing DMG was not rebuilt for this change.
+
+## UI details and categorized settings (2026-09-27)
+
+Settings now use four category buttons while retaining celadon cards and Save/Cancel.
+Button hover scaling/timing matches Windows. `SpeechBubbleView.swift` replaces the
+native material bubble with the Windows outline, tail, text and sizing.
+`PetContextMenu.swift` supplies a matching desktop popup and side submenu with
+keyboard navigation/dismissal; command actions are shared with the native menu bar.
+The final local development build passes 26 Swift tests. See `VALIDATION.md` for
+UI checks and the remaining physical-hover/trackpad acceptance limits.
