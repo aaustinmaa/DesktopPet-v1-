@@ -32,7 +32,7 @@ struct ChatMarkdownView: NSViewRepresentable {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
         config.userContentController.add(context.coordinator, name: "height")
-        let view = WKWebView(frame: .zero, configuration: config)
+        let view = ChatBubbleWebView(frame: .zero, configuration: config)
         view.setValue(false, forKey: "drawsBackground")
         view.navigationDelegate = context.coordinator
         if let url = Self.resourceURL {
@@ -47,6 +47,7 @@ struct ChatMarkdownView: NSViewRepresentable {
         context.coordinator.render(view)
     }
     static func dismantleNSView(_ view: WKWebView, coordinator: Coordinator) {
+        (view as? ChatBubbleWebView)?.stopMonitoringScroll()
         view.configuration.userContentController.removeScriptMessageHandler(forName: "height")
         view.navigationDelegate = nil
         view.stopLoading()

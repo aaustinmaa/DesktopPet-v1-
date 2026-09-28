@@ -374,9 +374,8 @@ import UniformTypeIdentifiers
     private func threadList(archived: Bool) -> some View {
         ForEach(model.data.threads.filter { $0.archived == archived }.sorted { $0.updated > $1.updated }) { item in
             Button { selected = item.id; draft = "" } label: {
-                Text(item.title).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading).padding(9)
-                    .background(selected == item.id ? PetTheme.soft : Color.clear, in: RoundedRectangle(cornerRadius: 6))
-            }.buttonStyle(.plain).disabled(model.busy)
+                Text(item.title).lineLimit(2).frame(maxWidth: .infinity, alignment: .leading)
+            }.buttonStyle(ChatThreadButtonStyle(selected: selected == item.id)).disabled(model.busy)
                 .contextMenu { Button(item.archived ? "恢复" : "归档") { model.archive(item.id) }.disabled(model.busy) }
         }
     }
