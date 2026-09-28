@@ -90,7 +90,19 @@ import Sparkle
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         guard desktop != nil else { return true }
         recall()
-        return true
+        return false
+    }
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        guard model != nil else { return nil }
+        let menu = NSMenu()
+        for (id, title) in [("launcher", "启动面板"), ("chat", "和我聊聊"), ("journal", "专注记录"), ("settings", "设置"), ("help", "使用说明")] {
+            menu.addItem(MenuAction(title, checked: windows[id]?.isKeyWindow == true) { [weak self] in
+                self?.openDockWindow(id)
+            })
+        }
+        menu.addItem(.separator())
+        menu.addItem(MenuAction("显示所有已打开的窗口") { [weak self] in self?.recall() })
+        return menu
     }
     func applicationWillTerminate(_ notification: Notification) {
         guard model != nil else { return }
@@ -100,7 +112,44 @@ import Sparkle
         ScreenCapture.cleanup()
         for observer in workspaceObservers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
     }
-    @objc private func recall() { desktop.recover(); openLauncher() }
+    @objc private func recall() {
+        desktop.recover()
+        // AppKit orders these front to back. Restore in reverse to preserve focus.
+        let ordered = NSApp.orderedWindows.filter { window in
+            windows.values.contains { $0 === window } && (window.isVisible || window.isMiniaturized)
+        }
+        let minimized = windows.values.filter { window in
+            window.isMiniaturized && !ordered.contains { $0 === window }
+        }.sorted { $0.title < $1.title }
+        let opened = ordered + minimized
+        guard !opened.isEmpty else { openLauncher(); return }
+        NSApp.activate(ignoringOtherApps: true)
+        for window in opened.reversed() {
+            if window.isMiniaturized { window.deminiaturize(nil) }
+            window.orderFront(nil)
+        }
+        opened.first?.makeKeyAndOrderFront(nil)
+    }
+    private func activateWindow(_ window: NSWindow) {
+        NSApp.activate(ignoringOtherApps: true)
+        if window.isMiniaturized { window.deminiaturize(nil) }
+        window.makeKeyAndOrderFront(nil)
+    }
+    private func openDockWindow(_ id: String) {
+        // Selecting an open chat must not create a new conversation or resize it.
+        if let window = windows[id], window.isVisible || window.isMiniaturized {
+            activateWindow(window)
+            return
+        }
+        switch id {
+        case "launcher": openLauncher()
+        case "chat": openChat()
+        case "journal": openJournal()
+        case "settings": openSettings()
+        case "help": show("help", title: "使用说明", view: HelpView(), size: NSSize(width: 640, height: 650))
+        default: break
+        }
+    }
     @objc private func screenChanged() { desktop.clamp(); desktop.applySettings() }
     private func setupMenuBar() {
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -133,7 +182,14 @@ import Sparkle
         }
         editItem.submenu = editMenu
         bar.addItem(editItem)
+        let windowItem = NSMenuItem()
+        let windowMenu = NSMenu(title: "窗口")
+        windowMenu.addItem(withTitle: "最小化", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        windowMenu.addItem(withTitle: "全部置于前面", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
+        windowItem.submenu = windowMenu
+        bar.addItem(windowItem)
         NSApp.mainMenu = bar
+        NSApp.windowsMenu = windowMenu
     }
     private func makeMenu(forPet: Bool = false) -> NSMenu {
         let menu = NSMenu()
@@ -187,8 +243,7 @@ import Sparkle
             window.center()
             windows[id] = window
         }
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        activateWindow(window)
     }
     private func openLauncher() {
         show("launcher", title: "苏无度 · 沈青", view: LauncherView(model: model, recover: { [weak self] in self?.desktop.recover() },
