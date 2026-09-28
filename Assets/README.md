@@ -65,6 +65,16 @@ This uses one nearest-neighbor scale per sheet and registers the blue crown,
 so moving props never affect character centering. Old Shen Qing frames and
 v1 atlases are preserved in `Archive`.
 
+The v3 outer white rim is removed with the reviewed, frame-specific masks in
+`Source/AnimationAtlases/shenqing-v3-outline-masks`. White mask pixels erase
+the corresponding registered sprite pixels to transparent; black mask pixels
+leave the original RGBA values untouched. The original source PNGs remain intact.
+These masks also clear the stray outer dark rim while preserving the inner
+contour, facial details, clothing highlights and action props. Their manifest
+checks the original registered frames before applying a mask, so replacing art
+or changing registration requires reviewing the masks instead of silently
+erasing unrelated pixels. No resizing or recoloring occurs during this step.
+
 Open `Source/AnimationAtlases/shenqing-v3-preview.html` to play or step through
 all twelve states. The imagegen prompts are saved alongside it in
 `shenqing-actions-v3-prompts.md`.

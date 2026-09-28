@@ -6,6 +6,7 @@ frame registration independent of moving hands, bells and sleep glyphs.
 """
 from pathlib import Path
 import argparse
+import hashlib
 import json
 import shutil
 import statistics
@@ -20,6 +21,26 @@ ACTIONS = ('idle', 'blink', 'wave', 'heart', 'working', 'success', 'error',
            'sleeping', 'reminder', 'hit', 'question')
 CELL = 362
 ANCHOR = (170, 86)
+OUTLINE_MASKS = ATLAS / 'shenqing-v3-outline-masks'
+
+
+def erase_outer_outline(action, frames):
+    """Apply reviewed erasure masks without repainting or moving any pixels."""
+    manifest = json.loads((OUTLINE_MASKS / 'manifest.json').read_text())
+    fingerprint = hashlib.sha256(b''.join(frame.tobytes() for frame in frames)).hexdigest()
+    if fingerprint != manifest[action]:
+        raise ValueError(f'{action}: source artwork/registration changed; review the outline mask first')
+    mask = Image.open(OUTLINE_MASKS / f'{action}.png').convert('L')
+    if mask.size != (CELL * 4, CELL * 2):
+        raise ValueError(f'{action}: outline mask must match the normalized atlas')
+    cleaned = []
+    for index, frame in enumerate(frames):
+        x, y = (index % 4) * CELL, (index // 4) * CELL
+        erase = np.asarray(mask.crop((x, y, x + CELL, y + CELL))) > 0
+        pixels = np.array(frame)
+        pixels[erase] = 0
+        cleaned.append(Image.fromarray(pixels))
+    return cleaned
 
 
 def crown(image):
@@ -64,7 +85,7 @@ def registered_frames(action):
     # The source choreography is a closed cycle. Reuse its exact initial frame
     # at the seam, avoiding generation noise when the animation loops/restores.
     frames[-1] = frames[0].copy()
-    return frames, scale
+    return erase_outer_outline(action, frames), scale
 
 
 def archive_previous():
