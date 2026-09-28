@@ -408,7 +408,7 @@ import UniformTypeIdentifiers
     func updateNSView(_ view: NSScrollView, context: Context) {
         context.coordinator.parent = self
         guard let editor = view.documentView as? SendTextView else { return }
-        if editor.string != text { editor.string = text }
+        editor.synchronizeDraft(text)
         editor.send = send
     }
     final class Coordinator: NSObject, NSTextViewDelegate {
@@ -421,6 +421,12 @@ import UniformTypeIdentifiers
 }
 final class SendTextView: NSTextView {
     var send: (() -> Void)?
+    func synchronizeDraft(_ text: String) {
+        // SwiftUI can refresh while the input method owns uncommitted pinyin.
+        // Replacing string then discards the marked text and candidate selection.
+        guard !hasMarkedText(), string != text else { return }
+        string = text
+    }
     override func keyDown(with event: NSEvent) {
         if (event.keyCode == 36 || event.keyCode == 76) && !event.modifierFlags.contains(.shift) && !hasMarkedText() { send?() }
         else { super.keyDown(with: event) }
