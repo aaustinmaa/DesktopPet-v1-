@@ -197,12 +197,20 @@ import Sparkle
             hide: { [weak self] in self?.desktop.hide() }), size: NSSize(width: 450, height: 565))
     }
     private func openSettings() {
-        show("settings", title: "苏无度沈青设置", view: SettingsView(model: model, close: { [weak self] in self?.windows["settings"]?.close() }),
+        show("settings", title: "苏无度沈青设置", view: SettingsView(model: model, close: { [weak self] in
+            self?.model.endAppearancePreview()
+            self?.windows["settings"]?.close()
+        }),
              size: NSSize(width: 620, height: 750), replace: windows["settings"]?.isVisible != true)
     }
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         if sender.identifier?.rawValue == "journal" { journalEditor?.save() }
         return true
+    }
+    func windowWillClose(_ notification: Notification) {
+        if (notification.object as? NSWindow)?.identifier?.rawValue == "settings" {
+            model.endAppearancePreview()
+        }
     }
     private func openJournal() {
         if journalEditor == nil { journalEditor = JournalEditor(model: model) }

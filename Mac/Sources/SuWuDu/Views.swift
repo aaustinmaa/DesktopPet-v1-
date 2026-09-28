@@ -60,8 +60,13 @@ import UniformTypeIdentifiers
     @State private var key = ""
     @State private var startup = SMAppService.mainApp.status == .enabled
     @State private var status = ""
-    private func binding<T>(_ path: WritableKeyPath<Settings, T>) -> Binding<T> {
-        Binding(get: { draft.value[keyPath: path] }, set: { draft.value[keyPath: path] = $0 })
+    private func binding<T>(_ path: WritableKeyPath<Settings, T>, previewAppearance: Bool = false) -> Binding<T> {
+        Binding(get: { draft.value[keyPath: path] }, set: {
+            draft.value[keyPath: path] = $0
+            if previewAppearance {
+                model.previewAppearance(skin: draft.value.skin, scale: draft.value.scale)
+            }
+        })
     }
     var body: some View {
         VStack(spacing: 0) {
@@ -118,8 +123,8 @@ import UniformTypeIdentifiers
     private var appearance: some View {
         PetCard("外观与行为") {
             VStack(alignment: .leading, spacing: 6) { Text("名字").font(.headline); TextField("名字", text: binding(\.petName)) }
-            Picker("角色", selection: binding(\.skin)) { Text("苏无度").tag("suwudu"); Text("沈青").tag("shenqing") }
-            HStack { Slider(value: binding(\.scale), in: 0.2...1.5, step: 0.05) { Text("桌宠大小") }; Text(draft.value.scale, format: .percent.precision(.fractionLength(0))).monospacedDigit().frame(width: 50) }
+            Picker("角色", selection: binding(\.skin, previewAppearance: true)) { Text("苏无度").tag("suwudu"); Text("沈青").tag("shenqing") }
+            HStack { Slider(value: binding(\.scale, previewAppearance: true), in: 0.2...1.5, step: 0.05) { Text("桌宠大小") }; Text(draft.value.scale, format: .percent.precision(.fractionLength(0))).monospacedDigit().frame(width: 50) }
             Toggle("始终置顶", isOn: binding(\.topmost))
             Toggle("在所有桌面空间显示", isOn: binding(\.allSpaces))
             Toggle("自动漫游", isOn: binding(\.wander))
@@ -236,6 +241,7 @@ import UniformTypeIdentifiers
             try model.store.save(imported)
             model.data = imported
             draft = SettingsDraft(imported.settings)
+            model.endAppearancePreview()
             model.paused = true
             model.changeSettings { _ in }
             model.say("Windows 数据已导入。")

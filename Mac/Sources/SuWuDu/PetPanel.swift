@@ -194,6 +194,7 @@ final class PetPanel: NSPanel {
     private let contextMenu = PetContextMenuController()
     private var movementGeneration = 0
     private var positionSave: DispatchWorkItem?
+    private var displayedSkin: String?
     var onChat: (() -> Void)?
     var makeMenu: (() -> NSMenu)?
 
@@ -234,8 +235,9 @@ final class PetPanel: NSPanel {
             self.contextMenu.show(menu, at: point)
         }
         view.onAnimationEnd = { [weak model] in model?.restoreAnimation() }
-        model.onStateChanged = { [weak self] state in self?.view.play(state, skin: model.data.settings.skin) }
+        model.onStateChanged = { [weak self] state in self?.playState(state) }
         model.onSettingsChanged = { [weak self] in self?.applySettings() }
+        model.onAppearanceChanged = { [weak self] in self?.applyAppearance() }
         model.onBubble = { [weak self] text in self?.showBubble(text) }
         model.onWander = { [weak self] in self?.wander() }
         applySettings()
@@ -245,14 +247,22 @@ final class PetPanel: NSPanel {
         panel.orderFrontRegardless()
     }
     func applySettings() {
-        movementGeneration += 1
-        panel.setContentSize(NSSize(width: 210 * model.data.settings.scale, height: 238 * model.data.settings.scale))
         for window in [panel, bubble] {
             window.level = model.data.settings.topmost ? .floating : .normal
             window.collectionBehavior = model.data.settings.allSpaces ? [.canJoinAllSpaces, .fullScreenAuxiliary] : [.moveToActiveSpace, .fullScreenAuxiliary]
         }
         panel.ignoresMouseEvents = model.clickThrough
-        view.play(model.state, skin: model.data.settings.skin)
+        applyAppearance()
+    }
+    private func playState(_ state: PetState) {
+        displayedSkin = model.displayedSkin
+        view.play(state, skin: model.displayedSkin)
+    }
+    private func applyAppearance() {
+        movementGeneration += 1
+        panel.setContentSize(NSSize(width: 210 * model.displayedScale, height: 238 * model.displayedScale))
+        // Resizing must not restart the current animation on every slider event.
+        if displayedSkin != model.displayedSkin { playState(model.state) }
         clamp()
         positionBubble()
     }

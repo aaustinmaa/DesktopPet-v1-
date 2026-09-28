@@ -15,6 +15,10 @@ import Combine
     let sound: any SoundPlaying
     let ai = AIService()
     var onSettingsChanged: (() -> Void)?
+    var onAppearanceChanged: (() -> Void)?
+    private var appearancePreview: (skin: String, scale: Double)?
+    var displayedSkin: String { appearancePreview?.skin ?? data.settings.skin }
+    var displayedScale: Double { appearancePreview?.scale ?? data.settings.scale }
     var onStateChanged: ((PetState) -> Void)?
     var onWander: (() -> Void)?
     var onBubble: ((String) -> Void)?
@@ -50,6 +54,15 @@ import Combine
     func persist() {
         do { try store.save(data) } catch { self.error = "保存失败：\(error.localizedDescription)" }
     }
+    func previewAppearance(skin: String, scale: Double) {
+        appearancePreview = (skin, scale)
+        onAppearanceChanged?()
+    }
+    func endAppearancePreview() {
+        guard appearancePreview != nil else { return }
+        appearancePreview = nil
+        onAppearanceChanged?()
+    }
     func changeSettings(_ change: (inout Settings) -> Void) {
         change(&data.settings)
         data.settings.normalize()
@@ -77,7 +90,7 @@ import Combine
     }
     func animate(_ value: PetState, seconds: Double = 3) {
         state = value
-        let spec = AnimationSpec.make(value, skin: data.settings.skin)
+        let spec = AnimationSpec.make(value, skin: displayedSkin)
         let cycle = Double(spec.frames.count) * spec.interval
         let duration = spec.once ? cycle : spec.frames.count > 1 ? ceil(seconds / cycle) * cycle : seconds
         temporaryUntil = Date().addingTimeInterval(duration)
