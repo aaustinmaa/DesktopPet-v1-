@@ -64,9 +64,8 @@ if [[ "$WITH_CODEX" == 1 ]]; then
 fi
 ICONSET="$MAC_ROOT/output/$ARCH/AppIcon.iconset"
 mkdir -p "$ICONSET"
-# Use the actual Windows application icon, not a pet animation frame.
-ICON_SOURCE="$MAC_ROOT/output/$ARCH/windows-app-icon.png"
-sips -s format png "$REPO_ROOT/Assets/app.ico" --out "$ICON_SOURCE" >/dev/null
+# Full-bleed jade artwork keeps the macOS icon from becoming a small inset badge.
+ICON_SOURCE="$MAC_ROOT/Support/AppIcon.png"
 for size in 16 32 128 256 512; do
     sips -z "$size" "$size" "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
     double=$((size * 2))
