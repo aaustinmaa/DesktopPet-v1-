@@ -137,10 +137,8 @@ extension SoundPlaying {
 
 @MainActor enum ScreenCapture {
     static func capture() async throws -> URL {
-        guard CGPreflightScreenCaptureAccess() else {
-            CGRequestScreenCaptureAccess()
-            throw AppError.message("请在系统设置 → 隐私与安全性 → 屏幕录制中允许苏无度，然后重新打开应用。也可以关闭“看屏幕”继续聊天。")
-        }
+        // Let ScreenCaptureKit request/check its own authorization. A separate
+        // CoreGraphics preflight must not prevent an actual capture attempt.
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
         guard !content.displays.isEmpty else { throw AppError.message("没有可截取的显示器。") }
         let chatIDs = NSApp.windows.filter { $0.identifier?.rawValue == "chat" && $0.windowNumber > 0 }.map { CGWindowID($0.windowNumber) }

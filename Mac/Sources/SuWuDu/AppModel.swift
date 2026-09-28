@@ -315,13 +315,11 @@ import Combine
         data.threads[index].updated = Date()
         persist()
         animate(.working, seconds: 190)
-        var screenshot: URL?
-        defer {
-            if let screenshot { try? FileManager.default.removeItem(at: screenshot) }
-        }
         do {
-            if settings.screenVision && settings.provider != "offline" { screenshot = try await ScreenCapture.capture() }
-            let reply = try await ai.reply(text: text, context: context, settings: settings, screenshot: screenshot, memoryReply: memoryReply)
+            let reply = try await ChatScreenCapture.reply(enabled: settings.screenVision && settings.provider != "offline") { screenshot, notice in
+                let replyContext = notice.map { "\(context)\n[本次屏幕状态]\n\($0)\n本次没有截图。不要根据聊天记录猜测屏幕内容；涉及看图的请求请说明无法查看，其他内容正常回答。" } ?? context
+                return try await self.ai.reply(text: text, context: replyContext, settings: settings, screenshot: screenshot, memoryReply: memoryReply)
+            }
             guard let i = data.threads.firstIndex(where: { $0.id == threadID }) else { return }
             data.threads[i].messages.append(ChatMessage(role: "assistant", content: reply.text))
             data.threads[i].updated = Date()
