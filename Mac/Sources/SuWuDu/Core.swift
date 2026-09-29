@@ -147,14 +147,14 @@ enum FocusAccounting {
     }
 
     static func record(segments: [FocusSegment], planned: Int, completed: Bool, startedAt: Date,
-                       endedAt: Date, journal: inout [JournalDay]) {
+                       endedAt: Date, targets: [JournalTargetRule] = [], journal: inout [JournalDay]) {
         let minutes = completed ? planned : min(planned, Int(segments.reduce(0) { $0 + $1.seconds } / 60))
         let allocations = allocate(segments, minutes: minutes)
         var affected = Set(allocations.keys)
         let completionKey = key(endedAt)
         if completed { affected.insert(completionKey) }
         for date in affected.sorted() {
-            if !journal.contains(where: { $0.date == date }) { journal.append(JournalDay(date: date)) }
+            if !journal.contains(where: { $0.date == date }) { journal.append(JournalDay(date: date, target: targets.last { $0.contains(date) }?.target ?? 0)) }
             let i = journal.firstIndex(where: { $0.date == date })!
             journal[i].adjustment += allocations[date, default: 0]
             if completed && date == completionKey {
@@ -190,13 +190,35 @@ struct ChatThread: Codable, Identifiable {
     var archived = false
     var messages: [ChatMessage] = []
 }
+struct JournalTargetRule: Codable {
+    var from: String
+    var through: String?
+    var target: Int
+    func contains(_ date: String) -> Bool { date >= from && (through == nil || date <= through!) }
+}
+
 struct AppData: Codable {
     var version = 1
     var settings = Settings()
     var journal: [JournalDay] = []
+    var targetRules: [JournalTargetRule]?
     var focus: FocusRun?
     var threads: [ChatThread] = []
     var facts: [String] = []
+}
+
+extension AppData {
+    func journalDay(_ date: String) -> JournalDay {
+        journal.first { $0.date == date } ?? JournalDay(date: date, target: targetRules?.last { $0.contains(date) }?.target ?? 0)
+    }
+    mutating func setTargets(from: String, through: String?, target: Int) {
+        guard through == nil || through! >= from else { return }
+        let rule = JournalTargetRule(from: from, through: through, target: min(999, max(0, target)))
+        targetRules = (targetRules ?? []) + [rule]
+        for index in journal.indices where rule.contains(journal[index].date) {
+            journal[index].target = rule.target
+        }
+    }
 }
 
 enum LocalMemory {

@@ -170,7 +170,7 @@ import UniformTypeIdentifiers
         HStack {
             Text(title)
             Spacer()
-            TextField(title, value: binding(path), format: .number).multilineTextAlignment(.center).frame(width: 65)
+            IntegerField(title: title, value: binding(path)).multilineTextAlignment(.center).frame(width: 65)
             Text(unit).foregroundStyle(PetTheme.muted)
             Stepper(title, value: binding(path), in: range).labelsHidden()
         }

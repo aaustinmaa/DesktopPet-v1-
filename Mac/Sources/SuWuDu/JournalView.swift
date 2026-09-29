@@ -28,14 +28,14 @@ enum JournalExport {
         let parts = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
     }
-    var day: JournalDay { draft ?? model.data.journal.first { $0.date == dateKey } ?? JournalDay(date: dateKey) }
+    var day: JournalDay { draft ?? model.data.journalDay(dateKey) }
     func edit(_ updated: JournalDay) {
         if baseline == nil { baseline = day }
         draft = updated
     }
     func save() {
         guard var value = draft, let baseline else { return }
-        let latest = model.data.journal.first { $0.date == value.date } ?? JournalDay(date: value.date)
+        let latest = model.data.journalDay(value.date)
         let known = Set(baseline.sessions.map(\.id) + value.sessions.map(\.id))
         value.sessions += latest.sessions.filter { !known.contains($0.id) }
         value.adjustment += latest.adjustment - baseline.adjustment
@@ -51,6 +51,7 @@ enum JournalExport {
     @ObservedObject var editor: JournalEditor
     @State private var expanded: Set<String> = []
     @State private var showingExport = false
+    @State private var showingTargets = false
     @State private var status = "记录日会在晚上 9 点切换。"
     @State private var exportFrom = Date()
     @State private var exportTo = Date()
@@ -86,11 +87,11 @@ enum JournalExport {
                         HStack(spacing: 18) {
                             VStack(alignment: .leading) {
                                 Text("今日目标（个）").font(.headline)
-                                TextField("0–999", value: Binding(get: { day.target }, set: { binding(\.target).wrappedValue = min(999, max(0, $0)) }), format: .number)
+                                IntegerField(title: "0–999", value: binding(\.target), range: 0...999)
                             }
                             VStack(alignment: .leading) {
                                 Text("今日分钟调整（可正可负）").font(.headline)
-                                TextField("分钟", value: Binding(get: { day.adjustment }, set: { binding(\.adjustment).wrappedValue = min(10_000, max(-10_000, $0)) }), format: .number)
+                                IntegerField(title: "分钟", value: binding(\.adjustment), range: -10_000...10_000)
                             }
                         }
                     }
@@ -109,7 +110,7 @@ enum JournalExport {
                                 VStack(alignment: .leading, spacing: 10) {
                                     HStack {
                                         Text("分钟数")
-                                        TextField("分钟", value: sessionBinding(session, \.minutes), format: .number).frame(width: 70)
+                                        IntegerField(title: "分钟", value: sessionBinding(session, \.minutes), range: 0...1440).frame(width: 70)
                                         Toggle("计入完成数量", isOn: sessionBinding(session, \.countsTowardGoal))
                                         Spacer()
                                         Button("删除") { var updated = day; updated.sessions.removeAll { $0.id == session.id }; editor.edit(updated) }
@@ -123,6 +124,7 @@ enum JournalExport {
                             }.padding(12).background(PetTheme.surface, in: RoundedRectangle(cornerRadius: 9))
                         }
                     }
+                    Button("批量设置番茄钟目标") { editor.save(); showingTargets = true }
                     PetCard("今日 Notes") {
                         TextEditor(text: binding(\.notes)).frame(height: 110)
                             .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
@@ -138,6 +140,10 @@ enum JournalExport {
                 Button("保存") { editor.save(); status = "已保存。" }.buttonStyle(PetButtonStyle(primary: true))
             }.padding(18).background(PetTheme.card)
         }.frame(minWidth: 670, minHeight: 600).petPage()
+            .id(dateKey)
+            .sheet(isPresented: $showingTargets) {
+                TargetScheduleView(model: model, initialDate: date)
+            }
             .sheet(isPresented: $showingExport) {
                 VStack(alignment: .leading, spacing: 20) {
                     PetHeading(title: "导出专注记录", subtitle: "选择日期范围，保存为 Markdown 文件。")
@@ -164,7 +170,7 @@ enum JournalExport {
             var updated = day
             if let index = updated.sessions.firstIndex(where: { $0.id == session.id }) {
                 updated.sessions[index][keyPath: path] = value
-                updated.sessions[index].minutes = min(1440, max(1, updated.sessions[index].minutes))
+                updated.sessions[index].minutes = min(1440, max(0, updated.sessions[index].minutes))
                 editor.edit(updated)
             }
         })

@@ -179,7 +179,7 @@ import Combine
         advanceFocus()
         guard let run = data.focus else { breakRemaining = 0; restoreAnimation(); return }
         FocusAccounting.record(segments: run.segments, planned: run.planned, completed: false,
-                               startedAt: run.startedAt, endedAt: Date(), journal: &data.journal)
+                               startedAt: run.startedAt, endedAt: Date(), targets: data.targetRules ?? [], journal: &data.journal)
         data.focus = nil
         paused = true
         persist() // Journal and recovery state commit together: no double settlement after a crash.
@@ -235,7 +235,7 @@ import Combine
         data.focus = run
         if run.remaining <= 0 {
             FocusAccounting.record(segments: run.segments, planned: run.planned, completed: true,
-                                   startedAt: run.startedAt, endedAt: end, journal: &data.journal)
+                                   startedAt: run.startedAt, endedAt: end, targets: data.targetRules ?? [], journal: &data.journal)
             data.focus = nil
             paused = true
             breakRemaining = Double(data.settings.breakMinutes * 60)
@@ -284,6 +284,10 @@ import Combine
             if let message = object?["message"] as? String { say(message, seconds: 6) }
             try FileManager.default.removeItem(at: file)
         } catch { self.error = "无法读取 command.json：\(error.localizedDescription)" }
+    }
+    func setTargets(from: String, through: String?, target: Int) {
+        data.setTargets(from: from, through: through, target: target)
+        persist()
     }
     func saveDay(_ day: JournalDay) {
         var value = day
