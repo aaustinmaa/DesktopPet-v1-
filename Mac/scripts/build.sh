@@ -42,11 +42,22 @@ swift test "${TEST_ARGS[@]}"
 # Rebuild without test-only framework paths before copying the distributable executable.
 swift build "${SWIFT_ARGS[@]}"
 BIN="$(swift build "${SWIFT_ARGS[@]}" --show-bin-path)"
-APP="$MAC_ROOT/output/$ARCH/SuWuDu.app"
+DESTINATION="$MAC_ROOT/output/$ARCH/SuWuDu.app"
 mkdir -p "$MAC_ROOT/output/$ARCH"
-# Only this build's generated bundle is replaced. User data lives in Application Support.
-if [[ "$APP" != "$MAC_ROOT/output/$ARCH/SuWuDu.app" ]]; then exit 1; fi
-rm -rf "$APP"
+BUILD_STAGING="$(mktemp -d "$MAC_ROOT/output/$ARCH/.dev-build.XXXXXX")"
+PREVIOUS="$BUILD_STAGING/Previous.app"
+cleanup_build() {
+    if [[ -e "$PREVIOUS" && ! -e "$DESTINATION" ]]; then
+        if ! mv "$PREVIOUS" "$DESTINATION"; then
+            echo "Previous app preserved at $PREVIOUS" >&2
+            return
+        fi
+    fi
+    rm -rf "$BUILD_STAGING"
+}
+trap cleanup_build EXIT
+APP="$BUILD_STAGING/SuWuDu.app"
+# Preserve the previous development app until the new bundle is complete and verified.
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Assets" "$APP/Contents/Frameworks" "$APP/Contents/Helpers"
 cp "$BIN/SuWuDu" "$APP/Contents/MacOS/SuWuDu"
 cp -R "$BIN/SuWuDuMac_SuWuDu.bundle" "$APP/Contents/Resources/"
@@ -100,9 +111,20 @@ if [[ -n "${NOTARY_PROFILE:-}" ]]; then
     xcrun notarytool submit "$ZIP" --keychain-profile "$NOTARY_PROFILE" --wait
     xcrun stapler staple "$APP"
 fi
+if [[ -e "$DESTINATION" ]]; then mv "$DESTINATION" "$PREVIOUS"; fi
+if ! mv "$APP" "$DESTINATION"; then
+    if [[ -e "$PREVIOUS" ]]; then
+        if ! mv "$PREVIOUS" "$DESTINATION"; then
+            trap - EXIT
+            echo "Could not restore the previous app; preserved at $PREVIOUS" >&2
+        fi
+    fi
+    exit 1
+fi
+APP="$DESTINATION"
 if [[ "$MAKE_DMG" == 1 ]]; then
     STAGING="$(mktemp -d "$MAC_ROOT/output/$ARCH/dmg.XXXXXX")"
-    trap 'rm -rf "$STAGING"' EXIT
+    trap 'rm -rf "$STAGING"; cleanup_build' EXIT
     ditto "$APP" "$STAGING/SuWuDu.app"
     ln -s /Applications "$STAGING/Applications"
     hdiutil create -volname "SuWuDu" -srcfolder "$STAGING" -ov -format UDZO "$MAC_ROOT/output/$ARCH/SuWuDu-macOS-$ARCH.dmg"

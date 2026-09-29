@@ -115,9 +115,14 @@ enum FocusAccounting {
     }
 
     static func date(from key: String, calendar: Calendar = .current) -> Date? {
-        let parts = key.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3 else { return nil }
-        return calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2], hour: 12))
+        let fields = key.split(separator: "-", omittingEmptySubsequences: false)
+        guard fields.map(\.count) == [4, 2, 2], fields.allSatisfy({ $0.allSatisfy { $0.isASCII && $0.isNumber } }) else { return nil }
+        let parts = fields.compactMap { Int($0) }
+        guard parts.count == 3, parts[0] > 0,
+              let date = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2], hour: 12)) else { return nil }
+        let actual = calendar.dateComponents([.year, .month, .day], from: date)
+        guard actual.year == parts[0], actual.month == parts[1], actual.day == parts[2] else { return nil }
+        return date
     }
 
     static func allocate(_ segments: [FocusSegment], minutes: Int, calendar: Calendar = .current) -> [String: Int] {

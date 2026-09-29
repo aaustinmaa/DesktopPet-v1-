@@ -35,7 +35,13 @@ struct DataStore {
         return decoder
     }
     func load() throws -> (AppData, String?) {
-        guard FileManager.default.fileExists(atPath: file.path) else { return (AppData(), nil) }
+        if !FileManager.default.fileExists(atPath: file.path) {
+            let backup = file.appendingPathExtension("backup")
+            guard FileManager.default.fileExists(atPath: backup.path) else { return (AppData(), nil) }
+            let recovered = try decode(backup)
+            try Data(contentsOf: backup).write(to: file, options: .atomic)
+            return (recovered, "主数据文件缺失，已从备份恢复。")
+        }
         do { return (try decode(file), nil) }
         catch AppError.unsupportedVersion(let version) { throw AppError.unsupportedVersion(version) }
         catch {

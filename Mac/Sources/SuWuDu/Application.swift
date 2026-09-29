@@ -50,6 +50,7 @@ import Sparkle
             let store = try DataStore()
             let (loaded, warning) = try store.load()
             model = AppModel(store: store, loaded: loaded)
+            model.prepareForImport = { [weak self] in self?.journalEditor?.save() ?? true }
             desktop = DesktopController(model: model)
             desktop.makeMenu = { [weak self] in self?.makeMenu(forPet: true) ?? NSMenu() }
             desktop.onChat = { [weak self] in self?.openChat() }
@@ -103,6 +104,12 @@ import Sparkle
         menu.addItem(.separator())
         menu.addItem(MenuAction("显示所有已打开的窗口") { [weak self] in self?.recall() })
         return menu
+    }
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard model != nil else { return .terminateNow }
+        guard journalEditor?.save() != false else { return .terminateCancel }
+        model.pause()
+        return model.persist() ? .terminateNow : .terminateCancel
     }
     func applicationWillTerminate(_ notification: Notification) {
         guard model != nil else { return }
@@ -259,7 +266,7 @@ import Sparkle
              size: NSSize(width: 620, height: 750), replace: windows["settings"]?.isVisible != true)
     }
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        if sender.identifier?.rawValue == "journal" { journalEditor?.save() }
+        if sender.identifier?.rawValue == "journal" { return journalEditor?.save() ?? true }
         return true
     }
     func windowWillClose(_ notification: Notification) {

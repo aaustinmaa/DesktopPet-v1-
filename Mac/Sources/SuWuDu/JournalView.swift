@@ -33,17 +33,29 @@ enum JournalExport {
         if baseline == nil { baseline = day }
         draft = updated
     }
-    func save() {
-        guard var value = draft, let baseline else { return }
+    @discardableResult func save() -> Bool {
+        guard var value = draft, let baseline else { return true }
         let latest = model.data.journalDay(value.date)
+        if value.target == baseline.target { value.target = latest.target }
+        if value.notes == baseline.notes { value.notes = latest.notes }
+        // Three-way merge: only fields explicitly changed in the editor win.
+        value.sessions = value.sessions.compactMap { edited in
+            guard let original = baseline.sessions.first(where: { $0.id == edited.id }) else { return edited }
+            guard var live = latest.sessions.first(where: { $0.id == edited.id }) else { return nil }
+            if edited.minutes != original.minutes { live.minutes = edited.minutes }
+            if edited.notes != original.notes { live.notes = edited.notes }
+            if edited.countsTowardGoal != original.countsTowardGoal { live.countsTowardGoal = edited.countsTowardGoal }
+            return live
+        }
         let known = Set(baseline.sessions.map(\.id) + value.sessions.map(\.id))
         value.sessions += latest.sessions.filter { !known.contains($0.id) }
         value.adjustment += latest.adjustment - baseline.adjustment
-        model.saveDay(value)
+        guard model.saveDay(value) else { return false }
         draft = nil
         self.baseline = nil
+        return true
     }
-    func navigate(_ newDate: Date) { save(); date = newDate }
+    func navigate(_ newDate: Date) { if save() { date = newDate } }
 }
 
 @MainActor struct JournalView: View {
@@ -124,7 +136,7 @@ enum JournalExport {
                             }.padding(12).background(PetTheme.surface, in: RoundedRectangle(cornerRadius: 9))
                         }
                     }
-                    Button("批量设置番茄钟目标") { editor.save(); showingTargets = true }
+                    Button("批量设置番茄钟目标") { if editor.save() { showingTargets = true } }
                     PetCard("今日 Notes") {
                         TextEditor(text: binding(\.notes)).frame(height: 110)
                             .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
@@ -135,9 +147,9 @@ enum JournalExport {
             HStack {
                 Text(editor.draft == nil ? status : "有未保存的修改").font(.caption).foregroundStyle(PetTheme.muted)
                 Spacer()
-                Button("复制当天文本") { editor.save(); NSPasteboard.general.clearContents(); NSPasteboard.general.setString(JournalExport.markdown([day]), forType: .string); status = "已复制当天记录。" }
-                Button("导出 Markdown") { editor.save(); exportFrom = date; exportTo = date; showingExport = true }
-                Button("保存") { editor.save(); status = "已保存。" }.buttonStyle(PetButtonStyle(primary: true))
+                Button("复制当天文本") { guard editor.save() else { return }; NSPasteboard.general.clearContents(); NSPasteboard.general.setString(JournalExport.markdown([day]), forType: .string); status = "已复制当天记录。" }
+                Button("导出 Markdown") { if editor.save() { exportFrom = date; exportTo = date; showingExport = true } }
+                Button("保存") { if editor.save() { status = "已保存。" } }.buttonStyle(PetButtonStyle(primary: true))
             }.padding(18).background(PetTheme.card)
         }.frame(minWidth: 670, minHeight: 600).petPage()
             .id(dateKey)

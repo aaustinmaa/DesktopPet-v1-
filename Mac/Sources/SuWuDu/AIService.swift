@@ -92,6 +92,7 @@ struct CodexModel: Identifiable {
     private var turnTimeout: Task<Void, Never>?
 
     func start() async throws {
+        try Task.checkCancellation()
         if ready { return }
         if let starting { return try await starting.value }
         let task = Task { @MainActor in try await self.launch() }
@@ -123,10 +124,13 @@ struct CodexModel: Identifiable {
         input = stdin.fileHandleForWriting
         output = stdout.fileHandleForReading
         errors = stderr.fileHandleForReading
-        output?.readabilityHandler = { [weak self] handle in
+        output?.readabilityHandler = { [weak self, weak task] handle in
             let bytes = handle.availableData
             guard !bytes.isEmpty else { return }
-            DispatchQueue.main.async { self?.receive(bytes) }
+            DispatchQueue.main.async {
+                guard let self, let task, self.process === task else { return }
+                self.receive(bytes)
+            }
         }
         // Drain stderr to avoid blocking the child; do not persist auth or conversation diagnostics.
         errors?.readabilityHandler = { handle in _ = handle.availableData }
@@ -195,6 +199,7 @@ struct CodexModel: Identifiable {
             params["model"] = settings.codexModel
         }
         let threadResult = try await rpc("thread/start", params)
+        try Task.checkCancellation()
         guard let id = (threadResult["thread"] as? [String: Any])?["id"] as? String else { throw AppError.message("Codex 未返回聊天编号。") }
         activeThread = id
         turnResult = nil
@@ -220,6 +225,7 @@ struct CodexModel: Identifiable {
         return result
     }
     private func rpc(_ method: String, _ params: [String: Any]) async throws -> [String: Any] {
+        try Task.checkCancellation()
         let id = nextID
         nextID += 1
         return try await withCheckedThrowingContinuation { continuation in

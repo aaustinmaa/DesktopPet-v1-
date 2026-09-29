@@ -15,6 +15,7 @@ import Combine
     let sound: any SoundPlaying
     let ai = AIService()
     var onSettingsChanged: (() -> Void)?
+    var prepareForImport: (() -> Bool)?
     var onAppearanceChanged: (() -> Void)?
     private var appearancePreview: (skin: String, scale: Double)?
     var displayedSkin: String { appearancePreview?.skin ?? data.settings.skin }
@@ -22,6 +23,7 @@ import Combine
     var onStateChanged: ((PetState) -> Void)?
     var onWander: (() -> Void)?
     var onBubble: ((String) -> Void)?
+    private var replyTask: Task<Void, Never>?
     private var timer: Timer?
     private var lastUptime = ProcessInfo.processInfo.systemUptime
     private var lastDate = Date()
@@ -51,8 +53,9 @@ import Combine
         }
         if data.focus != nil { say("已恢复未完成的专注，点击继续。") }
     }
-    func persist() {
-        do { try store.save(data) } catch { self.error = "保存失败：\(error.localizedDescription)" }
+    @discardableResult func persist() -> Bool {
+        do { try store.save(data); return true }
+        catch { self.error = "保存失败：\(error.localizedDescription)"; return false }
     }
     func previewAppearance(skin: String, scale: Double) {
         appearancePreview = (skin, scale)
@@ -63,15 +66,16 @@ import Combine
         appearancePreview = nil
         onAppearanceChanged?()
     }
-    func changeSettings(_ change: (inout Settings) -> Void) {
+    @discardableResult func changeSettings(_ change: (inout Settings) -> Void) -> Bool {
         change(&data.settings)
         data.settings.normalize()
         hydrationAt = Date().addingTimeInterval(Double(data.settings.hydrationMinutes * 60))
         scheduleWander()
         if !data.settings.microbreaks { data.focus?.nextMicro = nil; data.focus?.microRemaining = nil }
         else if data.focus != nil && data.focus?.nextMicro == nil && data.focus?.microRemaining == nil { scheduleMicro() }
-        persist()
+        let saved = persist()
         onSettingsChanged?()
+        return saved
     }
     var focusLabel: String {
         if let run = data.focus {
@@ -285,16 +289,35 @@ import Combine
             try FileManager.default.removeItem(at: file)
         } catch { self.error = "无法读取 command.json：\(error.localizedDescription)" }
     }
-    func setTargets(from: String, through: String?, target: Int) {
+    @discardableResult func setTargets(from: String, through: String?, target: Int) -> Bool {
+        let previous = data
         data.setTargets(from: from, through: through, target: target)
-        persist()
+        guard persist() else { data = previous; return false }
+        return true
     }
-    func saveDay(_ day: JournalDay) {
+    @discardableResult func saveDay(_ day: JournalDay) -> Bool {
+        let previous = data.journal
         var value = day
         value.settle(minutes: data.settings.focusMinutes)
         if let i = data.journal.firstIndex(where: { $0.date == day.date }) { data.journal[i] = value }
         else { data.journal.append(value) }
-        persist()
+        guard persist() else { data.journal = previous; return false }
+        return true
+    }
+    func importWindows(_ folder: URL) throws {
+        guard !busy, data.focus == nil else { throw AppError.message("请先结束专注并等待聊天完成，再导入数据。") }
+        guard prepareForImport?() != false else { throw AppError.message("记录未保存，已停止导入。") }
+        let imported = try WindowsImport.read(folder, into: data)
+        let backup = store.directory.appendingPathComponent("before-import-\(UUID().uuidString).json")
+        try DataStore.encoder.encode(data).write(to: backup, options: .atomic)
+        try store.save(imported)
+        data = imported
+        paused = true
+        breakRemaining = 0
+        hydrationAt = Date().addingTimeInterval(Double(data.settings.hydrationMinutes * 60))
+        scheduleWander()
+        onSettingsChanged?()
+        restoreAnimation()
     }
     func newChat() -> String {
         data.threads.removeAll { $0.messages.isEmpty }
@@ -307,10 +330,24 @@ import Combine
         data.threads[i].archived.toggle()
         persist()
     }
-    func send(_ text: String, threadID: String) async {
-        guard !busy, let index = data.threads.firstIndex(where: { $0.id == threadID }) else { return }
+    @discardableResult func beginSend(_ text: String, threadID: String) -> Bool {
+        guard !busy, data.threads.contains(where: { $0.id == threadID }) else { return false }
         busy = true
-        defer { busy = false }
+        replyTask = Task { await performSend(text, threadID: threadID) }
+        return true
+    }
+    func cancelReply() {
+        replyTask?.cancel()
+        ai.codex.shutdown()
+    }
+    func send(_ text: String, threadID: String) async {
+        guard !busy else { return }
+        busy = true
+        await performSend(text, threadID: threadID)
+    }
+    private func performSend(_ text: String, threadID: String) async {
+        defer { busy = false; replyTask = nil }
+        guard !Task.isCancelled, let index = data.threads.firstIndex(where: { $0.id == threadID }) else { return }
         let settings = data.settings
         let memoryReply = settings.memory ? LocalMemory.process(text, facts: &data.facts) : nil
         let context = LocalMemory.context(thread: data.threads[index], threads: data.threads, facts: data.facts, enabled: settings.memory)
@@ -324,6 +361,7 @@ import Combine
                 let replyContext = notice.map { "\(context)\n[本次屏幕状态]\n\($0)\n本次没有截图。不要根据聊天记录猜测屏幕内容；涉及看图的请求请说明无法查看，其他内容正常回答。" } ?? context
                 return try await self.ai.reply(text: text, context: replyContext, settings: settings, screenshot: screenshot, memoryReply: memoryReply)
             }
+            try Task.checkCancellation()
             guard let i = data.threads.firstIndex(where: { $0.id == threadID }) else { return }
             data.threads[i].messages.append(ChatMessage(role: "assistant", content: reply.text))
             data.threads[i].updated = Date()
@@ -332,6 +370,7 @@ import Combine
             animate(reply.state)
             say(reply.text, seconds: 8)
         } catch {
+            if Task.isCancelled || error is CancellationError { restoreAnimation(); return }
             self.error = error.localizedDescription
             animate(.error)
         }

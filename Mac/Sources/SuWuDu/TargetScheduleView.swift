@@ -45,8 +45,7 @@ import SwiftUI
                 Spacer()
                 Button("取消") { dismiss() }
                 Button("应用") {
-                    model.setTargets(from: key(lower), through: upper.map(key), target: target)
-                    dismiss()
+                    if model.setTargets(from: key(lower), through: upper.map(key), target: target) { dismiss() }
                 }.buttonStyle(PetButtonStyle(primary: true))
                     .disabled(upper.map { key($0) < key(lower) } ?? false)
             }

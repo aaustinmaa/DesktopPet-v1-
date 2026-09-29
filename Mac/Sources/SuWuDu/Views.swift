@@ -116,8 +116,7 @@ import UniformTypeIdentifiers
                 if startup { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
                 if SMAppService.mainApp.status == .requiresApproval { SMAppService.openSystemSettingsLoginItems() }
             }
-            model.changeSettings { $0 = draft.applying(to: $0) }
-            close()
+            if model.changeSettings({ $0 = draft.applying(to: $0) }) { close() }
         } catch { model.error = error.localizedDescription }
     }
     private var appearance: some View {
@@ -229,21 +228,15 @@ import UniformTypeIdentifiers
         picker.allowsMultipleSelection = false
         guard picker.runModal() == .OK, let folder = picker.url else { return }
         do {
-            let imported = try WindowsImport.read(folder, into: model.data)
             let alert = NSAlert()
             alert.messageText = "导入 Windows 数据？"
             alert.informativeText = "相同日期和聊天 ID 将被替换；导入前会保留完整备份。"
             alert.addButton(withTitle: "导入")
             alert.addButton(withTitle: "取消")
             guard alert.runModal() == .alertFirstButtonReturn else { return }
-            let backup = model.store.directory.appendingPathComponent("before-import-\(UUID().uuidString).json")
-            try DataStore.encoder.encode(model.data).write(to: backup, options: .atomic)
-            try model.store.save(imported)
-            model.data = imported
-            draft = SettingsDraft(imported.settings)
+            try model.importWindows(folder)
+            draft = SettingsDraft(model.data.settings)
             model.endAppearancePreview()
-            model.paused = true
-            model.changeSettings { _ in }
             model.say("Windows 数据已导入。")
         } catch { model.error = error.localizedDescription }
     }
@@ -356,14 +349,13 @@ import UniformTypeIdentifiers
                     Composer(text: $draft, send: send).frame(height: 75)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                         .overlay(RoundedRectangle(cornerRadius: 6).stroke(PetTheme.border))
-                        .disabled(model.busy)
-                        .help("Enter 发送，Shift+Enter 换行")
+                        .help("Enter 发送，Shift+Enter 换行；等待回复时可继续编辑下一条消息")
                     VStack(spacing: 6) {
                         Button("发送", action: send).buttonStyle(PetButtonStyle(primary: true))
                             .disabled(model.busy || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         Toggle("看屏幕", isOn: Binding(get: { model.data.settings.screenVision }, set: { value in model.changeSettings { $0.screenVision = value } }))
                             .toggleStyle(.switch).controlSize(.mini).font(.caption).disabled(model.busy)
-                        if model.busy { Button("取消") { model.ai.codex.shutdown() }.disabled(model.data.settings.provider != "codex") }
+                        if model.busy { Button("取消") { model.cancelReply() } }
                     }
                 }.padding(10).background(PetTheme.card, in: RoundedRectangle(cornerRadius: 12))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(PetTheme.border))
@@ -382,9 +374,7 @@ import UniformTypeIdentifiers
     private func send() {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !model.busy else { return }
-        let id = selected
-        draft = ""
-        Task { await model.send(text, threadID: id) }
+        if model.beginSend(text, threadID: selected) { draft = "" }
     }
 }
 
