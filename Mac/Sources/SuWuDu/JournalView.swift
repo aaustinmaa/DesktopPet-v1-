@@ -33,6 +33,18 @@ enum JournalExport {
         if baseline == nil { baseline = day }
         draft = updated
     }
+    @discardableResult func adjustMinutes(by delta: Int) -> Bool {
+        guard delta != 0 else { return false }
+        var updated = day
+        let (adjustment, overflow) = updated.adjustment.addingReportingOverflow(delta)
+        guard !overflow, (-10_000...10_000).contains(adjustment) else {
+            model.error = "调整后的分钟数须在 -10000 至 10000 之间，本次增减未应用。"
+            return false
+        }
+        updated.adjustment = adjustment
+        edit(updated)
+        return true
+    }
     @discardableResult func save() -> Bool {
         guard var value = draft, let baseline else { return true }
         let latest = model.data.journalDay(value.date)
@@ -62,6 +74,8 @@ enum JournalExport {
     @ObservedObject var model: AppModel
     @ObservedObject var editor: JournalEditor
     @State private var expanded: Set<String> = []
+    @State private var minutesToAdd = 0
+    @State private var minutesToSubtract = 0
     @State private var showingExport = false
     @State private var showingTargets = false
     @State private var status = "记录日会在晚上 9 点切换。"
@@ -106,6 +120,24 @@ enum JournalExport {
                                 IntegerField(title: "分钟", value: binding(\.adjustment), range: -10_000...10_000)
                             }
                         }
+                        HStack(spacing: 18) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("加多少分钟").font(.headline)
+                                HStack {
+                                    IntegerField(title: "分钟", value: $minutesToAdd, range: 0...10_000)
+                                    Button("增加") { applyMinuteChange(subtract: false) }.disabled(minutesToAdd == 0)
+                                }
+                            }
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("减多少分钟").font(.headline)
+                                HStack {
+                                    IntegerField(title: "分钟", value: $minutesToSubtract, range: 0...10_000)
+                                    Button("减少") { applyMinuteChange(subtract: true) }.disabled(minutesToSubtract == 0)
+                                }
+                            }
+                        }
+                        Text("输入本次增减量，点击后自动计算并保存当天记录。")
+                            .font(.caption).foregroundStyle(PetTheme.muted)
                     }
                     PetCard {
                         HStack {
@@ -153,6 +185,7 @@ enum JournalExport {
             }.padding(18).background(PetTheme.card)
         }.frame(minWidth: 670, minHeight: 600).petPage()
             .id(dateKey)
+            .onChange(of: dateKey) { _, _ in minutesToAdd = 0; minutesToSubtract = 0 }
             .sheet(isPresented: $showingTargets) {
                 TargetScheduleView(model: model, initialDate: date)
             }
@@ -169,6 +202,13 @@ enum JournalExport {
                     }
                 }.padding(26).frame(width: 390).petPage()
             }
+    }
+    private func applyMinuteChange(subtract: Bool) {
+        let amount = subtract ? minutesToSubtract : minutesToAdd
+        guard editor.adjustMinutes(by: subtract ? -amount : amount) else { return }
+        // The delta is now in the draft, even if saving fails. Do not apply it twice on retry.
+        if subtract { minutesToSubtract = 0 } else { minutesToAdd = 0 }
+        if editor.save() { status = "已\(subtract ? "减少" : "增加") \(amount) 分钟并保存。" }
     }
     private func summary(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
