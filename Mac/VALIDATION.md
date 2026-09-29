@@ -150,3 +150,24 @@ acceptance requirements; no Intel, notarization or authenticated AI pass is clai
 - Final development build and all 26 Swift tests passed. No DMG or Windows output
   was rebuilt. Physical hover timing and trackpad gestures remain user acceptance
   checks; the animation parameters match the checked-in Windows source.
+
+## Mac installer refresh (2026-09-29)
+
+- Rebuilt the current workspace as version **1.0.1 (build 2)** using
+  `bash Mac/scripts/build.sh --dmg --sdk=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk`.
+- Apple Silicon installer: `output/arm64/SuWuDu-macOS-arm64.dmg`.
+  Open it and drag `SuWuDu.app` to Applications; quit the development app before
+  launching the installed copy. User data remains in Application Support.
+- All 42 Swift tests passed. The app and nested helper signatures verified.
+  `hdiutil verify` passed; the DMG was mounted read-only and all 358 app files/links
+  matched the rebuilt bundle, including file contents and executable permissions.
+  The `/Applications` shortcut and packaged version were verified, then unmounted.
+- DMG SHA-256: `32449d90ead77543c5b49b3c48fee90821d91d7457acf240b7bab19bc4da86d2`.
+- Sparkle 2.10.0 remains bundled. Automatic updates remain disabled: no Mac
+  appcast URL or public update-signing key is configured. No update was published
+  or end-to-end update installation tested. See README's signed distribution
+  instructions for enabling a hosted feed.
+- This is an ad-hoc signed local installer, not a notarized distribution release;
+  no Developer ID signing identity is available on this Mac. Intel packaging and
+  Windows outputs were outside this refresh. The running app was not restarted
+  and no copy was installed into Applications by this task.
