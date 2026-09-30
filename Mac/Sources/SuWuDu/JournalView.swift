@@ -160,11 +160,9 @@ enum JournalExport {
                                         Button("删除") { var updated = day; updated.sessions.removeAll { $0.id == session.id }; editor.edit(updated) }
                                     }
                                     Text("这个番茄钟的 Notes").font(.caption).foregroundStyle(PetTheme.muted)
-                                    TextEditor(text: sessionBinding(session, \.notes))
-                                        .scrollContentBackground(.hidden)
-                                        .padding(8)
+                                    NotesEditor(text: sessionBinding(session, \.notes))
                                         .frame(height: 65)
-                                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 5))
+                                        .clipShape(RoundedRectangle(cornerRadius: 5))
                                         .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
                                 }.padding(.top, 10)
                             } label: {
