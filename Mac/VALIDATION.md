@@ -1,5 +1,20 @@
 # Mac validation record
 
+## Focus panel copy cleanup (2026-10-14)
+
+- Removed persistent instructional sentences and duplicate labels in the panel,
+  matching/memo/task dialogs, journal editors, export and bulk target dialog.
+  User Notes, task metrics and error/loading/unsaved states remain available.
+- Native renders at 1120 × 820 and 760 × 820, the memo preview at 600 × 580 and
+  bulk target dialog at 480 × 330 were visually checked with isolated sample data.
+  Instructions now live in hover help and the existing built-in help page.
+- This changes presentation only. No new unit tests were added; the temporary
+  native rendering harness was removed after inspection. No real user data,
+  account requests or running app state were changed by these checks.
+- The development script's required 97 tests passed, followed by production
+  compilation and strict signature verification. Updated the Mac development
+  `.app` only; no DMG or Windows output was rebuilt.
+
 ## Compact records, memo extraction and history (2026-10-14)
 
 - Added 14 focused tests for explicit memo-source evidence, budgets/deadlines,

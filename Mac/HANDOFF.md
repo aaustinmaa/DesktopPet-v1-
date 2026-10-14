@@ -4,6 +4,18 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Focus panel copy cleanup — 2026-10-14
+
+Removed persistent instructional captions, taglines and duplicate explanations
+from the task/focus panel and its dialogs. Controls use short labels; rules live
+in control hover help and `HelpView`. Task/user Notes and relevant error, stale,
+loading and unsaved states remain visible. Memo source excerpts are expandable.
+The default timer/footer no longer show instructional prose, and normal session
+Notes no longer repeat the automatic/manual source on every row.
+Native layout checks and the development build passed; the build's required
+97-test suite and strict app signature verification passed. Only the development
+`.app` was rebuilt.
+
 ## Compact records, memo extraction and task history — 2026-10-14
 
 The journal now uses 30-point single-line session rows with aligned time/minute/

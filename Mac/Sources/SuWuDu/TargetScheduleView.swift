@@ -25,28 +25,28 @@ import SwiftUI
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            PetHeading(title: "批量设置番茄钟目标", subtitle: "提前安排每天的目标数量。")
+            Text("批量设置目标").font(.title2.bold())
             Picker("设置范围", selection: $mode) {
                 Text("整个月").tag("month")
                 Text("日期范围").tag("range")
                 Text("所有未来日期").tag("future")
             }.pickerStyle(.segmented)
-            DatePicker(mode == "month" ? "选择月份（该日期所在月）" : "开始日期", selection: $from, displayedComponents: .date)
-            if mode == "range" { DatePicker("结束日期（含当天）", selection: $through, displayedComponents: .date) }
+            DatePicker(mode == "month" ? "月份" : "开始日期", selection: $from, displayedComponents: .date)
+                .help(mode == "month" ? "选择该日期所在的整个月。" : "从这个日期开始生效。")
+            if mode == "range" { DatePicker("结束日期", selection: $through, displayedComponents: .date).help("包含当天。") }
             HStack {
                 Text("每天目标（个）")
                 IntegerField(title: "0–999", value: $target, range: 0...999).frame(width: 90)
             }
-            Text(upper.map { "将设置 \(key(lower)) 至 \(key($0)) 每天的目标。" } ?? "从 \(key(lower)) 起每天生效，无截止日期。")
+            Text(upper.map { "\(key(lower)) → \(key($0))" } ?? "\(key(lower)) 起")
                 .font(.callout)
-            Text("覆盖范围内已有目标，保留番茄钟和 Notes。之后仍可单独修改某一天；重复批量设置以最新设置为准。")
-                .font(.caption).foregroundStyle(PetTheme.muted)
             HStack {
                 Spacer()
                 Button("取消") { dismiss() }
                 Button("应用") {
                     if model.setTargets(from: key(lower), through: upper.map(key), target: target) { dismiss() }
                 }.buttonStyle(PetButtonStyle(primary: true))
+                    .help("覆盖所选范围内的目标，保留番茄钟和 Notes。")
                     .disabled(upper.map { key($0) < key(lower) } ?? false)
             }
         }.padding(26).frame(width: 480).petPage()

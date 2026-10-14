@@ -89,7 +89,7 @@ enum JournalExport {
     @State private var minutesToSubtract = 0
     @State private var showingExport = false
     @State private var showingTargets = false
-    @State private var status = "记录日会在晚上 9 点切换。"
+    @State private var status = ""
     @State private var exportFrom = Date()
     @State private var exportTo = Date()
     private var date: Date { editor.date }
@@ -139,6 +139,7 @@ enum JournalExport {
         }.frame(minWidth: 760, minHeight: 650).petPage()
             .onChange(of: dateKey) { _, _ in
                 minutesToAdd = 0; minutesToSubtract = 0
+                status = ""
                 selected = []; selectionAnchor = nil; expanded = []
                 model.cancelFocusMatch(); model.clearFocusMatch()
             }
@@ -149,10 +150,7 @@ enum JournalExport {
     }
     private var header: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("任务与专注").font(.system(size: 24, weight: .bold))
-                Text("计划、投入和每一颗番茄放在一起").font(.caption).foregroundStyle(PetTheme.muted)
-            }
+            Text("任务与专注").font(.system(size: 24, weight: .bold))
             Spacer()
             Button { moveDay(-1) } label: { Image(systemName: "chevron.left") }.help("前一天")
             DatePicker("记录日", selection: Binding(get: { date }, set: { editor.navigate($0) }), displayedComponents: .date)
@@ -191,32 +189,31 @@ enum JournalExport {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 18) {
                         VStack(alignment: .leading) {
-                            Text("当天目标（个）").font(.headline)
+                            Text("目标（个）").font(.headline)
                             IntegerField(title: "0–999", value: binding(\.target), range: 0...999)
                         }
                         VStack(alignment: .leading) {
-                            Text("当天分钟调整（可正可负）").font(.headline)
+                            Text("分钟调整").font(.headline)
                             IntegerField(title: "分钟", value: binding(\.adjustment), range: -10_000...10_000)
+                                .help("可填正数或负数，按原有规则折算当天目标。")
                         }
                     }
                     HStack(spacing: 18) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("加多少分钟").font(.headline)
+                            Text("增加分钟").font(.headline)
                             HStack {
                                 IntegerField(title: "分钟", value: $minutesToAdd, range: 0...10_000)
                                 Button("增加") { applyMinuteChange(subtract: false) }.disabled(minutesToAdd == 0)
                             }
                         }
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("减多少分钟").font(.headline)
+                            Text("减少分钟").font(.headline)
                             HStack {
                                 IntegerField(title: "分钟", value: $minutesToSubtract, range: 0...10_000)
                                 Button("减少") { applyMinuteChange(subtract: true) }.disabled(minutesToSubtract == 0)
                             }
                         }
                     }
-                    Text("输入本次增减量，点击后自动计算并保存当天记录。分钟调整保留原来的折算方式，不会凭空增加任务投入。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
                     Button("批量设置番茄钟目标") { if editor.save() { showingTargets = true } }
                 }.padding(.top, 12)
             }.font(.callout.weight(.semibold))
@@ -241,6 +238,10 @@ enum JournalExport {
                         .disabled(day.sessions.allSatisfy { $0.taskID != nil || !selectable($0) })
                     Button("全选") { selected = Set(day.sessions.filter(selectable).map(\.id)); selectionAnchor = nil }
                         .disabled(day.sessions.allSatisfy { !selectable($0) })
+                    if model.canUndoFocusAssignments {
+                        Button("撤销") { if editor.save(), model.undoFocusAssignments() { status = "已撤销" } }
+                            .help("撤销最近一批任务匹配")
+                    }
                 }
                 if !selected.isEmpty {
                     HStack(spacing: 8) {
@@ -254,16 +255,8 @@ enum JournalExport {
                         Button("取消选择") { selected = []; selectionAnchor = nil }
                     }
                 }
-                HStack {
-                    Text("点击选择；Shift 点击连续选中一段，再点击任务旁的关联按钮。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
-                    Spacer()
-                    if model.canUndoFocusAssignments {
-                        Button("撤销匹配") { if editor.save(), model.undoFocusAssignments() { status = "已撤销最近一批任务匹配。" } }
-                    }
-                }
                 if day.sessions.isEmpty {
-                    Text("这一天还没有番茄钟记录。").foregroundStyle(PetTheme.muted)
+                    Text("暂无记录").foregroundStyle(PetTheme.muted)
                         .frame(maxWidth: .infinity).padding(.vertical, 18)
                 }
                 if !day.sessions.isEmpty {
@@ -290,7 +283,7 @@ enum JournalExport {
                 Text("时间").frame(width: 96, alignment: .leading)
                 Text("分钟").frame(width: 42, alignment: .trailing)
                 Text("任务").frame(width: 160, alignment: .leading)
-                Text("Notes / 状态").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Notes").frame(maxWidth: .infinity, alignment: .leading)
             }
             Color.clear.frame(width: 20, height: 1)
         }.font(.system(size: 11, weight: .semibold)).foregroundStyle(PetTheme.muted)
@@ -353,7 +346,12 @@ enum JournalExport {
         return formatter
     }()
     private func sessionPreview(_ session: FocusSession) -> String {
-        sessionDetail(session).split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+        var parts: [String] = []
+        if session.isPartial { parts.append("提前结束") }
+        else if session.actualMinutes == 0 { parts.append("分钟换算") }
+        else if !session.countsTowardGoal { parts.append("不计目标") }
+        if !session.notes.isEmpty { parts.append(session.notes) }
+        return parts.joined(separator: " · ").split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
     }
     private func sessionDetail(_ session: FocusSession) -> String {
         var parts = [sourceLabel(session)]
@@ -368,7 +366,9 @@ enum JournalExport {
             HStack {
                 Text("分钟数").font(.callout)
                 IntegerField(title: "分钟", value: sessionBinding(session, \.minutes), range: 0...1440).frame(width: 70)
+                    .help(session.isPartial ? "提前结束的分钟已计入分钟调整；修改时会同步调整。" : "这个番茄钟记录的分钟数。")
                 Toggle("计入完成数量", isOn: sessionBinding(session, \.countsTowardGoal)).disabled(session.isPartial)
+                    .help(session.isPartial ? "提前结束不计作完整番茄。" : session.actualMinutes == 0 ? "分钟换算只服务每日目标，不重复计算任务投入。" : "关闭后不计入当天完成数量。")
                 Spacer()
                 Button("删除") {
                     var updated = day
@@ -377,14 +377,7 @@ enum JournalExport {
                     selected.remove(session.id)
                 }
             }
-            if session.isPartial {
-                Text("提前结束的分钟已计入分钟调整；修改或删除会同步调整，不计作完整番茄。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
-            } else if session.actualMinutes == 0 {
-                Text("分钟换算用于目标统计，实际投入见专注明细；这条记录的关联不增加任务投入。手动补记可直接关联任务。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
-            }
-            Text("这个番茄钟的 Notes").font(.caption).foregroundStyle(PetTheme.muted)
+            Text("Notes").font(.caption).foregroundStyle(PetTheme.muted)
             NotesEditor(text: sessionBinding(session, \.notes)).frame(height: 75)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
@@ -392,21 +385,23 @@ enum JournalExport {
     }
     private var footer: some View {
         HStack {
-            Text(editor.draft == nil ? status : "有未保存的记录修改").font(.caption).foregroundStyle(PetTheme.muted)
+            if editor.draft != nil || !status.isEmpty {
+                Text(editor.draft == nil ? status : "未保存").font(.caption).foregroundStyle(PetTheme.muted)
+            }
             Spacer()
             Button("复制当天文本") {
                 guard editor.save() else { return }
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(JournalExport.markdown([day], tasks: tasks), forType: .string)
-                status = "已复制当天记录。"
+                status = "已复制"
             }
             Button("导出 Markdown") { if editor.save() { exportFrom = date; exportTo = date; showingExport = true } }
-            Button("保存") { if editor.save() { status = "已保存。" } }.buttonStyle(PetButtonStyle(primary: true))
+            Button("保存") { if editor.save() { status = "已保存" } }.buttonStyle(PetButtonStyle(primary: true))
         }.padding(18).background(PetTheme.card)
     }
     private var exportSheet: some View {
         VStack(alignment: .leading, spacing: 20) {
-            PetHeading(title: "导出专注记录", subtitle: "选择日期范围，保存为 Markdown 文件，包含任务和 Notes。")
+            Text("导出专注记录").font(.title2.bold())
             DatePicker("从", selection: $exportFrom, displayedComponents: .date)
             DatePicker("至", selection: $exportTo, displayedComponents: .date)
             HStack {
@@ -435,7 +430,7 @@ enum JournalExport {
         guard !selected.isEmpty, editor.save() else { return }
         let live = model.data.journalDay(dateKey).sessions.filter { selected.contains($0.id) }
         guard model.assignFocusSessions(live, to: taskID) else { return }
-        status = "已将 \(live.count) 条记录\(taskID == nil ? "取消任务关联" : "关联到「\(taskTitle(taskID))」")。"
+        status = taskID == nil ? "已取消关联 · \(live.count) 条" : "已关联 · \(live.count) 条"
         selected = []; selectionAnchor = nil
     }
     private func taskTitle(_ id: String?) -> String {
@@ -451,7 +446,7 @@ enum JournalExport {
         let amount = subtract ? minutesToSubtract : minutesToAdd
         guard editor.adjustMinutes(by: subtract ? -amount : amount) else { return }
         if subtract { minutesToSubtract = 0 } else { minutesToAdd = 0 }
-        if editor.save() { status = "已\(subtract ? "减少" : "增加") \(amount) 分钟并保存。" }
+        if editor.save() { status = "已\(subtract ? "减少" : "增加") \(amount) 分钟" }
     }
     private func summary(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -492,7 +487,7 @@ enum JournalExport {
         panel.nameFieldStringValue = "专注记录.md"
         panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        do { try JournalExport.markdown(days, tasks: tasks).write(to: url, atomically: true, encoding: .utf8); showingExport = false; status = "已导出 Markdown。" }
+        do { try JournalExport.markdown(days, tasks: tasks).write(to: url, atomically: true, encoding: .utf8); showingExport = false; status = "已导出" }
         catch { model.error = error.localizedDescription }
     }
 }
@@ -510,9 +505,9 @@ struct HelpView: View {
                 Text("任务与番茄匹配").font(.headline)
                 Text("从启动面板、菜单栏或桌宠右键打开“任务与专注”。任务统一放在一张清单，支持预计番茄数、截止日期、可选截止时间、说明和手动完成；预计数是投入预算。截止日期按日历判断，与 21:00 记录日分界独立。可粘贴清单预览导入，备忘也能转为任务。")
                 Text("选好当前任务后，每轮专注自动关联；进行中切换任务只影响下一轮。本轮暂停、继续或恢复后仍保留原任务。番茄表格一行一条，直接显示时间、分钟、任务及简短 Notes；悬停查看完整文字，展开箭头编辑。勾选记录，按住 Shift 连续选择，再点任务旁“关联”，即可一次修正整批，或清除归属、撤销最近一次关联。按任务查看可汇总投入。提前结束明细记录真实分钟，分钟换算记录仅服务每日目标，避免重复计算任务投入。")
-                Text("在备忘中点击“AI 提取任务”，AI 会从当前文字提取可执行事项，保留原文出处。检查、修改和勾选候选任务后整批导入；原备忘会保留，明确写出的预计番茄数和截止日期才会提取。该操作只向设置中的服务发送当前备忘和本地日期/时区上下文，离线时可手动转任务或粘贴清单。")
+                Text("在备忘中点击“AI 提取”，AI 会从当前文字提取可执行事项，保留原文出处。检查、修改和勾选候选任务后整批导入；原备忘会保留，明确写出的预计番茄数和截止日期才会提取。该操作只向设置中的服务发送当前备忘和本地日期/时区上下文，离线时可手动转任务或粘贴清单。")
                 Text("任务清单中的“完成历史”保存已完成任务，显示完成时间、说明、原文出处及累计投入。展开可查看关联专注明细、跳转到对应记录日，也可重新打开任务继续执行。旧任务如果没有保存完成时间，会显示时间未记录。")
-                Text("“一句话匹配”和“AI 建议”使用设置中已有的 ChatGPT／OpenAI API；只发送当前匹配范围的记录时间、任务名称与说明、单次 Notes，不发送聊天历史、自由备忘或截图。先检查原任务、新任务与原因，再应用整批结果；有歧义或记录已被修改时不会覆盖。离线时可用“本机建议”，仅识别 Notes 中明确且唯一的完整任务名。未关联记录可以保留，不必逐颗填写。")
+                Text("“AI 匹配”和“AI 建议”使用设置中已有的 ChatGPT／OpenAI API；只发送当前匹配范围的记录时间、任务名称与说明、单次 Notes，不发送聊天历史、自由备忘或截图。先检查原任务、新任务与原因，再应用整批结果；有歧义或记录已被修改时不会覆盖。离线时可用“Notes 匹配”，仅识别 Notes 中明确且唯一的完整任务名。未关联记录可以保留，不必逐颗填写。操作规则可在相应控件的悬停提示中查看。")
                 Text("聊天与隐私").font(.headline)
                 Text("每次打开聊天默认新建会话；左侧可以继续旧聊天，右键归档或恢复。聊天保存在本机；开启记忆后，近期聊天摘要和最多 50 条明确记住的事实可用于其他聊天。说“请记住……”或“请忘记……”管理事实。关闭记忆不会删除聊天。")
                 Text("ChatGPT 模式使用随附 Codex 组件完成登录，API 模式使用保存在 macOS Keychain 的 API key。离线模式仅提供固定回复。开启“看屏幕”时，每次发送会截取所有显示器并合成一张图片，排除聊天窗口；图片会随消息发送给所选服务，请求结束后删除临时文件。屏幕录制权限由 macOS 管理。")

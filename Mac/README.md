@@ -63,6 +63,8 @@ Open **任务与专注** from the launcher, Dock menu, menu bar or pet context m
 The existing journal and timer controls share one panel with a unified task list;
 there is no separate today/task-library hierarchy. The panel uses the existing
 celadon theme and shared controls.
+The panel keeps controls, task/session data and relevant states visible; operating
+rules are in hover help and the built-in instructions. Memo source text is expandable.
 
 - Create or edit tasks with optional estimated pomodoros, a date-only or timed
   deadline, notes and a completion flag. Estimates measure a budget, not completion.
@@ -70,7 +72,7 @@ celadon theme and shared controls.
 - Paste a list and review/select the detected tasks before import; edit them after
   import. Explicit budget markers and separate numeric child lines are recognized;
   course numbers, dates, times and compound plans are preserved for manual review. Freeform memos
-  remain editable locally and can be turned into a task. **AI 提取任务** proposes
+  remain editable locally and can be turned into a task. **AI 提取** proposes
   actionable items from the memo; select and edit the proposed names, budgets,
   deadlines and notes before importing the batch. Each proposal retains its source
   excerpt, and the original memo stays intact. Only explicit budgets/deadlines are
@@ -85,8 +87,8 @@ celadon theme and shared controls.
   estimated/actual effort, notes and source excerpt. Expand a task to inspect its
   associated sessions and jump to a record day. Older completed tasks with no
   stored completion time show it as unknown. Reopen a task to continue working.
-- **一句话匹配（AI）** and **AI 建议未关联** use the configured ChatGPT/Codex or
-  OpenAI API provider. **根据 Notes 建议** runs locally and requires a unique, explicit
+- **AI 匹配** and **AI 建议** use the configured ChatGPT/Codex or
+  OpenAI API provider. **Notes 匹配** runs locally and requires a unique, explicit
   full task name in the note. Review old/new tasks and reasons before applying.
   The application rejects unknown IDs and stale snapshots; automatic suggestions
   preserve existing associations. Offline mode does not pretend to run an AI parser.

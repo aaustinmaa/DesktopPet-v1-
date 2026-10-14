@@ -12,11 +12,8 @@ import SwiftUI
                 HStack(spacing: 16) { taskPicker; Spacer(minLength: 12); controls }
                 VStack(alignment: .leading, spacing: 12) { taskPicker; controls }
             }
-            if let run = model.data.focus {
-                Text("本轮：\(taskTitle(run.taskID))。任务选择会沿用到之后的番茄；更换选择从下一轮生效。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
-            } else {
-                Text("选一次任务，之后的番茄自动沿用；也可以先专注，再整批补关联。")
+            if let run = model.data.focus, run.taskID != model.data.currentTaskID {
+                Text("本轮：\(taskTitle(run.taskID))")
                     .font(.caption).foregroundStyle(PetTheme.muted)
             }
         }.padding(.horizontal, 22).padding(.vertical, 14).background(PetTheme.card)
@@ -31,11 +28,14 @@ import SwiftUI
                     Text(task.title).tag(task.id)
                 }
             }.labelsHidden().frame(minWidth: 170, maxWidth: 330)
+                .help("任务会沿用到之后的番茄；专注中更换任务从下一轮生效。")
         }
     }
     private var controls: some View {
         HStack(spacing: 10) {
-            Text(model.focusLabel).font(.callout.weight(.semibold)).monospacedDigit()
+            if model.data.focus != nil || model.breakRemaining > 0 {
+                Text(model.focusLabel).font(.callout.weight(.semibold)).monospacedDigit()
+            }
             Button(model.data.focus == nil ? (model.breakRemaining > 0 ? "开始下一轮" : "开始专注") : (model.paused ? "继续" : "暂停")) {
                 model.toggleFocus()
             }.buttonStyle(PetButtonStyle(primary: true))
@@ -66,7 +66,6 @@ import SwiftUI
     @State private var editingTask: FocusTask?
     @State private var memos = ""
     @State private var savedMemos = ""
-    @State private var memoStatus = ""
     @State private var showingImport = false
     @State private var showingMemoExtraction = false
     @State private var taskError: String?
@@ -94,20 +93,14 @@ import SwiftUI
                 Picker("任务状态", selection: $showingHistory) {
                     Text("进行中 \(tasks.filter { !$0.isCompleted }.count)").tag(false)
                     Text("完成历史 \(tasks.filter(\.isCompleted).count)").tag(true)
-                }.pickerStyle(.segmented)
-                TextField(showingHistory ? "搜索历史任务、说明或原文" : "搜索任务或说明", text: $search)
+                }.pickerStyle(.segmented).labelsHidden()
                 HStack {
-                    Text(showingHistory ? "按完成时间排列，展开可追溯专注明细。" : "所有待办都在这一份清单中。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
-                    Spacer()
+                    TextField("搜索任务", text: $search)
+                        .help("搜索任务名称、说明或备忘原文。")
                     if !showingHistory { Toggle("截止优先", isOn: $sortByDue).font(.caption) }
                 }
-                if selectedSessionCount > 0 {
-                    Text("已选 \(selectedSessionCount) 条记录，点击任务旁的关联按钮即可整批匹配。")
-                        .font(.caption).foregroundStyle(PetTheme.accent)
-                }
                 if visibleTasks.isEmpty {
-                    Text(search.isEmpty ? (showingHistory ? "完成的任务会保存在这里，保留说明与每次专注的记录。" : "把计划写成任务，预计番茄数和截止日期都可以留空。") : "没有符合筛选条件的任务。")
+                    Text(search.isEmpty ? (showingHistory ? "暂无完成任务" : "暂无任务") : "未找到任务")
                         .font(.callout).foregroundStyle(PetTheme.muted).padding(.vertical, 14)
                 }
                 LazyVStack(alignment: .leading, spacing: 10) {
@@ -119,8 +112,6 @@ import SwiftUI
                     .help("先预览任务，再选择导入；购物清单和自由备忘可保留在下方。")
             }
             PetCard("备忘") {
-                Text("保留想法、链接和日常提醒，需要执行时再转成任务。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
                 NotesEditor(text: $memos).frame(height: 130)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
                     .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
@@ -128,10 +119,9 @@ import SwiftUI
                     HStack { memoButtons }
                     VStack(alignment: .leading, spacing: 8) { memoButtons }
                 }
-                Text(model.data.settings.provider == "offline" ? "AI 提取任务使用设置中的 AI 服务；离线时仍可手动转成任务。" : "AI 会先列出可执行的任务，可修改名称、预计投入与截止日期，再一次导入；备忘原文会保留。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
-                Text(memos == savedMemos ? (memoStatus.isEmpty ? "转成任务时会保留这份备忘。" : memoStatus) : "备忘有未保存的修改")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
+                if memos != savedMemos {
+                    Text("未保存").font(.caption).foregroundStyle(PetTheme.muted)
+                }
             }
         }
         .onAppear { memos = model.data.taskMemos ?? ""; savedMemos = memos }
@@ -141,7 +131,7 @@ import SwiftUI
             savedMemos = latest
         }
         .onChange(of: memos) { _, value in
-            if value != savedMemos, model.saveTaskMemos(value) { savedMemos = value; memoStatus = "备忘已自动保存。" }
+            if value != savedMemos, model.saveTaskMemos(value) { savedMemos = value }
         }
         .sheet(item: $editingTask) { task in FocusTaskEditor(model: model, task: task) }
         .sheet(isPresented: $showingImport) { FocusTaskImportView(model: model) }
@@ -181,6 +171,7 @@ import SwiftUI
                 if selectedSessionCount > 0 {
                     Button("关联 \(selectedSessionCount) 条") { assignSelection(task.id) }
                         .buttonStyle(PetButtonStyle(primary: true))
+                        .help("将已选的专注记录关联到这个任务。")
                 } else if !task.isCompleted {
                     Button(model.data.currentTaskID == task.id ? "已设为当前" : "设为当前") {
                         taskError = model.selectFocusTask(task.id) ? nil : (model.matchingError ?? model.error ?? "任务选择未保存，请重试。")
@@ -202,20 +193,22 @@ import SwiftUI
         }.padding(12).background(PetTheme.surface, in: RoundedRectangle(cornerRadius: 9))
     }
     private func saveMemos() {
-        if model.saveTaskMemos(memos) { savedMemos = memos; memoStatus = "备忘已保存。" }
+        if model.saveTaskMemos(memos) { savedMemos = memos }
     }
     @ViewBuilder private var memoButtons: some View {
-        Button("保存备忘") { saveMemos() }.disabled(memos == savedMemos)
-        Button("转成任务…") {
+        if memos != savedMemos { Button("保存") { saveMemos() } }
+        Button("转为任务…") {
             editingTask = FocusTask(title: String(memos.split(whereSeparator: \.isNewline).first ?? "").trimmingCharacters(in: .whitespaces), notes: memos)
         }.disabled(memos.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        Button("AI 提取任务…") {
+            .help("手动创建一个任务，保留备忘原文。")
+        Button("AI 提取…") {
             guard memos == savedMemos || model.saveTaskMemos(memos) else { return }
             savedMemos = memos
             model.requestMemoTaskExtraction(memos)
             showingMemoExtraction = true
         }.buttonStyle(PetButtonStyle(primary: true))
             .disabled(memos.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.busy || model.data.settings.provider == "offline")
+            .help(model.data.settings.provider == "offline" ? "在设置中启用 AI 服务后，可从备忘中提取任务。" : "使用设置中的 AI 服务提取任务，预览并编辑后导入；备忘原文会保留。")
     }
 }
 
@@ -252,10 +245,9 @@ import SwiftUI
                 Text(task.notes).font(.caption).textSelection(.enabled)
             }
             if let source = task.sourceExcerpt, !source.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("来自备忘原文").font(.caption.weight(.semibold))
+                DisclosureGroup("备忘原文") {
                     Text(source).font(.caption).foregroundStyle(PetTheme.muted).textSelection(.enabled)
-                }
+                }.font(.caption)
             }
             HStack {
                 Text("专注历史 · \(records.count) 条").font(.caption.weight(.semibold))
@@ -267,7 +259,7 @@ import SwiftUI
             }
             if let saveError { Text(saveError).font(.caption).foregroundStyle(.red) }
             if records.isEmpty {
-                Text("尚无关联的专注明细；完成状态与原有计划仍已保留。")
+                Text("暂无关联记录")
                     .font(.caption).foregroundStyle(PetTheme.muted)
             } else {
                 ScrollView {
@@ -280,9 +272,9 @@ import SwiftUI
                                     } else { Text(record.day).font(.caption) }
                                     Text("\(record.session.startedAt.formatted(date: .omitted, time: .shortened))–\(record.session.completedAt.formatted(date: .omitted, time: .shortened)) · \(record.session.taskMinutes) 分钟")
                                         .font(.caption).monospacedDigit()
+                                        .help(historySource(record.session))
                                     Spacer(minLength: 0)
                                 }
-                                Text(historySource(record.session)).font(.caption2).foregroundStyle(PetTheme.muted)
                                 if !record.session.notes.isEmpty {
                                     Text(record.session.notes).font(.caption).foregroundStyle(PetTheme.muted).textSelection(.enabled)
                                 }
@@ -331,7 +323,7 @@ import SwiftUI
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            PetHeading(title: exists ? "编辑任务" : "新增任务", subtitle: "预计投入与实际完成独立，截止日期可以留空。")
+            Text(exists ? "编辑任务" : "新增任务").font(.title2.bold())
             TextField("任务名称", text: $task.title)
             Toggle("任务已完成", isOn: $task.isCompleted)
             HStack {
@@ -341,9 +333,8 @@ import SwiftUI
             Toggle("设置截止日期", isOn: $hasDue)
             if hasDue {
                 DatePicker("截止日期", selection: $due, displayedComponents: dueHasTime ? [.date, .hourAndMinute] : [.date])
+                    .help("截止日期按实际日历判断，不受 21:00 记录换日影响。")
                 Toggle("包括具体时间", isOn: $dueHasTime)
-                Text("截止日期按实际日历判断，不受 21:00 记录换日影响。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
             }
             Text("说明与链接").font(.headline)
             NotesEditor(text: $task.notes).frame(height: 150)
@@ -390,43 +381,41 @@ import SwiftUI
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            PetHeading(title: "备忘转成任务", subtitle: "选择需要执行的条目，修改后整批导入；原文继续保留。")
             HStack(spacing: 10) {
+                Text("AI 提取任务").font(.title2.bold())
+                Spacer()
                 if model.memoExtractionBusy {
                     ProgressView().controlSize(.small)
-                    Text("AI 正在整理这份备忘…").font(.callout)
-                    Spacer()
-                    Button("取消整理") { model.cancelMemoTaskExtraction() }
+                    Text("提取中…").font(.callout)
+                    Button("取消") { model.cancelMemoTaskExtraction() }
                 } else {
-                    Text("使用设置中的 AI 服务，只整理明确可执行的内容。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
-                    Spacer()
-                    Button("重新整理") { model.requestMemoTaskExtraction(model.data.taskMemos ?? "") }
+                    Button("重新提取") { model.requestMemoTaskExtraction(model.data.taskMemos ?? "") }
                         .disabled(model.busy || model.data.settings.provider == "offline")
+                        .help("使用设置中的 AI 服务提取明确可执行的任务。")
                 }
             }
             if let error = model.memoExtractionError {
                 Text(error).font(.callout).foregroundStyle(.red).textSelection(.enabled)
             }
             if let plan = model.memoExtractionPlan {
-                DisclosureGroup("查看备忘原文", isExpanded: $showOriginal) {
+                DisclosureGroup("备忘原文", isExpanded: $showOriginal) {
                     ScrollView {
                         Text(plan.sourceText).font(.caption).foregroundStyle(PetTheme.muted)
                             .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
                     }.frame(maxHeight: 110).padding(.top, 5)
                 }.font(.caption)
                 if planIsStale {
-                    Text("备忘在预览后已有修改，请重新整理。")
+                    Text("备忘已修改，请重新提取。")
                         .font(.caption).foregroundStyle(.red)
                 }
                 if proposals.isEmpty {
-                    Text("没有识别到明确可执行的任务。想法、链接和日常记录仍保留在备忘里。")
+                    Text("未识别到任务")
                         .font(.callout).foregroundStyle(PetTheme.muted).padding(.vertical, 18)
                 } else {
                     HStack {
                         Text("候选任务 · \(proposals.count) 项").font(.headline)
                         Spacer()
-                        Button(selected == selectableIDs ? "取消全选" : "全选可导入项") {
+                        Button(selected == selectableIDs ? "取消全选" : "全选") {
                             selected = selected == selectableIDs ? [] : selectableIDs
                         }.font(.caption)
                     }
@@ -435,12 +424,7 @@ import SwiftUI
                             ForEach(proposals) { proposal in proposalRow(proposal) }
                         }
                     }.frame(minHeight: 180, maxHeight: 340)
-                    Text("原文中未明确写出的预计番茄数或日期会留空；这里也可以自行补充。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
                 }
-            } else if !model.memoExtractionBusy {
-                Text("整理不会改动备忘；生成候选后，你可以选择并编辑要导入的任务。")
-                    .font(.callout).foregroundStyle(PetTheme.muted).padding(.vertical, 18)
             }
             HStack {
                 Spacer()
@@ -449,6 +433,7 @@ import SwiftUI
                     if model.applyMemoTaskExtraction(proposals, selectedIDs: selected) { dismiss() }
                 }.buttonStyle(PetButtonStyle(primary: true))
                     .disabled(model.memoExtractionBusy || selected.isEmpty || planIsStale || model.memoExtractionPlan == nil)
+                    .help("导入选中的任务，保留备忘原文。")
             }
         }.padding(26).frame(width: 600).petPage()
             .onAppear { loadPlan() }
@@ -488,11 +473,15 @@ import SwiftUI
                         .font(.caption).foregroundStyle(PetTheme.muted)
                 }
                 if !proposal.notes.isEmpty { Text(proposal.notes).font(.caption).foregroundStyle(PetTheme.muted).lineLimit(2) }
-                Text("原文：\(proposal.sourceExcerpt)").font(.caption).foregroundStyle(PetTheme.muted).lineLimit(3).textSelection(.enabled)
-                if duplicate { Text("已有同名任务，请取消勾选或修改名称后导入。")
-                    .font(.caption).foregroundStyle(PetTheme.accent) }
-                else if batchDuplicate { Text("本批已有同名任务，请取消勾选或修改名称后导入。")
-                    .font(.caption).foregroundStyle(PetTheme.accent) }
+                DisclosureGroup("原文") {
+                    Text(proposal.sourceExcerpt).font(.caption).foregroundStyle(PetTheme.muted).textSelection(.enabled)
+                }.font(.caption)
+                if duplicate { Text("已有同名任务")
+                    .font(.caption).foregroundStyle(PetTheme.accent)
+                    .help("取消勾选或修改名称后导入。") }
+                else if batchDuplicate { Text("本批同名任务")
+                    .font(.caption).foregroundStyle(PetTheme.accent)
+                    .help("取消勾选或修改名称后导入。") }
             }.frame(maxWidth: .infinity, alignment: .leading)
             Button("编辑") { editingProposal = proposal }.font(.caption)
         }.padding(12).background(PetTheme.surface, in: RoundedRectangle(cornerRadius: 9))
@@ -519,7 +508,7 @@ import SwiftUI
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            PetHeading(title: "编辑候选任务", subtitle: "确认名称、预计投入与截止日期后再导入。")
+            Text("编辑候选任务").font(.title2.bold())
             TextField("任务名称", text: $proposal.title)
             HStack {
                 Toggle("预计番茄数", isOn: $hasEstimate)
@@ -533,9 +522,10 @@ import SwiftUI
             Text("任务说明").font(.headline)
             NotesEditor(text: $proposal.notes).frame(height: 100)
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
-            Text("备忘原文").font(.caption.weight(.semibold))
-            ScrollView { Text(proposal.sourceExcerpt).font(.caption).foregroundStyle(PetTheme.muted)
-                .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }.frame(maxHeight: 90)
+            DisclosureGroup("备忘原文") {
+                ScrollView { Text(proposal.sourceExcerpt).font(.caption).foregroundStyle(PetTheme.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }.frame(maxHeight: 90)
+            }.font(.caption)
             HStack {
                 Spacer()
                 Button("取消") { dismiss() }
@@ -576,7 +566,7 @@ import SwiftUI
                 matchingContent.padding(.top, 10)
             } label: {
                 HStack {
-                    Label("一句话整理与匹配建议", systemImage: "wand.and.stars").font(.title3.bold())
+                    Label("任务匹配", systemImage: "wand.and.stars").font(.title3.bold())
                     Spacer()
                     Text("\(selectionOnly ? "已选" : "当天") \(sessions.count) 条").font(.caption).foregroundStyle(PetTheme.muted)
                     if model.matchingBusy { ProgressView().controlSize(.small) }
@@ -586,23 +576,15 @@ import SwiftUI
     }
     private var matchingContent: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("范围：\(selectionOnly ? "已选的" : "当前记录日的") \(sessions.count) 条专注明细。")
-                    .font(.callout.weight(.semibold))
-                Spacer()
-                if model.matchingBusy { ProgressView().controlSize(.small); Button("取消") { model.cancelFocusMatch() } }
-            }
-            Text("一句话说明这些时间做了什么，AI 会找出对应记录；先预览，再一次应用。建议功能只处理范围内未关联的记录。")
-                .font(.caption).foregroundStyle(PetTheme.muted)
             NotesEditor(text: $instruction).frame(height: 65)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
+                .accessibilityLabel("匹配指令")
+                .help("例如：上午前三个做 CS370，其余做网站。按当前范围生成匹配预览。")
             ViewThatFits(in: .horizontal) {
                 HStack { matchingButtons }
                 VStack(alignment: .leading) { matchingButtons }
             }
-            Text(model.data.settings.provider == "offline" ? "离线模式可根据 Notes 中明确出现的任务名生成本地建议；一句话匹配需先在设置中启用 AI。" : "AI 使用设置中的服务，发送范围内记录的时间及 Notes、任务名称与说明。明确任务名也可用本地建议。")
-                .font(.caption).foregroundStyle(PetTheme.muted)
             if let error = model.matchingError { Text(error).font(.callout).foregroundStyle(.red).textSelection(.enabled) }
             if let plan = model.matchingPlan {
                 Divider()
@@ -610,12 +592,13 @@ import SwiftUI
                     Text("匹配预览 · \(plan.changes.count) 条").font(.headline)
                     Spacer()
                     Button("清除") { model.clearFocusMatch() }
-                    Button("应用整批匹配") { if prepare() { _ = model.applyFocusMatch() } }
+                    Button("应用") { if prepare() { _ = model.applyFocusMatch() } }
                         .buttonStyle(PetButtonStyle(primary: true))
                         .disabled(model.matchingBusy || plan.changes.isEmpty || staleReason != nil)
+                        .help("整批修改任务归属，保留分钟、目标和 Notes；应用后可撤销。")
                 }
                 if plan.changes.isEmpty {
-                    Text("没有可应用的匹配。补充具体时间段、任务名或 Notes 后再试。")
+                    Text("暂无匹配")
                         .font(.callout).foregroundStyle(PetTheme.muted)
                 } else {
                     ScrollView {
@@ -624,29 +607,31 @@ import SwiftUI
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("\(timeLabel(change.sessionID)) · \(title(change.expectedTaskID)) → \(title(change.targetTaskID))")
                                         .font(.callout.weight(.semibold))
-                                    if !change.reason.isEmpty { Text(change.reason).font(.caption).foregroundStyle(PetTheme.muted) }
+                                    if !change.reason.isEmpty { Text(change.reason).font(.caption).foregroundStyle(PetTheme.muted).lineLimit(2).help(change.reason) }
                                 }.frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                     }.frame(maxHeight: 190)
-                    Text("只修改任务归属；分钟、目标和 Notes 会保留。应用后可整批撤销。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
                     if let staleReason { Text(staleReason).font(.caption).foregroundStyle(.red) }
                 }
             }
         }
     }
     @ViewBuilder private var matchingButtons: some View {
-        Button("一句话匹配（AI）") {
+        Button("AI 匹配") {
             if prepare() { model.requestFocusMatch(instruction, sessions: liveSessions()) }
         }.buttonStyle(PetButtonStyle(primary: true))
             .disabled(unavailable || model.matchingBusy || model.busy || model.data.settings.provider == "offline" || instruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        Button("根据 Notes 建议") {
+            .help(model.data.settings.provider == "offline" ? "在设置中启用 AI 服务后，可按输入的指令匹配。" : "使用设置中的 AI 服务；发送当前范围的时间、Notes 与任务名称、说明。")
+        Button("Notes 匹配") {
             if prepare() { model.requestFocusSuggestions(sessions: liveSessions(), useAI: false) }
         }.disabled(unavailable || model.matchingBusy)
-        Button("AI 建议未关联") {
+            .help("离线匹配 Notes 中明确出现的任务名，仅处理未关联记录。")
+        Button("AI 建议") {
             if prepare() { model.requestFocusSuggestions(sessions: liveSessions().filter { $0.taskID == nil }, useAI: true) }
         }.disabled(unavailable || model.matchingBusy || model.busy || model.data.settings.provider == "offline" || sessions.allSatisfy { $0.taskID != nil })
+            .help("使用设置中的 AI 服务，为当前范围的未关联记录生成建议。")
+        if model.matchingBusy { Button("取消") { model.cancelFocusMatch() } }
     }
     private func liveSessions() -> [FocusSession] {
         let ids = Set(sessions.map(\.id))
@@ -671,19 +656,18 @@ import SwiftUI
     @State private var status = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            PetHeading(title: "粘贴清单", subtitle: "先识别候选任务，再选择要导入的条目。")
+            Text("粘贴清单").font(.title2.bold())
             NotesEditor(text: $text).frame(height: 160)
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
-            HStack {
-                Button("预览任务") {
-                    candidates = FocusTaskImport.preview(text)
-                    selected = Set(candidates.map(\.id))
-                    status = candidates.isEmpty ? "没有识别到任务。可以每行写一个任务。" : "取消勾选备忘或重复内容，再导入。"
-                }.disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Text("行尾番茄数仅作为候选估计，请在预览中确认。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
+            Button("预览任务") {
+                candidates = FocusTaskImport.preview(text)
+                selected = Set(candidates.map(\.id))
+                status = candidates.isEmpty ? "未识别到任务" : ""
+            }.disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .help("每行一个任务；识别明确标注的预计番茄数。请选择需要导入的条目。")
+            if !status.isEmpty {
+                Text(status).font(.caption).foregroundStyle(PetTheme.muted)
             }
-            Text(status).font(.caption).foregroundStyle(PetTheme.muted)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(candidates) { task in
