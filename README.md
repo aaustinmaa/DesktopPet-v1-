@@ -10,6 +10,8 @@ Mac 原生版已将统一任务清单、可选截止日期/时间、备忘、清
 
 Mac 使用原有浅青 UI 风格。AI 使用设置中已有的 ChatGPT／API，先预览再应用；离线仍可用明确任务名的本机建议。新功能目前仅在 Mac 开发版实现，Windows 待移植。
 
+AI 备忘提取统一返回六字段任务 JSON（名称、预计番茄数、规范化日期／时间、备注、原文出处），由严格 JSON Schema 约束。备忘中的横线后数字、紧接下一行数字和命名子任务 `+N` 由 AI 理解为各自的预计番茄数；应用校验规范结果，不再按原文写法重新解析预算。详见 [Mac 提取协议](Mac/README.md#memo-ai-contract)。
+
 使用与开发构建见 [Mac/README.md](Mac/README.md)，平台差异见 [Mac/WINDOWS_PARITY.md](Mac/WINDOWS_PARITY.md)。Mac 开发入口为 `Mac/output/arm64/SuWuDu.app`；开发构建不带 `--dmg`。应用内使用说明也已更新。
 
 ## 当前功能

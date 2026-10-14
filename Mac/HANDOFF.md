@@ -4,6 +4,32 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Fixed memo-extraction contract — 2026-10-14
+
+`AIService.extractMemoTasks` sends dedicated fixed instructions plus the memo,
+local reference date/timezone and strict JSON Schema to both the Codex and OpenAI
+API providers. Regardless of input notation, the response is `{"tasks": [...]}`.
+Every task has exactly six required keys: `title` (string), `estimatedPomodoros`
+(integer 0–10000 or null), `dueDate` (`YYYY-MM-DD` or null), `dueTime` (`HH:mm` or
+null), `notes` (string) and `sourceExcerpt` (exact original substring). A non-null
+time requires a date; invalid calendar dates or times are rejected.
+
+AI interprets the user's dash budgets, following standalone numeric lines and
+named child `+N` budgets. Parent and child budgets remain separate: the CS370
+example produces 15 and 5, not 20. Course identifiers are not estimates; a task
+without a budget remains present with null. AI normalizes explicit deadlines
+using the supplied date/timezone; uncertain values remain null. Local code only
+validates the contract, types, ranges, normalized dates/times and source integrity.
+It no longer parses memo notation or resolves a whitelist of deadline expressions;
+`estimateText` and `deadlineText` are absent from the new schema.
+
+Preview/edit/selected import, duplicate handling, stale-request rejection and
+original memo preservation remain in place. Windows extraction is still pending.
+The 21 targeted contract/import tests passed. The required development build
+passed 104 tests in 19 suites and strict signature verification, producing
+`output/arm64/SuWuDu.app`. No live-model extraction pass is claimed. See the current
+entry in `VALIDATION.md`.
+
 ## Focus panel copy cleanup — 2026-10-14
 
 Removed persistent instructional captions, taglines and duplicate explanations
@@ -27,8 +53,8 @@ stay unknown. Historical tasks retain their associated sessions and can navigate
 to the record day through `JournalEditor.navigate`, which saves pending edits.
 
 `FocusMemoExtraction.swift` validates AI task proposals and original-source
-evidence, resolves supported explicit deadlines locally, and leaves ambiguous
-information for review. `AppModelMemoTasks.swift` handles cancellation, stale memo
+integrity; the current normalized contract is described above.
+`AppModelMemoTasks.swift` handles cancellation, stale memo
 snapshots and atomic selected imports. `AIService.extractMemoTasks` uses the
 existing Codex/OpenAI providers. The UI allows editing proposals before import,
 preserves the memo and original excerpts, and excludes duplicate titles by default.

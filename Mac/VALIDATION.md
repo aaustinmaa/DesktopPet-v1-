@@ -1,5 +1,32 @@
 # Mac validation record
 
+## Fixed memo-extraction contract (2026-10-14)
+
+- The AI request uses dedicated fixed instructions, memo text, local reference
+  date/timezone and strict JSON Schema for both ChatGPT/Codex and OpenAI API.
+  Every task returns the same six required keys: `title`, `estimatedPomodoros`,
+  `dueDate`, `dueTime`, `notes` and `sourceExcerpt`.
+- Estimates are integers from 0 to 10000 or null. Dates/times use valid local
+  `YYYY-MM-DD` / `HH:mm` values or null; a time requires a date. Original source
+  excerpts must match the memo. Local checks validate this normalized contract,
+  rather than parsing memo notation or resolving a deadline-word whitelist.
+- The instructions explicitly explain dash budgets, a following numeric line,
+  separate named-child `+N` budgets, course identifiers and tasks with no estimate.
+  AI performs this interpretation and deadline normalization; there are no
+  `estimateText` or `deadlineText` fields.
+- The 21 targeted tests in `FocusMemoExtractionTests` and
+  `MemoBudgetNotationTests` passed. They cover the seven canonical tasks from the
+  screenshot, the complete prompt example, varied input notation with the same
+  response contract, nullable values, invalid types/extra keys, normalized dates,
+  DST validation, source integrity and atomic/stale import handling. These are
+  fixture-based contract checks, not a live-model semantic accuracy test.
+- The required development build checks passed all 104 tests in 19 suites,
+  followed by production compilation and strict signature verification. The
+  updated Apple Silicon development app is `output/arm64/SuWuDu.app`. No real AI
+  request was submitted. The older results below describe their original versions.
+- This request remains scoped to the Mac development app; Windows and the DMG
+  are outside the update.
+
 ## Focus panel copy cleanup (2026-10-14)
 
 - Removed persistent instructional sentences and duplicate labels in the panel,

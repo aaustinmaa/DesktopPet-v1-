@@ -20,96 +20,101 @@ struct FocusMemoExtractionTests {
             referenceDate: ISO8601DateFormatter().date(from: "2026-10-14T14:00:00Z")!, timeZoneIdentifier: "America/Toronto")
     }
 
-    private func response(title: String = "CS370 补课", estimate: Any = NSNull(), estimateText: Any = NSNull(),
-                          deadline: Any = NSNull(), source: String = "CS370 补课 - 15，明天 17:30 前提交笔记") throws -> String {
-        let task: [String: Any] = ["title": title, "estimatedPomodoros": estimate, "estimateText": estimateText,
-            "deadlineText": deadline, "notes": "提交笔记", "sourceExcerpt": source]
+    private func response(title: String = "CS370 补课", estimate: Any = NSNull(),
+                          dueDate: Any = NSNull(), dueTime: Any = NSNull(), notes: String = "提交笔记",
+                          source: String = "CS370 补课 - 15，明天 17:30 前提交笔记") throws -> String {
+        let task: [String: Any] = ["title": title, "estimatedPomodoros": estimate, "dueDate": dueDate,
+            "dueTime": dueTime, "notes": notes, "sourceExcerpt": source]
         return String(decoding: try JSONSerialization.data(withJSONObject: ["tasks": [task]]), as: UTF8.self)
     }
 
-    @Test func parsesOnlySupportedExplicitEvidenceAndRetainsSource() throws {
-        var snapshot = request
-        snapshot.sourceText = "CS370 补课，预计 15 个番茄钟，明天 17:30 前提交笔记"
-        let result = try FocusMemoExtraction.parse(response(estimate: 15, estimateText: "15 个番茄钟",
-            deadline: "明天 17:30", source: snapshot.sourceText), request: snapshot)
+    @Test func parsesNormalizedTaskValuesAndRetainsSource() throws {
+        let result = try FocusMemoExtraction.parse(response(estimate: 15,
+            dueDate: "2026-10-15", dueTime: "17:30"), request: request)
         let task = try #require(result.first)
         #expect(task.title == "CS370 补课")
         #expect(task.estimatedPomodoros == 15)
         #expect(task.dueHasTime)
         #expect(task.dueDate == ISO8601DateFormatter().date(from: "2026-10-15T21:30:00Z"))
-        #expect(task.sourceExcerpt == snapshot.sourceText)
-        #expect(snapshot.sourceText == "CS370 补课，预计 15 个番茄钟，明天 17:30 前提交笔记")
+        #expect(task.sourceExcerpt == "CS370 补课 - 15，明天 17:30 前提交笔记")
+        #expect(task.notes == "提交笔记")
     }
 
-    @Test func trailingBudgetAndSeparateNumericBudgetRequireOneOriginalTask() throws {
-        for source in ["个人网站 - 20", "个人网站\n20"] {
+    @Test func inputNotationDoesNotChangeTheOutputContract() throws {
+        for source in ["个人网站 - 20", "个人网站\n20", "个人网站，预算二十个番茄钟", "个人网站 【20🍅】"] {
             var snapshot = request; snapshot.sourceText = source
             let proposals = try FocusMemoExtraction.parse(response(title: "个人网站", estimate: 20,
-                estimateText: "20", source: source), request: snapshot)
+                notes: "", source: source), request: snapshot)
             #expect(proposals.first?.estimatedPomodoros == 20)
+            #expect(proposals.first?.notes == "")
         }
     }
 
-    @Test func rejectsCourseNumbersInventedEvidenceAndMalformedBatchAsWhole() throws {
-        var snapshot = request; snapshot.sourceText = "Mod 10\nCS 370\n2026-10-16\n读两小时"
+    @Test func rejectsInventedSourceAndMalformedBatches() throws {
         let invalid = [
-            try response(title: "Mod 10", estimate: 10, estimateText: "10", source: "Mod 10"),
-            try response(title: "CS 370", estimate: 370, estimateText: "370", source: "CS 370"),
-            try response(title: "读两小时", estimate: 5, estimateText: "两小时", source: "读两小时"),
-            try response(title: "Mod 10", deadline: "明天", source: "Mod 10"),
             try response(title: "新任务", source: "不存在的原文"),
-            try response(title: "", source: "Mod 10"),
-            #"{"tasks":[],"extra":true}"#, "not JSON"
+            try response(title: ""),
+            #"{"tasks":[],"extra":true}"#, "not JSON", #"[{"tasks":[]}]"#,
+            "```json\n{\"tasks\":[]}\n```", "{\"tasks\":[]}\n{\"tasks\":[]}"
         ]
         for raw in invalid {
-            #expect(throws: (any Error).self) { try FocusMemoExtraction.parse(raw, request: snapshot) }
+            #expect(throws: (any Error).self) { try FocusMemoExtraction.parse(raw, request: request) }
         }
-        #expect(try FocusMemoExtraction.parse(#"{"tasks":[]}"#, request: snapshot).isEmpty)
+        #expect(try FocusMemoExtraction.parse(#"{"tasks":[]}"#, request: request).isEmpty)
     }
 
-    @Test func truncatedEstimateEvidenceCannotConvertHoursOrMinutesIntoPomodoros() throws {
-        for source in ["补课 预计3小时", "补课 预计30分钟"] {
+    @Test func unknownValuesRemainNullWithoutChangingNotes() throws {
+        for source in ["补课 预计3小时", "补课 预计30分钟", "修改网站 明天或后天", "Nexo project"] {
             var snapshot = request; snapshot.sourceText = source
-            let value = source.contains("30") ? 30 : 3
-            let raw = try response(title: "补课", estimate: value, estimateText: "预计\(value)", source: source)
-            #expect(throws: (any Error).self) { try FocusMemoExtraction.parse(raw, request: snapshot) }
+            let raw = try response(title: source, notes: "原文信息待确认", source: source)
+            let proposal = try #require(try FocusMemoExtraction.parse(raw, request: snapshot).first)
+            #expect(proposal.estimatedPomodoros == nil)
+            #expect(proposal.dueDate == nil)
+            #expect(!proposal.dueHasTime)
+            #expect(proposal.notes == "原文信息待确认")
         }
     }
 
-    @Test func ambiguousAndInvalidDeadlineWordsStayEmptyWithOriginalVisible() throws {
-        for deadline in ["周五", "2026-02-30", "明天或后天", "明天下午三点", "有空", "大后天", "下下周五",
-                         "明天下午3点半", "明天晚上12点", "明天凌晨12点"] {
-            var snapshot = request; snapshot.sourceText = "修改网站：" + deadline
-            let proposals = try FocusMemoExtraction.parse(response(title: "修改网站", deadline: deadline,
-                source: snapshot.sourceText), request: snapshot)
-            #expect(proposals.first?.dueDate == nil)
-            #expect(proposals.first?.dueHasTime == false)
-            #expect(proposals.first?.notes.contains(deadline) == true)
-            #expect(proposals.first?.sourceExcerpt == snapshot.sourceText)
+    @Test func rejectsNonCanonicalDatesAndTimes() throws {
+        for value in ["明天", "2026-2-03", "2026-02-30", "2026/10/16", "0000-01-01"] {
+            #expect(throws: (any Error).self) {
+                try FocusMemoExtraction.parse(response(dueDate: value), request: request)
+            }
+        }
+        for value in ["下午3点", "3:00", "24:00", "17:60", "17:30:00"] {
+            #expect(throws: (any Error).self) {
+                try FocusMemoExtraction.parse(response(dueDate: "2026-10-16", dueTime: value), request: request)
+            }
+        }
+        #expect(throws: (any Error).self) {
+            try FocusMemoExtraction.parse(response(dueTime: "17:30"), request: request)
         }
     }
 
-    @Test func truncatedDeadlineEvidenceCannotDiscardSuppliedTimeQualifier() throws {
-        for (source, evidence) in [("修改网站 明天下午3点半", "明天下午3点"),
-                                   ("修改网站 明天 17:30", "明天")] {
-            var snapshot = request; snapshot.sourceText = source
-            let proposals = try FocusMemoExtraction.parse(response(title: "修改网站", deadline: evidence,
-                source: source), request: snapshot)
-            #expect(proposals.first?.dueDate == nil)
-            #expect(proposals.first?.notes.contains("待确认") == true)
+    @Test func localDateConversionHandlesDSTAndRejectsNonexistentTime() throws {
+        for (day, expected) in [("2026-01-16", "2026-01-16T05:00:00Z"),
+                                ("2026-10-16", "2026-10-16T04:00:00Z")] {
+            let proposal = try #require(try FocusMemoExtraction.parse(response(dueDate: day), request: request).first)
+            #expect(proposal.dueDate == ISO8601DateFormatter().date(from: expected))
+            #expect(!proposal.dueHasTime)
+        }
+        #expect(throws: (any Error).self) {
+            try FocusMemoExtraction.parse(response(dueDate: "2026-03-08", dueTime: "02:30"), request: request)
         }
     }
 
-    @Test func explicitCalendarDatesAndWeekdayDeadlinesUseLocalMidnight() throws {
-        for (text, expected, timed) in [
-            ("2026-10-16", "2026-10-16T04:00:00Z", false),
-            ("2026年10月16日 下午3点", "2026-10-16T19:00:00Z", true),
-            ("本周五", "2026-10-16T04:00:00Z", false),
-            ("下周五", "2026-10-23T04:00:00Z", false)
-        ] {
-            let resolved = try #require(FocusMemoExtraction.explicitDeadline(text, request: request))
-            #expect(resolved.date == ISO8601DateFormatter().date(from: expected))
-            #expect(resolved.hasTime == timed)
+    @Test func outputSizeAndFieldLengthsAreBounded() throws {
+        #expect(throws: (any Error).self) {
+            try FocusMemoExtraction.parse(response(title: String(repeating: "a", count: 301)), request: request)
+        }
+        #expect(throws: (any Error).self) {
+            try FocusMemoExtraction.parse(response(notes: String(repeating: "a", count: 10_001)), request: request)
+        }
+        let single = try #require(try JSONSerialization.jsonObject(with: Data(response().utf8)) as? [String: Any])
+        let task = try #require((single["tasks"] as? [[String: Any]])?.first)
+        let tooMany = String(decoding: try JSONSerialization.data(withJSONObject: ["tasks": Array(repeating: task, count: 101)]), as: UTF8.self)
+        #expect(throws: (any Error).self) {
+            try FocusMemoExtraction.parse(tooMany, request: request)
         }
     }
 

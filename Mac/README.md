@@ -76,7 +76,9 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   actionable items from the memo; select and edit the proposed names, budgets,
   deadlines and notes before importing the batch. Each proposal retains its source
   excerpt, and the original memo stays intact. Only explicit budgets/deadlines are
-  extracted; ambiguous information stays empty. Google Docs sync is not included.
+  extracted; ambiguous information stays empty. AI understands the memo shorthand
+  described below; the manual paste importer retains its conservative behavior.
+  Google Docs sync is not included.
 - Select the current task once; subsequent runs capture it automatically. Changing
   the selection during a run only changes the next run. Pause/recovery keeps its task.
 - Select records, use Shift for a range, then click a task's **关联** button. Clear
@@ -107,6 +109,39 @@ history or screen images, and neither modifies Google Docs. Both use the configu
 ChatGPT/Codex or OpenAI API provider; memo extraction requires AI connectivity.
 Tasks, memos and associations are persisted in `app-state.json`; old files remain readable.
 The Windows implementation is still pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
+
+### Memo AI contract
+
+`AIService.extractMemoTasks` sends dedicated fixed instructions, the current memo,
+the local reference date and timezone, and a strict JSON Schema through either
+ChatGPT/Codex or OpenAI API. Input notation does not change the output structure:
+the response is always `{"tasks": [...]}`, and every task has exactly six required
+keys:
+
+- `title`: a nonempty task-name string, at most 300 characters.
+- `estimatedPomodoros`: an integer from 0 to 10000, or `null`.
+- `dueDate`: a valid local calendar date in `YYYY-MM-DD`, or `null`.
+- `dueTime`: a valid local 24-hour time in `HH:mm`, or `null`; a time requires a date.
+- `notes`: a string, at most 10000 characters; empty when no extra details are supplied.
+- `sourceExcerpt`: a nonblank exact original substring, at most 8000 characters,
+  containing the task and its context.
+
+AI interprets the memo's meaning: `CS341 - 8` means eight expected pomodoros;
+`Build personal website` followed by a standalone `20` means twenty. A named child
+budget stays separate: `Cs370 - 15, catchup cheat sheet +5` becomes a course task
+with 15 and a course-scoped cheat-sheet task with 5, rather than one task with 20.
+Course codes are not budgets, and `Nexo project` remains a task with a `null`
+estimate. Unclear estimates/deadlines stay empty. AI resolves explicit relative
+deadlines using the supplied reference date and timezone.
+
+The local app checks only the response contract, types, ranges, normalized date/
+time validity and original-source integrity. It does not parse memo budget notation
+or use a deadline-word whitelist to reinterpret the model's result. There are no
+`estimateText` or `deadlineText` response fields. Proposals are still editable and
+selected by the user before import.
+The array contains at most 100 tasks; an empty array is valid when no planned work
+is present. All six keys are required even when their values are null. Additional
+keys, Markdown fences and explanatory text are outside the response contract.
 
 For the Mac **development app only**, build without `--dmg`:
 
@@ -200,8 +235,15 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Verification status (2026-10-14):** The compact records, memo extraction and
-task history development build passes 97 Swift Testing tests and produces an ad-hoc signed Apple Silicon app at
+**Current extraction-contract validation (2026-10-14):** All 21 targeted tests
+passed. The updated development build passed its required 104 tests in 19 suites,
+production compilation and strict signature verification, producing
+`output/arm64/SuWuDu.app`. No real AI request was submitted; the checks verify the
+fixed contract and import behavior rather than live-model semantic accuracy.
+See [`VALIDATION.md`](VALIDATION.md) for the current record.
+
+**Previous verification (2026-10-14):** The compact records, memo extraction and
+task history development build passed 97 Swift Testing tests and produced an ad-hoc signed Apple Silicon app at
 `output/arm64/SuWuDu.app`. The merged panel was rendered and visually checked at
 1120 × 820 and 760 × 820 using 24 isolated sample sessions; memo extraction
 preview and history details were also checked at their native widths. The required build checks
