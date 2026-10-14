@@ -11,6 +11,13 @@ import Combine
     @Published var error: String?
     @Published var clickThrough = false
     @Published var busy = false
+    @Published var matchingBusy = false
+    @Published var matchingError: String?
+    @Published var matchingPlan: FocusMatchingPlan?
+    @Published var canUndoFocusAssignments = false
+    var focusMatchTask: Task<Void, Never>?
+    var focusMatchRequestID = UUID()
+    var focusAssignmentUndo: FocusAssignmentTransaction?
     let store: DataStore
     let sound: any SoundPlaying
     let ai = AIService()
@@ -151,7 +158,8 @@ import Combine
     func startFocus() {
         if data.focus != nil { stopFocus() }
         breakRemaining = 0
-        data.focus = FocusRun(startedAt: Date(), planned: data.settings.focusMinutes, remaining: Double(data.settings.focusMinutes * 60))
+        data.focus = FocusRun(startedAt: Date(), planned: data.settings.focusMinutes,
+                              remaining: Double(data.settings.focusMinutes * 60), taskID: data.currentTaskID)
         paused = false
         lastUptime = ProcessInfo.processInfo.systemUptime
         lastDate = Date()
@@ -183,7 +191,7 @@ import Combine
         advanceFocus()
         guard let run = data.focus else { breakRemaining = 0; restoreAnimation(); return }
         FocusAccounting.record(segments: run.segments, planned: run.planned, completed: false,
-                               startedAt: run.startedAt, endedAt: Date(), targets: data.targetRules ?? [], journal: &data.journal)
+                               startedAt: run.startedAt, endedAt: Date(), taskID: run.taskID, targets: data.targetRules ?? [], journal: &data.journal)
         data.focus = nil
         paused = true
         persist() // Journal and recovery state commit together: no double settlement after a crash.
@@ -239,7 +247,7 @@ import Combine
         data.focus = run
         if run.remaining <= 0 {
             FocusAccounting.record(segments: run.segments, planned: run.planned, completed: true,
-                                   startedAt: run.startedAt, endedAt: end, targets: data.targetRules ?? [], journal: &data.journal)
+                                   startedAt: run.startedAt, endedAt: end, taskID: run.taskID, targets: data.targetRules ?? [], journal: &data.journal)
             data.focus = nil
             paused = true
             breakRemaining = Double(data.settings.breakMinutes * 60)
@@ -298,6 +306,7 @@ import Combine
     @discardableResult func saveDay(_ day: JournalDay) -> Bool {
         let previous = data.journal
         var value = day
+        value.reconcilePartialWorkEdits(previous: data.journalDay(day.date))
         value.settle(minutes: data.settings.focusMinutes)
         if let i = data.journal.firstIndex(where: { $0.date == day.date }) { data.journal[i] = value }
         else { data.journal.append(value) }
@@ -312,6 +321,9 @@ import Combine
         try DataStore.encoder.encode(data).write(to: backup, options: .atomic)
         try store.save(imported)
         data = imported
+        clearFocusMatch()
+        focusAssignmentUndo = nil
+        canUndoFocusAssignments = false
         paused = true
         breakRemaining = 0
         hydrationAt = Date().addingTimeInterval(Double(data.settings.hydrationMinutes * 60))
@@ -337,6 +349,7 @@ import Combine
         return true
     }
     func cancelReply() {
+        if matchingBusy { cancelFocusMatch(); return }
         replyTask?.cancel()
         ai.codex.shutdown()
     }

@@ -4,6 +4,14 @@
 
 项目当前版本为 `1.3.0`，使用 C#、WPF 和 .NET Framework 4.8 开发。应用不依赖 NuGet 包；ChatGPT 登录模式所需的 OpenAI Codex 运行组件随成品一起分发。
 
+## Mac 开发版：任务与专注
+
+Mac 原生版已将统一任务清单、可选截止日期/时间、备忘、清单导入预览和番茄记录合并到“任务与专注”面板。支持选任务后连续沿用、Shift 连选后一键关联、整批撤销，以及 AI 一句话匹配和本机关键词建议；原目标、分钟调整、补记、Notes、复制和导出继续保留。
+
+Mac 使用原有浅青 UI 风格。AI 使用设置中已有的 ChatGPT／API，先预览再应用；离线仍可用明确任务名的本机建议。新功能目前仅在 Mac 开发版实现，Windows 待移植。
+
+使用与开发构建见 [Mac/README.md](Mac/README.md)，平台差异见 [Mac/WINDOWS_PARITY.md](Mac/WINDOWS_PARITY.md)。Mac 开发入口为 `Mac/output/arm64/SuWuDu.app`；开发构建不带 `--dmg`。应用内使用说明也已更新。
+
 ## 当前功能
 
 ### 桌面伴侣

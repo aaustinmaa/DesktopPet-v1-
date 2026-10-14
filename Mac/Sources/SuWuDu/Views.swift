@@ -25,7 +25,7 @@ import UniformTypeIdentifiers
                     Grid(horizontalSpacing: 10, verticalSpacing: 10) {
                         GridRow { action("设置", settings); action("使用说明", help) }
                         GridRow {
-                            action("今日专注记录", journal)
+                            action("任务与专注", journal)
                             action("在 Finder 中显示应用") { NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL]) }
                         }
                         GridRow { action("把桌宠收起来", hide); action("完全退出") { NSApp.terminate(nil) } }

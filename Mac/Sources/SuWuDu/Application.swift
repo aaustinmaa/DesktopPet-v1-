@@ -96,7 +96,7 @@ import Sparkle
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         guard model != nil else { return nil }
         let menu = NSMenu()
-        for (id, title) in [("launcher", "启动面板"), ("chat", "和我聊聊"), ("journal", "专注记录"), ("settings", "设置"), ("help", "使用说明")] {
+        for (id, title) in [("launcher", "启动面板"), ("chat", "和我聊聊"), ("journal", "任务与专注"), ("settings", "设置"), ("help", "使用说明")] {
             menu.addItem(MenuAction(title, checked: windows[id]?.isKeyWindow == true) { [weak self] in
                 self?.openDockWindow(id)
             })
@@ -176,7 +176,7 @@ import Sparkle
         let appMenu = NSMenu()
         appMenu.addItem(MenuAction("启动面板") { [weak self] in self?.openLauncher() })
         appMenu.addItem(MenuAction("和她聊聊") { [weak self] in self?.openChat() })
-        appMenu.addItem(MenuAction("专注记录") { [weak self] in self?.openJournal() })
+        appMenu.addItem(MenuAction("任务与专注") { [weak self] in self?.openJournal() })
         appMenu.addItem(MenuAction("设置…") { [weak self] in self?.openSettings() })
         appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(withTitle: "退出苏无度", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -221,7 +221,7 @@ import Sparkle
         add(model.breakRemaining > 0 ? "▶ 跳过休息并开始专注" : model.data.focus != nil ? "↻ 重新开始专注计时" : "⏱ 开始专注计时") { [weak self] in self?.model.startFocus() }
         add(model.paused ? "▶ 继续专注计时" : "⏸ 暂停专注计时", enabled: model.data.focus != nil) { [weak self] in self?.model.toggleFocus() }
         add(model.breakRemaining > 0 ? "■ 结束休息" : "■ 停止专注计时", enabled: model.data.focus != nil || model.breakRemaining > 0) { [weak self] in self?.model.stopFocus() }
-        add("📊 今日专注记录") { [weak self] in self?.openJournal() }
+        add("📊 任务与专注") { [weak self] in self?.openJournal() }
         menu.addItem(.separator())
         add("🐾 自动漫游", checked: model.data.settings.wander) { [weak self] in self?.model.changeSettings { $0.wander.toggle() } }
         add("📌 始终置顶", checked: model.data.settings.topmost) { [weak self] in self?.model.changeSettings { $0.topmost.toggle() } }
@@ -277,7 +277,7 @@ import Sparkle
     private func openJournal() {
         if journalEditor == nil { journalEditor = JournalEditor(model: model) }
         guard let editor = journalEditor else { return }
-        show("journal", title: "专注记录", view: JournalView(model: model, editor: editor), size: NSSize(width: 730, height: 730))
+        show("journal", title: "任务与专注", view: JournalView(model: model, editor: editor), size: NSSize(width: 1120, height: 820))
     }
     private func openChat() {
         if model.busy, let window = windows["chat"] { NSApp.activate(ignoringOtherApps: true); window.makeKeyAndOrderFront(nil); return }

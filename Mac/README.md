@@ -57,6 +57,51 @@ framework path; the resulting application does not depend on that test framework
 Cached Codex binaries copied from Windows have their executable permissions
 restored after checksum verification.
 
+## Tasks and focus
+
+Open **任务与专注** from the launcher, Dock menu, menu bar or pet context menu.
+The existing journal and timer controls share one panel with a unified task list;
+there is no separate today/task-library hierarchy. The panel uses the existing
+celadon theme and shared controls.
+
+- Create or edit tasks with optional estimated pomodoros, a date-only or timed
+  deadline, notes and a completion flag. Estimates measure a budget, not completion.
+  Deadlines follow the local calendar, independently of the journal's 21:00 boundary.
+- Paste a list and review/select the detected tasks before import; edit them after
+  import. Explicit budget markers and separate numeric child lines are recognized;
+  course numbers, dates, times and compound plans are preserved for manual review. Freeform memos
+  remain editable locally and can be turned into a task. Google Docs sync is not included.
+- Select the current task once; subsequent runs capture it automatically. Changing
+  the selection during a run only changes the next run. Pause/recovery keeps its task.
+- Select records, use Shift for a range, then click a task's **关联** button. Clear
+  associations or undo the most recent whole batch. Time/task views keep task names
+  and session Notes visible without opening each record.
+- **一句话匹配（AI）** and **AI 建议未关联** use the configured ChatGPT/Codex or
+  OpenAI API provider. **根据 Notes 建议** runs locally and requires a unique, explicit
+  full task name in the note. Review old/new tasks and reasons before applying.
+  The application rejects unknown IDs and stale snapshots; automatic suggestions
+  preserve existing associations. Offline mode does not pretend to run an AI parser.
+- Actual task minutes include interrupted-run details. Minute-conversion records
+  still serve daily goals, but do not duplicate task minutes or real complete pomodoros.
+  Manual sessions can still be added and assigned directly.
+
+Daily goals, bulk target schedules, signed minute adjustments, manual sessions,
+ignore/delete, daily/session Notes, save-on-navigation, clipboard copy and Markdown
+range export are retained. Exports include time and task names.
+
+Matching sends only task titles/descriptions and the selected journal range's
+timestamps/session Notes to the selected provider. It sends no chat history,
+freeform memos or screen images, and does not modify Google Docs.
+Tasks, memos and associations are persisted in `app-state.json`; old files remain readable.
+The Windows implementation is still pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
+
+For the Mac **development app only**, build without `--dmg`:
+
+```bash
+bash scripts/build.sh --sdk=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk
+open output/arm64/SuWuDu.app
+```
+
 ## Features implemented
 
 - Both characters, all 12 states, PNG frame sequences, nearest-neighbor rendering,
@@ -88,7 +133,7 @@ Application data is stored in:
 
 ```text
 ~/Library/Application Support/SuWuDu/
-  app-state.json           settings, journal, recovery, chats, facts
+  app-state.json           settings, journal, tasks, memos, recovery, chats, facts
   app-state.json.backup    previous successful state
   before-import-*.json     explicit Windows import backups
   Codex/                  app-specific Codex state
@@ -142,12 +187,14 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Verification status:** The Apple Silicon application now compiles on macOS,
-passes 21 Swift Testing tests, with five Python tests passed during the initial
-Mac validation, and produces an ad-hoc signed
-app and DMG. The launcher and focus start/pause have been exercised on the Mac.
-This is a local development build; release signing/notarization and the remaining
-hardware/account-dependent acceptance cases are still outstanding. See
+**Verification status (2026-10-14):** The tasks/focus development build passes
+83 Swift Testing tests and produces an ad-hoc signed Apple Silicon app at
+`output/arm64/SuWuDu.app`. The merged panel was rendered and visually checked at
+1120 × 820 and 760 × 820 using isolated sample data. The required build checks
+and strict app signature verification passed. This feature update did not rebuild
+the DMG or Windows outputs, and no real AI request was submitted. Release
+signing/notarization and hardware/account-dependent acceptance cases remain
+outstanding. See
 [`VALIDATION.md`](VALIDATION.md) for the acceptance cases and recorded checks.
 
 ## Signed distribution and updates

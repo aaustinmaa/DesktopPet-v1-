@@ -66,7 +66,7 @@ enum MicrobreakSchedule {
     }
 }
 
-struct FocusSession: Codable, Identifiable {
+struct FocusSession: Codable, Identifiable, Equatable {
     var id = UUID().uuidString
     var source = "automatic"
     var startedAt = Date()
@@ -74,6 +74,11 @@ struct FocusSession: Codable, Identifiable {
     var minutes = 25
     var countsTowardGoal = true
     var notes = ""
+    var taskID: String?
+    var assignmentSource: String?
+    var assignmentRevision: Int?
+    var actualMinutes: Int?
+    var completedPomodoro: Bool?
 }
 
 struct JournalDay: Codable, Identifiable {
@@ -99,7 +104,8 @@ struct JournalDay: Codable, Identifiable {
         let completion = date == FocusAccounting.key(Date(), calendar: calendar) ? Date() : FocusAccounting.date(from: date, calendar: calendar) ?? Date()
         while adjustment >= minutes {
             sessions.append(FocusSession(source: "manual", startedAt: completion.addingTimeInterval(-Double(minutes * 60)),
-                                         completedAt: completion, minutes: minutes, notes: "由今日分钟调整自动换算"))
+                                         completedAt: completion, minutes: minutes, notes: "由今日分钟调整自动换算",
+                                         actualMinutes: 0, completedPomodoro: false))
             adjustment -= minutes
         }
     }
@@ -152,7 +158,7 @@ enum FocusAccounting {
     }
 
     static func record(segments: [FocusSegment], planned: Int, completed: Bool, startedAt: Date,
-                       endedAt: Date, targets: [JournalTargetRule] = [], journal: inout [JournalDay]) {
+                       endedAt: Date, taskID: String? = nil, targets: [JournalTargetRule] = [], journal: inout [JournalDay]) {
         let minutes = completed ? planned : min(planned, Int(segments.reduce(0) { $0 + $1.seconds } / 60))
         let allocations = allocate(segments, minutes: minutes)
         var affected = Set(allocations.keys)
@@ -163,12 +169,31 @@ enum FocusAccounting {
             let i = journal.firstIndex(where: { $0.date == date })!
             journal[i].adjustment += allocations[date, default: 0]
             if completed && date == completionKey {
-                journal[i].sessions.append(FocusSession(startedAt: startedAt, completedAt: endedAt, minutes: planned))
+                journal[i].sessions.append(FocusSession(startedAt: startedAt, completedAt: endedAt, minutes: planned,
+                    taskID: taskID, assignmentSource: taskID == nil ? nil : "current", actualMinutes: minutes, completedPomodoro: true))
                 journal[i].adjustment -= planned
+            } else if !completed, let allocated = allocations[date], allocated > 0,
+                      let range = partialWorkingRange(segments, date: date) {
+                journal[i].sessions.append(FocusSession(source: "partial", startedAt: range.start, completedAt: range.end,
+                    minutes: allocated, countsTowardGoal: false, taskID: taskID,
+                    assignmentSource: taskID == nil ? nil : "current", actualMinutes: allocated, completedPomodoro: false))
             }
             journal[i].settle(minutes: planned)
         }
         journal.sort { $0.date < $1.date }
+    }
+
+    private static func partialWorkingRange(_ segments: [FocusSegment], date: String,
+                                            calendar: Calendar = .current) -> FocusSegment? {
+        guard let journalDate = self.date(from: date, calendar: calendar),
+              let upper = calendar.date(bySettingHour: 21, minute: 0, second: 0, of: journalDate),
+              let lower = calendar.date(byAdding: .day, value: -1, to: upper) else { return nil }
+        let clipped = segments.compactMap { segment -> FocusSegment? in
+            let start = max(segment.start, lower), end = min(segment.end, upper)
+            return end > start ? FocusSegment(start: start, end: end) : nil
+        }
+        guard let first = clipped.map(\.start).min(), let last = clipped.map(\.end).max() else { return nil }
+        return FocusSegment(start: first, end: last)
     }
 }
 
@@ -179,6 +204,7 @@ struct FocusRun: Codable {
     var segments: [FocusSegment] = []
     var microRemaining: Double?
     var nextMicro: Double?
+    var taskID: String?
 }
 
 struct ChatMessage: Codable, Identifiable {
@@ -210,6 +236,9 @@ struct AppData: Codable {
     var focus: FocusRun?
     var threads: [ChatThread] = []
     var facts: [String] = []
+    var tasks: [FocusTask]?
+    var currentTaskID: String?
+    var taskMemos: String?
 }
 
 extension AppData {

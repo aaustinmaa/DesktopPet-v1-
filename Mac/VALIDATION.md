@@ -1,5 +1,28 @@
 # Mac validation record
 
+## Tasks and focus development update (2026-10-14)
+
+- Added tests for backward-compatible task persistence, deadlines, conservative
+  task import, task accounting, partial-session day boundaries, minute-conversion
+  exclusions, assignment validation, batch undo, and Windows import preservation.
+- Matching tests cover request limits, local time/chronological ordering, strict
+  JSON parsing, unknown/duplicate IDs, stale snapshots, and conservative local
+  note suggestions. Model tests cover task continuity, persistence failure,
+  cancellation, AI preview/apply/undo, and editor merge behavior.
+- Native SwiftUI panel renders were visually inspected at 1120 × 820 and
+  760 × 820 with isolated sample tasks and sessions. The task list, timer,
+  journal totals, collapsed goal/matching tools, and session records remain
+  usable at both widths and follow the existing celadon theme.
+- `scripts/build.sh` completed using the macOS 26.5 SDK. Its required suite
+  passed all **83 Swift Testing tests in 17 suites**; the production executable
+  built and the app/nested components passed strict signature verification.
+- Updated development output: `output/arm64/SuWuDu.app`. No DMG, Windows source,
+  Windows development output, or Windows installer was changed. The running app
+  and real user data were not modified by the UI rendering checks.
+- No real ChatGPT or OpenAI API matching request was submitted. The Google Doc
+  remains a source for manual paste/import; automatic synchronization is not
+  part of this feature.
+
 ## Follow-up: obvious focus/interaction bugs
 
 - Confirmed Windows plays the selected start cue on resume; Mac omitted that

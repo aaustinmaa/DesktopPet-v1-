@@ -127,9 +127,17 @@ enum WindowsImport {
                     let started = parseDate(s["StartedAt"]) ?? FocusAccounting.date(from: date)!
                     let ended = parseDate(s["CompletedAt"]) ?? started
                     guard let id = s["Id"] as? String else { throw AppError.message("专注记录缺少 Id。") }
-                    return FocusSession(id: id, source: (s["Source"] as? String) ?? "manual", startedAt: started,
+                    var imported = FocusSession(id: id, source: (s["Source"] as? String) ?? "manual", startedAt: started,
                         completedAt: ended, minutes: max(0, (s["PlannedMinutes"] as? Int) ?? 0),
                         countsTowardGoal: (s["CountsTowardGoal"] as? Bool) ?? true, notes: (s["Notes"] as? String) ?? "")
+                    if let existing = original.journal.flatMap(\.sessions).first(where: { $0.id == id }) {
+                        imported.taskID = existing.taskID
+                        imported.assignmentSource = existing.assignmentSource
+                        imported.assignmentRevision = existing.assignmentRevision
+                        imported.actualMinutes = existing.actualMinutes == 0 ? 0 : existing.actualMinutes.map { _ in imported.minutes }
+                        imported.completedPomodoro = existing.completedPomodoro
+                    }
+                    return imported
                 }
                 let day = JournalDay(date: date, target: max(0, (d["TargetCount"] as? Int) ?? 0),
                     adjustment: (d["MinuteAdjustment"] as? Int) ?? 0, notes: (d["DailyNotes"] as? String) ?? "", sessions: sessions)

@@ -4,6 +4,33 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Tasks and focus — 2026-10-14
+
+The Mac journal is now the **任务与专注** panel. It combines the existing timer,
+daily goals, bulk targets, minute adjustments, manual/ignored/deleted sessions,
+Notes and exports with a unified task list, optional deadlines, local memos,
+paste/import preview, task selection and retrospective batch matching.
+`FocusTasks.swift` contains persistence-compatible domain logic and atomic
+association/undo validation; `AppModelFocusTasks.swift` coordinates persistence
+and asynchronous matching. `FocusTaskMatching.swift` isolates AI snapshots from
+chat context and provides explicit-title offline suggestions. The matching UI
+previews changes and refuses stale results.
+
+Current-run task IDs are captured when starting; changing current selection affects
+the next run. Partial records expose real minutes already counted in daily
+adjustment; conversion records contribute zero duplicate task minutes. Keep
+that distinction when changing journal accounting. Only the Mac development app
+is updated for this feature; Windows work is listed in `WINDOWS_PARITY.md`.
+User instructions in `HelpView` and `Mac/README.md` describe the current workflow.
+Build without `--dmg` when only updating development output. Validation for further
+work must stay scoped to the new request, rather than repeating previous checks.
+
+The development build completed with all 83 Swift Testing tests passing and
+strict signature verification passing for `output/arm64/SuWuDu.app`. Native
+panel renders at 1120 × 820 and 760 × 820 were visually checked using isolated
+sample data. Matching payload/response validation was tested without submitting
+a real AI request. See the dated entry in `VALIDATION.md` for the scope.
+
 ## MacBook progress — 2026-09-27
 
 The Apple Silicon app now builds and launches on this MacBook (macOS 26.6,

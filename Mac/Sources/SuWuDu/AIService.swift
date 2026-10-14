@@ -62,6 +62,56 @@ struct CompanionReply {
         guard !text.isEmpty else { throw AppError.message("AI 没有返回可显示的回复。") }
         return CompanionReply.parse(text)
     }
+
+    func matchFocusTasks(_ snapshot: FocusMatchRequest, settings: Settings) async throws -> [FocusMatchProposal] {
+        try Task.checkCancellation()
+        guard settings.provider != "offline" else {
+            throw AppError.message("一句话整理需要 AI：请在设置中连接 ChatGPT 或 OpenAI API。本机关键词建议可离线使用。")
+        }
+        let prompt = try FocusTaskMatching.prompt(snapshot)
+        let schema = FocusTaskMatching.schema(for: snapshot)
+        let raw: String
+        if settings.provider == "codex" {
+            raw = try await codex.structuredReply(prompt, settings: settings,
+                instructions: FocusTaskMatching.instructions, schema: schema)
+        } else if settings.provider == "openai" {
+            let key = try Keychain.read()
+            guard !key.isEmpty else { throw AppError.message("请在设置中填写 OpenAI API key。") }
+            guard !settings.apiModel.trimmingCharacters(in: .whitespaces).isEmpty else {
+                throw AppError.message("请在设置中填写账号可用的 API 模型名称。")
+            }
+            let body: [String: Any] = [
+                "model": settings.apiModel, "instructions": FocusTaskMatching.instructions,
+                "input": [["role": "user", "content": [["type": "input_text", "text": prompt]]]],
+                "text": ["format": ["type": "json_schema", "name": "focus_task_matches", "strict": true, "schema": schema]],
+                "store": false
+            ]
+            var request = URLRequest(url: URL(string: "https://api.openai.com/v1/responses")!)
+            request.httpMethod = "POST"
+            request.timeoutInterval = 180
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try Task.checkCancellation()
+            let object = (try JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+            guard let status = response as? HTTPURLResponse, (200..<300).contains(status.statusCode) else {
+                throw AppError.message(((object["error"] as? [String: Any])?["message"] as? String) ?? "OpenAI 匹配请求失败。")
+            }
+            guard object["status"] as? String == "completed" else {
+                throw AppError.message("AI 未完成匹配，未修改任何记录；请重试。")
+            }
+            let content = ((object["output"] as? [[String: Any]]) ?? [])
+                .flatMap { ($0["content"] as? [[String: Any]]) ?? [] }
+            guard !content.contains(where: { $0["type"] as? String == "refusal" }) else {
+                throw AppError.message("AI 无法处理这次匹配说明，请改写后重试。")
+            }
+            raw = content.filter { $0["type"] as? String == "output_text" }
+                .compactMap { $0["text"] as? String }.joined(separator: "\n")
+        } else { throw AppError.message("当前 AI 连接方式无效，请在设置中重新选择。") }
+        try Task.checkCancellation()
+        return try FocusTaskMatching.parse(raw, request: snapshot)
+    }
 }
 
 struct CodexModel: Identifiable {
@@ -90,6 +140,7 @@ struct CodexModel: Identifiable {
     private var turnWaiter: CheckedContinuation<String, Error>?
     private var turnText = ""
     private var turnTimeout: Task<Void, Never>?
+    private var activeRequestID: UUID?
 
     func start() async throws {
         try Task.checkCancellation()
@@ -188,12 +239,37 @@ struct CodexModel: Identifiable {
         loginPending = false
     }
     func reply(_ text: String, settings: Settings, screenshot: URL?) async throws -> String {
+        let schema: [String: Any] = ["type": "object", "properties": ["reply": ["type": "string"], "emotion": ["type": "string"], "action": ["type": "string"]],
+                                     "required": ["reply", "emotion", "action"], "additionalProperties": false]
+        return try await structuredReply(text, settings: settings, instructions: AIService.instructions(settings.petName),
+                                         schema: schema, screenshot: screenshot)
+    }
+
+    func structuredReply(_ text: String, settings: Settings, instructions: String,
+                         schema: [String: Any], screenshot: URL? = nil) async throws -> String {
+        try Task.checkCancellation()
+        guard activeRequestID == nil else { throw AppError.message("请等待当前 AI 请求完成。") }
+        let requestID = UUID()
+        activeRequestID = requestID
+        defer { if activeRequestID == requestID { activeRequestID = nil } }
+        return try await withTaskCancellationHandler {
+            try await performReply(text, settings: settings, instructions: instructions, schema: schema, screenshot: screenshot)
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                guard let self, self.activeRequestID == requestID else { return }
+                self.shutdown(reason: CancellationError())
+            }
+        }
+    }
+
+    private func performReply(_ text: String, settings: Settings, instructions: String,
+                              schema: [String: Any], screenshot: URL?) async throws -> String {
         try await refresh()
         guard signedIn else { throw AppError.message("请先在设置中连接 ChatGPT。") }
         guard activeThread == nil else { throw AppError.message("请等待上一条回复完成。") }
         let workspace = DataStore.applicationDirectory.appendingPathComponent("CompanionWorkspace")
         var params: [String: Any] = ["cwd": workspace.path, "sandbox": "read-only", "approvalPolicy": "never",
-                                   "baseInstructions": AIService.instructions(settings.petName), "serviceName": "su-wu-du-mac"]
+                                   "baseInstructions": instructions, "serviceName": "su-wu-du-mac"]
         if !settings.codexModel.isEmpty {
             guard models.contains(where: { $0.id == settings.codexModel }) else { throw AppError.message("所选模型当前不可用，请在设置中刷新模型列表。") }
             params["model"] = settings.codexModel
@@ -207,8 +283,6 @@ struct CodexModel: Identifiable {
         defer { activeThread = nil; turnTimeout?.cancel(); turnTimeout = nil }
         var content: [[String: Any]] = [["type": "text", "text": text, "textElements": []]]
         if let screenshot { content.append(["type": "localImage", "path": screenshot.path]) }
-        let schema: [String: Any] = ["type": "object", "properties": ["reply": ["type": "string"], "emotion": ["type": "string"], "action": ["type": "string"]],
-                                     "required": ["reply", "emotion", "action"], "additionalProperties": false]
         var turn: [String: Any] = ["threadId": id, "input": content, "outputSchema": schema]
         if !settings.reasoning.isEmpty { turn["effort"] = settings.reasoning }
         _ = try await rpc("turn/start", turn)
@@ -219,6 +293,7 @@ struct CodexModel: Identifiable {
         let result: String
         if let completed = turnResult { result = try completed.get() }
         else { result = try await withCheckedThrowingContinuation { turnWaiter = $0 } }
+        try Task.checkCancellation()
         guard !result.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw AppError.message("Codex 没有返回可显示的回复。") }
         // Each request carries bounded local context; retire the server-side thread after completion.
         _ = try? await rpc("thread/archive", ["threadId": id])
