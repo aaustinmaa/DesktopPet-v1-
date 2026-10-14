@@ -162,7 +162,10 @@ enum JournalExport {
         }.padding(22).background(PetTheme.card)
     }
     private var taskList: some View {
-        FocusTasksView(model: model, selectedSessionCount: selected.count, assignSelection: assignSelection)
+        FocusTasksView(model: model, selectedSessionCount: selected.count, assignSelection: assignSelection,
+                       onSelectJournalDay: { key in
+            if let date = FocusAccounting.date(from: key) { editor.navigate(date) }
+        })
     }
     private var recordPanel: some View {
         VStack(spacing: 16) {
@@ -221,57 +224,77 @@ enum JournalExport {
     }
     private var sessionsCard: some View {
         PetCard {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
                     Text("番茄钟记录").font(.title3.bold())
-                    Text("任务与 Notes 直接可见，展开后仍可编辑分钟、Notes 或删除。")
-                        .font(.caption).foregroundStyle(PetTheme.muted)
-                }
-                Spacer()
-                Button("＋ 补记", action: addSession).help("补记一个番茄钟")
-            }
-            HStack {
-                Picker("排列方式", selection: $recordsByTask) {
-                    Text("按时间").tag(false)
-                    Text("按任务").tag(true)
-                }.pickerStyle(.segmented).frame(width: 210)
-                Spacer()
-                Button("选未关联") { selected = Set(day.sessions.filter { $0.taskID == nil && selectable($0) }.map(\.id)); selectionAnchor = nil }
-                    .disabled(day.sessions.allSatisfy { $0.taskID != nil || !selectable($0) })
-                Button("全选") { selected = Set(day.sessions.filter(selectable).map(\.id)); selectionAnchor = nil }
-                    .disabled(day.sessions.allSatisfy { !selectable($0) })
-            }
-            if !selected.isEmpty {
-                HStack(spacing: 8) {
-                    Text("已选 \(selected.count) 条").font(.caption.weight(.semibold))
-                    Menu("关联任务…") {
-                        ForEach(tasks) { task in Button(task.title) { assignSelection(task.id) } }
-                        Divider()
-                        Button("清除任务关联") { assignSelection(nil) }
-                    }
+                    Text("\(day.sessions.count) 条").font(.caption).foregroundStyle(PetTheme.muted)
                     Spacer()
-                    Button("取消选择") { selected = []; selectionAnchor = nil }
+                    Button("＋ 补记", action: addSession).help("补记一个番茄钟")
                 }
-            }
-            HStack {
-                Text("点击选择；Shift 点击连续选中一段，再点击任务旁的关联按钮。")
-                    .font(.caption).foregroundStyle(PetTheme.muted)
-                Spacer()
-                if model.canUndoFocusAssignments {
-                    Button("撤销匹配") { if editor.save(), model.undoFocusAssignments() { status = "已撤销最近一批任务匹配。" } }
+                HStack {
+                    Picker("排列方式", selection: $recordsByTask) {
+                        Text("按时间").tag(false)
+                        Text("按任务").tag(true)
+                    }.pickerStyle(.segmented).labelsHidden().frame(width: 180)
+                    Spacer()
+                    Button("选未关联") { selected = Set(day.sessions.filter { $0.taskID == nil && selectable($0) }.map(\.id)); selectionAnchor = nil }
+                        .disabled(day.sessions.allSatisfy { $0.taskID != nil || !selectable($0) })
+                    Button("全选") { selected = Set(day.sessions.filter(selectable).map(\.id)); selectionAnchor = nil }
+                        .disabled(day.sessions.allSatisfy { !selectable($0) })
                 }
-            }
-            if day.sessions.isEmpty {
-                Text("这一天还没有番茄钟记录。").foregroundStyle(PetTheme.muted)
-                    .frame(maxWidth: .infinity).padding(.vertical, 18)
-            }
-            ForEach(Array(orderedSessions.enumerated()), id: \.element.id) { index, session in
-                if recordsByTask && (index == 0 || orderedSessions[index - 1].taskID != session.taskID) {
-                    taskGroupHeading(session.taskID)
+                if !selected.isEmpty {
+                    HStack(spacing: 8) {
+                        Text("已选 \(selected.count) 条").font(.caption.weight(.semibold))
+                        Menu("关联任务…") {
+                            ForEach(tasks) { task in Button(task.title) { assignSelection(task.id) } }
+                            Divider()
+                            Button("清除任务关联") { assignSelection(nil) }
+                        }
+                        Spacer()
+                        Button("取消选择") { selected = []; selectionAnchor = nil }
+                    }
                 }
-                sessionRow(session)
+                HStack {
+                    Text("点击选择；Shift 点击连续选中一段，再点击任务旁的关联按钮。")
+                        .font(.caption).foregroundStyle(PetTheme.muted)
+                    Spacer()
+                    if model.canUndoFocusAssignments {
+                        Button("撤销匹配") { if editor.save(), model.undoFocusAssignments() { status = "已撤销最近一批任务匹配。" } }
+                    }
+                }
+                if day.sessions.isEmpty {
+                    Text("这一天还没有番茄钟记录。").foregroundStyle(PetTheme.muted)
+                        .frame(maxWidth: .infinity).padding(.vertical, 18)
+                }
+                if !day.sessions.isEmpty {
+                    VStack(spacing: 0) {
+                        sessionTableHeader
+                        ForEach(Array(orderedSessions.enumerated()), id: \.element.id) { index, session in
+                            if recordsByTask && (index == 0 || orderedSessions[index - 1].taskID != session.taskID) {
+                                taskGroupHeading(session.taskID)
+                            }
+                            sessionRow(session)
+                            Divider()
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(PetTheme.border))
+                }
             }
         }
+    }
+    private var sessionTableHeader: some View {
+        HStack(spacing: 8) {
+            Color.clear.frame(width: 20, height: 1)
+            HStack(spacing: 8) {
+                Text("时间").frame(width: 96, alignment: .leading)
+                Text("分钟").frame(width: 42, alignment: .trailing)
+                Text("任务").frame(width: 160, alignment: .leading)
+                Text("Notes / 状态").frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Color.clear.frame(width: 20, height: 1)
+        }.font(.system(size: 11, weight: .semibold)).foregroundStyle(PetTheme.muted)
+            .padding(.horizontal, 8).frame(height: 25).background(PetTheme.surface)
     }
     private func taskGroupHeading(_ taskID: String?) -> some View {
         let group = day.sessions.filter { $0.taskID == taskID }
@@ -280,45 +303,64 @@ enum JournalExport {
             Spacer()
             Text("\(group.filter(\.isCompletedPomodoro).count) 颗 · \(group.reduce(0) { $0 + $1.taskMinutes }) 分钟")
                 .font(.caption).foregroundStyle(PetTheme.muted)
-        }.padding(.top, 8)
+        }.padding(.horizontal, 8).padding(.vertical, 6).background(PetTheme.surface)
     }
     private func sessionRow(_ session: FocusSession) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
                 Button { select(session) } label: {
                     Image(systemName: selected.contains(session.id) ? "checkmark.square.fill" : "square")
-                        .font(.title3).foregroundStyle(PetTheme.accent)
-                }.buttonStyle(.plain).disabled(!selectable(session)).help("选择这条记录；Shift 点击可连续选择")
+                        .font(.system(size: 15)).foregroundStyle(PetTheme.accent)
+                        .frame(width: 20, height: 30)
+                }.buttonStyle(.plain).disabled(!selectable(session))
+                    .accessibilityLabel(selected.contains(session.id) ? "取消选择这条番茄钟记录" : "选择这条番茄钟记录")
+                    .help("选择这条记录；Shift 点击可连续选择")
                 Button { select(session) } label: {
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(alignment: .firstTextBaseline) {
-                            Text("\(session.startedAt.formatted(date: .omitted, time: .shortened))–\(session.completedAt.formatted(date: .omitted, time: .shortened)) · \(session.minutes) 分钟")
-                                .font(.callout.weight(.semibold)).monospacedDigit()
-                            Spacer()
-                            Text(sourceLabel(session)).font(.caption).foregroundStyle(PetTheme.muted)
-                        }
-                        Text(taskTitle(session.taskID)).font(.callout).foregroundStyle(session.taskID == nil ? PetTheme.muted : PetTheme.accent)
-                        if !session.notes.isEmpty {
-                            Text(session.notes).font(.caption).foregroundStyle(PetTheme.muted).fixedSize(horizontal: false, vertical: true)
-                        }
-                        if !session.countsTowardGoal && !session.isPartial {
-                            Text("不计入目标").font(.caption).foregroundStyle(PetTheme.muted)
-                        }
-                        if !selectable(session) {
-                            Text("仅用于目标统计，实际投入见专注明细。")
-                                .font(.caption).foregroundStyle(PetTheme.muted)
-                        }
-                    }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                    HStack(spacing: 8) {
+                        Text(sessionTimeRange(session)).monospacedDigit()
+                            .frame(width: 96, alignment: .leading)
+                            .help("\(session.startedAt.formatted()) → \(session.completedAt.formatted())")
+                        Text("\(session.minutes)").monospacedDigit()
+                            .frame(width: 42, alignment: .trailing)
+                        Text(taskTitle(session.taskID)).foregroundStyle(session.taskID == nil ? PetTheme.muted : PetTheme.accent)
+                            .frame(width: 160, alignment: .leading).help(taskTitle(session.taskID))
+                        Text(sessionPreview(session)).foregroundStyle(PetTheme.muted)
+                            .frame(maxWidth: .infinity, alignment: .leading).help(sessionDetail(session))
+                    }.font(.system(size: 12)).lineLimit(1).truncationMode(.tail)
+                        .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading).contentShape(Rectangle())
                 }.buttonStyle(.plain).disabled(!selectable(session))
                 Button {
                     if expanded.contains(session.id) { expanded.remove(session.id) } else { expanded.insert(session.id) }
                 } label: {
                     Image(systemName: expanded.contains(session.id) ? "chevron.up" : "chevron.down")
-                }.help(expanded.contains(session.id) ? "收起编辑" : "编辑记录")
+                        .font(.system(size: 11, weight: .semibold)).frame(width: 20, height: 30)
+                }.buttonStyle(.plain)
+                    .accessibilityLabel(expanded.contains(session.id) ? "收起番茄钟记录" : "展开番茄钟记录")
+                    .help(expanded.contains(session.id) ? "收起编辑" : "查看完整 Notes、编辑或删除")
             }
-            if expanded.contains(session.id) { sessionEditor(session) }
-        }.padding(12).background(selected.contains(session.id) ? PetTheme.soft : PetTheme.surface, in: RoundedRectangle(cornerRadius: 9))
-            .overlay(RoundedRectangle(cornerRadius: 9).stroke(selected.contains(session.id) ? PetTheme.accent : Color.clear))
+            .padding(.horizontal, 8)
+            if expanded.contains(session.id) { sessionEditor(session).padding(.horizontal, 12).padding(.bottom, 12) }
+        }.background(selected.contains(session.id) ? PetTheme.soft : PetTheme.card)
+    }
+    private func sessionTimeRange(_ session: FocusSession) -> String {
+        "\(Self.recordClock.string(from: session.startedAt))–\(Self.recordClock.string(from: session.completedAt))"
+    }
+    private static let recordClock: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .autoupdatingCurrent
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
+    private func sessionPreview(_ session: FocusSession) -> String {
+        sessionDetail(session).split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+    }
+    private func sessionDetail(_ session: FocusSession) -> String {
+        var parts = [sourceLabel(session)]
+        if !session.countsTowardGoal && !session.isPartial { parts.append("不计入目标") }
+        if !selectable(session) { parts.append("仅用于目标统计，实际投入见专注明细") }
+        if !session.notes.isEmpty { parts.append(session.notes) }
+        return parts.joined(separator: " · ")
     }
     private func sessionEditor(_ session: FocusSession) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -467,7 +509,9 @@ struct HelpView: View {
                 Text("完整专注自动记录，提前停止时记录已完成的整分钟。暂停不计时，Mac 睡眠或应用重启后保持暂停。每天 21:00 开始下一记录日，跨界分钟按实际片段分配。记录窗口支持目标、分钟调整、补记、删除、每日 / 单次 Notes、复制及日期范围导出。完成专注后进入休息，休息结束时提醒；重新开始可以提前结束休息。")
                 Text("任务与番茄匹配").font(.headline)
                 Text("从启动面板、菜单栏或桌宠右键打开“任务与专注”。任务统一放在一张清单，支持预计番茄数、截止日期、可选截止时间、说明和手动完成；预计数是投入预算。截止日期按日历判断，与 21:00 记录日分界独立。可粘贴清单预览导入，备忘也能转为任务。")
-                Text("选好当前任务后，每轮专注自动关联；进行中切换任务只影响下一轮。本轮暂停、继续或恢复后仍保留原任务。记录列表直接显示任务与 Notes；勾选记录，按住 Shift 连续选择，再点任务旁“关联”，即可一次修正整批，或清除归属、撤销最近一次关联。按任务查看可汇总投入。提前结束明细记录真实分钟，分钟换算记录仅服务每日目标，避免重复计算任务投入。")
+                Text("选好当前任务后，每轮专注自动关联；进行中切换任务只影响下一轮。本轮暂停、继续或恢复后仍保留原任务。番茄表格一行一条，直接显示时间、分钟、任务及简短 Notes；悬停查看完整文字，展开箭头编辑。勾选记录，按住 Shift 连续选择，再点任务旁“关联”，即可一次修正整批，或清除归属、撤销最近一次关联。按任务查看可汇总投入。提前结束明细记录真实分钟，分钟换算记录仅服务每日目标，避免重复计算任务投入。")
+                Text("在备忘中点击“AI 提取任务”，AI 会从当前文字提取可执行事项，保留原文出处。检查、修改和勾选候选任务后整批导入；原备忘会保留，明确写出的预计番茄数和截止日期才会提取。该操作只向设置中的服务发送当前备忘和本地日期/时区上下文，离线时可手动转任务或粘贴清单。")
+                Text("任务清单中的“完成历史”保存已完成任务，显示完成时间、说明、原文出处及累计投入。展开可查看关联专注明细、跳转到对应记录日，也可重新打开任务继续执行。旧任务如果没有保存完成时间，会显示时间未记录。")
                 Text("“一句话匹配”和“AI 建议”使用设置中已有的 ChatGPT／OpenAI API；只发送当前匹配范围的记录时间、任务名称与说明、单次 Notes，不发送聊天历史、自由备忘或截图。先检查原任务、新任务与原因，再应用整批结果；有歧义或记录已被修改时不会覆盖。离线时可用“本机建议”，仅识别 Notes 中明确且唯一的完整任务名。未关联记录可以保留，不必逐颗填写。")
                 Text("聊天与隐私").font(.headline)
                 Text("每次打开聊天默认新建会话；左侧可以继续旧聊天，右键归档或恢复。聊天保存在本机；开启记忆后，近期聊天摘要和最多 50 条明确记住的事实可用于其他聊天。说“请记住……”或“请忘记……”管理事实。关闭记忆不会删除聊天。")

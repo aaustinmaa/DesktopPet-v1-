@@ -70,12 +70,21 @@ celadon theme and shared controls.
 - Paste a list and review/select the detected tasks before import; edit them after
   import. Explicit budget markers and separate numeric child lines are recognized;
   course numbers, dates, times and compound plans are preserved for manual review. Freeform memos
-  remain editable locally and can be turned into a task. Google Docs sync is not included.
+  remain editable locally and can be turned into a task. **AI 提取任务** proposes
+  actionable items from the memo; select and edit the proposed names, budgets,
+  deadlines and notes before importing the batch. Each proposal retains its source
+  excerpt, and the original memo stays intact. Only explicit budgets/deadlines are
+  extracted; ambiguous information stays empty. Google Docs sync is not included.
 - Select the current task once; subsequent runs capture it automatically. Changing
   the selection during a run only changes the next run. Pause/recovery keeps its task.
 - Select records, use Shift for a range, then click a task's **关联** button. Clear
-  associations or undo the most recent whole batch. Time/task views keep task names
-  and session Notes visible without opening each record.
+  associations or undo the most recent whole batch. Compact table rows show time,
+  minutes, task and a single-line note; hover to read the full note or expand one
+  row to edit. Time/task views preserve the same selection and association actions.
+- The task list's **完成历史** view retains completed tasks, their completion time,
+  estimated/actual effort, notes and source excerpt. Expand a task to inspect its
+  associated sessions and jump to a record day. Older completed tasks with no
+  stored completion time show it as unknown. Reopen a task to continue working.
 - **一句话匹配（AI）** and **AI 建议未关联** use the configured ChatGPT/Codex or
   OpenAI API provider. **根据 Notes 建议** runs locally and requires a unique, explicit
   full task name in the note. Review old/new tasks and reasons before applying.
@@ -90,8 +99,10 @@ ignore/delete, daily/session Notes, save-on-navigation, clipboard copy and Markd
 range export are retained. Exports include time and task names.
 
 Matching sends only task titles/descriptions and the selected journal range's
-timestamps/session Notes to the selected provider. It sends no chat history,
-freeform memos or screen images, and does not modify Google Docs.
+timestamps/session Notes to the selected provider. Memo extraction sends the memo
+being extracted plus local date/timezone context. Neither operation sends chat
+history or screen images, and neither modifies Google Docs. Both use the configured
+ChatGPT/Codex or OpenAI API provider; memo extraction requires AI connectivity.
 Tasks, memos and associations are persisted in `app-state.json`; old files remain readable.
 The Windows implementation is still pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
 
@@ -187,10 +198,11 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Verification status (2026-10-14):** The tasks/focus development build passes
-83 Swift Testing tests and produces an ad-hoc signed Apple Silicon app at
+**Verification status (2026-10-14):** The compact records, memo extraction and
+task history development build passes 97 Swift Testing tests and produces an ad-hoc signed Apple Silicon app at
 `output/arm64/SuWuDu.app`. The merged panel was rendered and visually checked at
-1120 × 820 and 760 × 820 using isolated sample data. The required build checks
+1120 × 820 and 760 × 820 using 24 isolated sample sessions; memo extraction
+preview and history details were also checked at their native widths. The required build checks
 and strict app signature verification passed. This feature update did not rebuild
 the DMG or Windows outputs, and no real AI request was submitted. Release
 signing/notarization and hardware/account-dependent acceptance cases remain

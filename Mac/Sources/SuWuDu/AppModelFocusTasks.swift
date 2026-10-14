@@ -13,8 +13,9 @@ import Foundation
         let previous = data
         value.updatedAt = Date()
         var tasks = data.tasks ?? []
-        if let index = tasks.firstIndex(where: { $0.id == value.id }) { tasks[index] = value }
-        else { tasks.append(value) }
+        if let index = tasks.firstIndex(where: { $0.id == value.id }) {
+            value.reconcileCompletion(previous: tasks[index]); tasks[index] = value
+        } else { value.reconcileCompletion(previous: nil); tasks.append(value) }
         data.tasks = tasks
         guard persist() else { data = previous; return false }
         clearFocusMatch()
@@ -22,6 +23,9 @@ import Foundation
     }
 
     @discardableResult func deleteFocusTask(_ id: String) -> Bool {
+        guard !(data.tasks ?? []).contains(where: { $0.id == id && $0.isCompleted }) else {
+            matchingError = "已完成任务保留在历史记录中；如需删除，请先重新打开任务。"; return false
+        }
         guard data.focus?.taskID != id,
               !data.journal.flatMap(\.sessions).contains(where: { $0.taskID == id }) else {
             matchingError = "这个任务仍有关联的专注记录，请标记完成以保留历史。"; return false
@@ -49,6 +53,7 @@ import Foundation
         let previous = data.taskMemos
         data.taskMemos = text
         guard persist() else { data.taskMemos = previous; return false }
+        if previous != text { clearMemoTaskExtraction() }
         return true
     }
 
@@ -103,7 +108,8 @@ import Foundation
             startFocusMatching(instruction: "仅根据单次 Notes 中明确的任务线索，建议这些未关联记录的任务。线索不足或存在歧义就省略；不要按截止日期、预计番茄数或时间猜测。", sessions: candidates, onlyUnassigned: true)
             return
         }
-        guard !matchingBusy else { return }
+        guard !busy else { return }
+        clearMemoTaskExtraction()
         matchingError = nil; matchingPlan = nil
         let request = focusMatchSnapshot(instruction: "根据明确任务名生成本机建议", sessions: candidates)
         let proposals = FocusTaskMatching.localSuggestions(tasks: request.tasks, sessions: request.sessions)
@@ -112,6 +118,7 @@ import Foundation
 
     private func startFocusMatching(instruction: String, sessions: [FocusSession], onlyUnassigned: Bool) {
         guard !busy else { matchingError = "请等待当前 AI 请求完成，或先取消它。"; return }
+        clearMemoTaskExtraction()
         matchingPlan = nil; matchingError = nil
         let snapshots = sessions.filter { !isConversionRecord($0) }
         let request = focusMatchSnapshot(instruction: instruction, sessions: snapshots)

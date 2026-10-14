@@ -112,6 +112,54 @@ struct CompanionReply {
         try Task.checkCancellation()
         return try FocusTaskMatching.parse(raw, request: snapshot)
     }
+
+    func extractMemoTasks(_ snapshot: FocusMemoExtractionRequest, settings: Settings) async throws -> [FocusMemoTaskProposal] {
+        try Task.checkCancellation()
+        guard settings.provider != "offline" else {
+            throw AppError.message("备忘录自动整理需要 AI：请在设置中连接 ChatGPT 或 OpenAI API。也可以继续手动转为任务。")
+        }
+        let prompt = try FocusMemoExtraction.prompt(snapshot)
+        let raw: String
+        if settings.provider == "codex" {
+            raw = try await codex.structuredReply(prompt, settings: settings,
+                instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema)
+        } else if settings.provider == "openai" {
+            let key = try Keychain.read()
+            guard !key.isEmpty else { throw AppError.message("请在设置中填写 OpenAI API key。") }
+            guard !settings.apiModel.trimmingCharacters(in: .whitespaces).isEmpty else {
+                throw AppError.message("请在设置中填写账号可用的 API 模型名称。")
+            }
+            let body: [String: Any] = [
+                "model": settings.apiModel, "instructions": FocusMemoExtraction.instructions,
+                "input": [["role": "user", "content": [["type": "input_text", "text": prompt]]]],
+                "text": ["format": ["type": "json_schema", "name": "memo_task_extraction", "strict": true,
+                    "schema": FocusMemoExtraction.schema]], "store": false
+            ]
+            var request = URLRequest(url: URL(string: "https://api.openai.com/v1/responses")!)
+            request.httpMethod = "POST"; request.timeoutInterval = 180
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            try Task.checkCancellation()
+            let object = (try JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+            guard let status = response as? HTTPURLResponse, (200..<300).contains(status.statusCode) else {
+                throw AppError.message(((object["error"] as? [String: Any])?["message"] as? String) ?? "OpenAI 备忘录整理请求失败。")
+            }
+            guard object["status"] as? String == "completed" else {
+                throw AppError.message("AI 未完成整理，未添加任何任务；请重试。")
+            }
+            let content = ((object["output"] as? [[String: Any]]) ?? [])
+                .flatMap { ($0["content"] as? [[String: Any]]) ?? [] }
+            guard !content.contains(where: { $0["type"] as? String == "refusal" }) else {
+                throw AppError.message("AI 无法处理这次备忘录，请改写后重试。")
+            }
+            raw = content.filter { $0["type"] as? String == "output_text" }
+                .compactMap { $0["text"] as? String }.joined(separator: "\n")
+        } else { throw AppError.message("当前 AI 连接方式无效，请在设置中重新选择。") }
+        try Task.checkCancellation()
+        return try FocusMemoExtraction.parse(raw, request: snapshot)
+    }
 }
 
 struct CodexModel: Identifiable {

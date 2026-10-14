@@ -18,6 +18,13 @@ import Combine
     var focusMatchTask: Task<Void, Never>?
     var focusMatchRequestID = UUID()
     var focusAssignmentUndo: FocusAssignmentTransaction?
+    @Published var memoExtractionBusy = false
+    @Published var memoExtractionError: String?
+    @Published var memoExtractionPlan: FocusMemoExtractionPlan?
+    var memoExtractionTask: Task<Void, Never>?
+    var memoExtractionRequestID = UUID()
+    // Injection is only used by isolated model tests; normal requests use the configured AI service.
+    var memoTaskExtractor: ((FocusMemoExtractionRequest, Settings) async throws -> [FocusMemoTaskProposal])?
     let store: DataStore
     let sound: any SoundPlaying
     let ai = AIService()
@@ -322,6 +329,7 @@ import Combine
         try store.save(imported)
         data = imported
         clearFocusMatch()
+        clearMemoTaskExtraction()
         focusAssignmentUndo = nil
         canUndoFocusAssignments = false
         paused = true
@@ -350,6 +358,7 @@ import Combine
     }
     func cancelReply() {
         if matchingBusy { cancelFocusMatch(); return }
+        if memoExtractionBusy { cancelMemoTaskExtraction(); return }
         replyTask?.cancel()
         ai.codex.shutdown()
     }

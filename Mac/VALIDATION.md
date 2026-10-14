@@ -1,5 +1,24 @@
 # Mac validation record
 
+## Compact records, memo extraction and history (2026-10-14)
+
+- Added 14 focused tests for explicit memo-source evidence, budgets/deadlines,
+  ambiguous or truncated date/time wording, duplicate/stale preview rejection,
+  atomic edited imports, persistence failure, request cancellation, and
+  completion timestamps with backward-compatible legacy tasks. All passed.
+- Native renders used 24 sample pomodoros at 1120 × 820 and 760 × 820, including
+  the scrolled record area. Rows are approximately 30 points high, retain aligned
+  columns and show one-line Notes with full-text tooltips and expanded editing.
+  The native memo preview (600-point width) and history detail at sidebar width
+  were also visually checked. Temporary rendering tests were removed afterward.
+- The checks used isolated sample data and a silent sound provider. No real user
+  data or running app was changed, and no real ChatGPT/OpenAI request was sent.
+  The original memo remains intact when selected proposals are imported.
+- The development build completed with **97 Swift Testing tests in 18 suites**
+  passing, a successful production executable build, and strict verification of
+  app/nested component signatures. Updated `output/arm64/SuWuDu.app` only; no
+  DMG, Windows source, Windows development output or installer was updated.
+
 ## Tasks and focus development update (2026-10-14)
 
 - Added tests for backward-compatible task persistence, deadlines, conservative

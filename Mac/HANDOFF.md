@@ -4,6 +4,29 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Compact records, memo extraction and task history — 2026-10-14
+
+The journal now uses 30-point single-line session rows with aligned time/minute/
+task/Notes columns; full text remains available through tooltips and row expansion.
+Selection, task grouping and existing edit actions remain connected to the journal.
+The same task list switches between active tasks and completed history. Completion
+time and memo-source excerpts persist on tasks; legacy missing completion dates
+stay unknown. Historical tasks retain their associated sessions and can navigate
+to the record day through `JournalEditor.navigate`, which saves pending edits.
+
+`FocusMemoExtraction.swift` validates AI task proposals and original-source
+evidence, resolves supported explicit deadlines locally, and leaves ambiguous
+information for review. `AppModelMemoTasks.swift` handles cancellation, stale memo
+snapshots and atomic selected imports. `AIService.extractMemoTasks` uses the
+existing Codex/OpenAI providers. The UI allows editing proposals before import,
+preserves the memo and original excerpts, and excludes duplicate titles by default.
+Only the Mac development app is updated; Windows parity remains pending.
+
+The updated developer build passed all 97 Swift Testing tests and strict app
+signature verification. Native checks used 24 sample sessions at 1120 × 820 and
+760 × 820, plus memo preview and history detail renders. No real AI request was
+sent. Development output remains `output/arm64/SuWuDu.app`; the DMG is unchanged.
+
 ## Tasks and focus — 2026-10-14
 
 The Mac journal is now the **任务与专注** panel. It combines the existing timer,

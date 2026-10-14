@@ -8,20 +8,24 @@ struct FocusTask: Codable, Identifiable, Equatable {
     var dueHasTime = false
     var notes = ""
     var isCompleted = false
+    var completedAt: Date?
+    var sourceExcerpt: String?
     var createdAt = Date()
     var updatedAt = Date()
 
     init(id: String = UUID().uuidString, title: String, estimatedPomodoros: Int? = nil,
          dueDate: Date? = nil, dueHasTime: Bool = false, notes: String = "", isCompleted: Bool = false,
+         completedAt: Date? = nil, sourceExcerpt: String? = nil,
          createdAt: Date = Date(), updatedAt: Date = Date()) {
         self.id = id; self.title = title
         self.estimatedPomodoros = estimatedPomodoros.map { max(0, $0) }
         self.dueDate = dueDate; self.dueHasTime = dueHasTime; self.notes = notes
-        self.isCompleted = isCompleted; self.createdAt = createdAt; self.updatedAt = updatedAt
+        self.isCompleted = isCompleted; self.completedAt = completedAt; self.sourceExcerpt = sourceExcerpt
+        self.createdAt = createdAt; self.updatedAt = updatedAt
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, estimatedPomodoros, dueDate, dueHasTime, notes, isCompleted, createdAt, updatedAt
+        case id, title, estimatedPomodoros, dueDate, dueHasTime, notes, isCompleted, completedAt, sourceExcerpt, createdAt, updatedAt
     }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -32,8 +36,17 @@ struct FocusTask: Codable, Identifiable, Equatable {
         dueHasTime = try c.decodeIfPresent(Bool.self, forKey: .dueHasTime) ?? false
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
         isCompleted = try c.decodeIfPresent(Bool.self, forKey: .isCompleted) ?? false
+        completedAt = try c.decodeIfPresent(Date.self, forKey: .completedAt)
+        sourceExcerpt = try c.decodeIfPresent(String.self, forKey: .sourceExcerpt)
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
+    }
+
+    mutating func reconcileCompletion(previous: FocusTask?, at instant: Date = Date()) {
+        if !isCompleted { completedAt = nil }
+        else if previous?.isCompleted == true { completedAt = previous?.completedAt }
+        else { completedAt = instant }
+        if let previous { sourceExcerpt = previous.sourceExcerpt }
     }
 
     // Date-only deadlines expire at the next calendar midnight, never the journal's 21:00 boundary.
