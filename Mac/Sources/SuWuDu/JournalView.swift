@@ -8,7 +8,7 @@ enum JournalExport {
             var text = "## \(day.date)\n\n完成：\(day.count) / \(day.target) 个番茄钟\n总计：\(day.total) 分钟\n分钟调整：\(day.adjustment)\n"
             if !day.notes.isEmpty { text += "\n### Notes\n\n\(day.notes)\n" }
             for session in day.sessions {
-                let source = session.isPartial ? "提前结束" : session.actualMinutes == 0 ? "分钟换算" : session.source == "automatic" ? "自动" : "手动"
+                let source = session.recordingSourceLabel
                 let task = FocusAllocationPresentation.label(session.allocations, tasks: tasks,
                     totalMinutes: Double(session.taskMinutes))
                 text += "\n- \(session.completedAt.formatted(date: .omitted, time: .shortened)) · \(session.minutes) 分钟 · \(source)\(session.countsTowardGoal ? "" : " · 不计入目标") · 任务：\(task)"
@@ -331,7 +331,7 @@ enum JournalExport {
                 Text("时间").frame(width: 96, alignment: .leading)
                 Text("分钟").frame(width: 42, alignment: .trailing)
                 Text("任务 · 分钟").frame(width: 200, alignment: .leading)
-                Text("Notes").frame(maxWidth: .infinity, alignment: .leading)
+                Text("来源 · Notes").frame(maxWidth: .infinity, alignment: .leading)
             }
             Color.clear.frame(width: 20, height: 1)
         }.font(.system(size: 11, weight: .semibold)).foregroundStyle(PetTheme.muted)
@@ -407,15 +407,13 @@ enum JournalExport {
         return formatter
     }()
     private func sessionPreview(_ session: FocusSession) -> String {
-        var parts: [String] = []
-        if session.isPartial { parts.append("提前结束") }
-        else if session.actualMinutes == 0 { parts.append("分钟换算") }
-        else if !session.countsTowardGoal { parts.append("不计目标") }
+        var parts = [session.recordingSourceLabel]
+        if !session.countsTowardGoal && !session.isPartial { parts.append("不计目标") }
         if !session.notes.isEmpty { parts.append(session.notes) }
         return parts.joined(separator: " · ").split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
     }
     private func sessionDetail(_ session: FocusSession) -> String {
-        var parts = [sourceLabel(session)]
+        var parts = [session.recordingSourceLabel]
         if !session.countsTowardGoal && !session.isPartial { parts.append("不计入目标") }
         if !selectable(session) { parts.append("仅用于目标统计，实际投入见专注明细") }
         if !session.notes.isEmpty { parts.append(session.notes) }
@@ -429,7 +427,7 @@ enum JournalExport {
                 IntegerField(title: "分钟", value: sessionBinding(session, \.minutes), range: 0...1440).frame(width: 70)
                     .help(session.isPartial ? "提前结束的分钟已计入分钟调整；修改时会同步调整。" : "这个番茄钟记录的分钟数。")
                 Toggle("计入完成数量", isOn: sessionBinding(session, \.countsTowardGoal)).disabled(session.isPartial)
-                    .help(session.isPartial ? "提前结束不计作完整番茄。" : session.actualMinutes == 0 ? "分钟换算只服务每日目标，不重复计算任务投入。" : "关闭后不计入当天完成数量。")
+                    .help(session.isPartial ? "提前结束不计作完整番茄。" : session.isMinuteConversion ? "分钟换算只服务每日目标，不重复计算任务投入。" : "关闭后不计入当天完成数量。")
                 Spacer()
                 Button("删除") {
                     var updated = day
@@ -492,7 +490,7 @@ enum JournalExport {
         }
     }
     private func selectable(_ session: FocusSession) -> Bool {
-        !(session.actualMinutes == 0 && session.completedPomodoro == false && !session.isPartial)
+        !session.isMinuteConversion
     }
     private func assignSelection(_ taskID: String?) {
         guard !selected.isEmpty, editor.save() else { return }
@@ -536,11 +534,6 @@ enum JournalExport {
     private func taskTitle(_ id: String?) -> String {
         guard let id else { return "未关联任务" }
         return tasks.first { $0.id == id }?.title ?? "已删除任务"
-    }
-    private func sourceLabel(_ session: FocusSession) -> String {
-        if session.isPartial { return "提前结束" }
-        if session.actualMinutes == 0 { return "分钟换算" }
-        return session.source == "automatic" ? "自动" : "手动"
     }
     private func applyMinuteChange(subtract: Bool) {
         let amount = subtract ? minutesToSubtract : minutesToAdd
@@ -605,7 +598,7 @@ struct HelpView: View {
                 Text("完整专注自动记录，提前停止时记录已完成的整分钟。暂停不计时，Mac 睡眠或应用重启后保持暂停。每天 21:00 开始下一记录日，跨界分钟按实际片段分配。记录窗口支持目标、分钟调整、补记、删除、每日 / 单次 Notes、复制及日期范围导出。完成专注后进入休息，休息结束时提醒；重新开始可以提前结束休息。")
                 Text("任务与番茄匹配").font(.headline)
                 Text("从启动面板、菜单栏或桌宠右键打开“任务与专注”。任务统一放在一张清单，支持预计番茄数、截止日期、可选截止时间、说明和手动完成；预计数是投入预算。截止日期按日历判断，与 21:00 记录日分界独立。可粘贴清单预览导入，备忘也能转为任务。")
-                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格一行一条，点击任务列调整用时；Shift 连选后点“追加任务”，或点击任务卡片的“追加到 N 条”，会保留每条记录原有的任务。新增任务后均分用时，重复添加不改变原分配。更多菜单中的“重新分配用时”用于统一替换所选记录的任务与用时：同长度按每条分钟填写，不同时长按合计分钟填写再按比例分摊；也可明确清空关联。最近一次修改可整批撤销。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
+                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格一行一条，“来源 · Notes”直接区分自动、手动、提前结束和分钟换算；补记的默认时间是补记当时向前推一轮时长，每条独立计入。点击任务列调整用时；Shift 连选后点“追加任务”，或点击任务卡片的“追加到 N 条”，会保留每条记录原有的任务。新增任务后均分用时，重复添加不改变原分配。更多菜单中的“重新分配用时”用于统一替换所选记录的任务与用时：同长度按每条分钟填写，不同时长按合计分钟填写再按比例分摊；也可明确清空关联。最近一次修改可整批撤销。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
                 Text("在备忘中点击“AI 提取”，AI 会提取任务并保留原文出处。“任务 - 数字”或紧接下一行的数字表示预计番茄数；例如“Cs370 - 15, catchup cheat sheet +5”会分成课程任务 15 颗和对应 cheat sheet 5 颗，课程号不计入预算。明确截止日期由 AI 根据本地日期和时区整理，不明确的值留空。检查、修改和勾选后整批导入，原备忘保留。该操作向设置中的服务发送专用指令、当前备忘、日期/时区及固定输出格式；应用检查返回格式、数值和原文出处。离线时可手动转任务或粘贴清单。")
                 Text("任务清单中的“完成历史”保存已完成任务，显示完成时间、说明、原文出处及累计投入。展开可查看关联专注明细、跳转到对应记录日，也可重新打开任务继续执行。旧任务如果没有保存完成时间，会显示时间未记录。")
                 Text("“AI 匹配”和“AI 建议”使用设置中的 ChatGPT、Claude 或 OpenAI API，发送当前范围的记录序号、真实时间、实际分钟、任务及当前分配、单次 Notes。可以说“第一颗补课 10 分钟、网站 15 分钟”“第二颗再加笔记”或“清空第三颗关联”。多个任务未指定用时则均分；AI 返回固定格式的完整分配，未知任务或无法确定的记录会省略。先查看修改前后各任务的分钟数，再应用整批结果；记录有新修改时会阻止覆盖，应用后可撤销。离线“Notes 匹配”只识别明确且唯一的完整任务名。")

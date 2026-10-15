@@ -1,5 +1,24 @@
 # Mac validation record
 
+## Visible recording sources (2026-10-15)
+
+- Compact rows now show **自动 / 手动 / 提前结束 / 分钟换算** in the existing
+  **来源 · Notes** column, preserving row height and table width. Recording
+  sources remain stored separately from task-assignment sources.
+- Source inspection and a read-only check of the reported local records confirmed
+  the manual flags were retained. Manual additions create independent records;
+  overlapping displayed times are not a deduplication key. No user records were
+  edited, deleted or merged.
+- Fixed a related classification bug: editing ordinary manual/automatic records
+  to zero minutes no longer labels them as minute conversions. Table, hover help
+  and Markdown export share the same source classification.
+- The new isolated regression test passed through edit, save, reload and export
+  for automatic, manual, partial and converted records. Earlier functional suites
+  were not rerun for this change.
+- Release compilation with the macOS 26.5 SDK and strict/deep signature verification
+  passed. The development app at `output/arm64/SuWuDu.app` was updated without
+  restarting the user's app. Windows and installers were not changed.
+
 ## Claude resolved model labels (2026-10-15)
 
 - Model picker labels now include the official `resolvedModel` ID, including

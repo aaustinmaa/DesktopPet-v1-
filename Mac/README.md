@@ -163,7 +163,8 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   with a **每条 … 分钟** footer; mixed-duration batches use combined minutes with
   a **合计 … 分钟** footer and apply the resulting proportions to each record.
   Batch changes remain atomic, reject stale records and support whole-batch undo.
-  Compact table rows show time, minutes, tasks and a single-line note; hover to
+  Compact table rows show time, minutes, tasks and **来源 · Notes** on one line:
+  **自动**, **手动**, **提前结束** or **分钟换算**, followed by the note. Hover to
   read the full note or expand one row to edit. Task grouping and history show
   each task's allocated minutes without counting the whole record for every task.
 - The task list's **完成历史** view retains completed tasks, their completion time,
@@ -178,9 +179,11 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   preserve existing associations. Offline mode does not run a natural-language parser.
 - Task effort uses the stored proportion: a 10/15 split of one 25-minute completed
   pomodoro contributes 0.4/0.6 completed pomodoros and 10/15 minutes. Interrupted
-  runs contribute only their allocated actual minutes. Minute-conversion records
-  still serve daily goals, with no duplicate task minutes or completed pomodoros.
-  Manual sessions can still be added and assigned directly.
+  runs contribute only their allocated actual minutes. Minute conversion moves
+  adjusted minutes into daily goal counts without counting task effort again.
+  Manual sessions can still be added and assigned directly. Each manual addition
+  creates a separate record, ending at the time of entry by default; overlapping
+  times are not automatically deduplicated.
 
 Daily goals, bulk target schedules, signed minute adjustments, manual sessions,
 ignore/delete, daily/session Notes, save-on-navigation, clipboard copy and Markdown

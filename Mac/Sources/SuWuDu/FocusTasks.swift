@@ -139,6 +139,12 @@ enum FocusTaskImport {
 
 extension FocusSession {
     var isPartial: Bool { source == "partial" }
+    var isMinuteConversion: Bool { !isPartial && actualMinutes == 0 && completedPomodoro == false }
+    var recordingSourceLabel: String {
+        if isPartial { return "提前结束" }
+        if isMinuteConversion { return "分钟换算" }
+        return source == "automatic" ? "自动" : "手动"
+    }
     var taskMinutes: Int {
         if isPartial { return max(0, minutes) }
         return max(0, actualMinutes ?? minutes)
