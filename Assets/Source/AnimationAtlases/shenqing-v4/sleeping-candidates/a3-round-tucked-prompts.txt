@@ -1,0 +1,28 @@
+Generated with the built-in image_gen tool.
+
+PASS 1 — Redraw from Su Wu Du sleeping + Shen Qing identity references
+
+Use case: style-transfer.
+Asset type: one new transparent pixel-art sleeping-pose concept sprite for Shen Qing, preview only.
+
+Reference 1 is Su Wu Du SLEEPING: it is the PRIMARY reference for posture, head-to-body proportions, chunky pixel grid, and relaxed compact silhouette. Reference 2 is Shen Qing STANDING: use it ONLY for Shen Qing's identity, gray hair, small blue-and-white crown, green-and-white side ornament, cream skin, dark green sleeves and red heart.
+
+Redraw the sleeping sprite from scratch, matching the first reference's adorable lightly tucked sleeping posture, but MIRROR THE POSE so the face looks LEFT. The face and two small tucked hands are near the lower-left; the hair drapes naturally behind the head toward the right. Keep the cheek resting softly near the hands with gently closed eyes. The torso is tucked compactly beneath the head, with no legs or feet visible and an almost flat lower silhouette. It must feel gently dozing and supported, not collapsed into a flat horizontal puddle.
+
+Most important: use a LOW, softly rounded, ASYMMETRICAL hair silhouette that follows the tilted sleeping skull. Avoid a high triangular/conical dome above the face. The forehead-to-crown gray hair distance should be modest. Keep the crown SMALL, like in the original standing reference; position it slightly toward the rear/top-right of the tilted head, angled with the sleeping head rather than sticking straight up from the center. Keep the hair end short and rounded. Maintain the green-and-white ornament on the viewer's RIGHT. A small red heart rests beside the tucked hands at lower center/right. Preserve Shen Qing's actual costume details and gray/blue/green colors.
+
+Style: precise chunky 2D pixel art, flat solid limited palette, clean black stepped outlines, uniform coarse pixel grid comparable to the references. Each logical pixel is a square; no soft airbrush, gradients, fine texture, messy subpixel edges or glossy 3D treatment. Simple readable sprite at small display size.
+Composition: one sprite only on a square true transparent canvas, fully visible with generous margins. Compact low mound; body width gently exceeds body height excluding crown. No props, pillow, bed, ground shadow, text, labels, ZZZ, sparkles, feet, legs, sharp hair tuft or tall centered crown. Do not reproduce the standing pose. Do not merely squash a previous drawing.
+
+PASS 2 — Refine the new drawing using Shen Qing identity reference
+
+Use case: precise-object-edit.
+Edit image 1 (the new left-facing Shen Qing sleeping concept), using image 2 ONLY as the authoritative identity-detail reference.
+
+Keep the new LOW gently rounded hair silhouette, sleeping face, position of the head and flat floor baseline from image 1. Make these specific corrections:
+1. The blue crown must be the SMALL blue-and-white diamond-shaped crown visible in reference 2, not the loose blue flower/cross shape from image 1. Copy that crown design at about 80 percent of image 1 crown's current visual size, placed near the rear/top-right of the tilted sleeping head.
+2. The right-side green ornament must match Shen Qing in image 2: simple GREEN and WHITE only, no yellow pixels or gold details whatsoever.
+3. Tuck both hands directly under and close to the cheek. Shorten the long outward green sleeve at the far left and the long central forearm. Elbows are folded underneath the head; no arms stretched sideways. Keep the hands small and sweet. Leave a small red heart beside the tucked hands.
+4. The rear hair on the right ends close to the head with a short soft blunt tip, not a long horizontal tail.
+
+Preserve Shen Qing's gray hair and its chunky white highlights, cream face, dark green sleeves, closed peaceful eyes and left-facing angle. Use crisp COARSE square pixels, stepped black outline, solid flat colors with minimal shading, no gradients, texture or antialiasing. Do not make the hair taller, widen the body, flatten the whole face, or change the pose. One sprite only, same square true transparent canvas and generous margins. No text, ZZZ, props, shadow, feet or legs.
