@@ -69,7 +69,9 @@ Sleeping instead uses the single 362-by-362 `sleeping.png`, copied to
 `Sprites/shenqing-sleeping-base.png`. It reuses SuWuDu's three separate
 `sleeping-z-{small,medium,large}.png` layers and their ten-second choreography.
 The layers' positions and horizontal movement are mirrored for Shen Qing's
-left-facing pose; the Z glyph images themselves remain unflipped.
+left-facing pose; Shen Qing's approved layout is shifted 20 pixels left and
+30 pixels down from those mirrored positions on the 362-by-362 canvas.
+The Z glyph images themselves remain unflipped, with timing and travel unchanged.
 The approved sleeping base uses the first image from the balanced prone pose
 generation: Shen Qing faces left, rests on small folded hands and has a red heart
 on the left. The original generated image is retained unchanged as

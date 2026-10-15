@@ -57,8 +57,9 @@ final class PetPanel: NSPanel {
         let coordinates: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [(252, 72, 14, 17), (268, 49, 26, 31), (294, 4, 32, 40)]
         for (index, z) in sleepLayers.enumerated() {
             let (x, y, width, height) = coordinates[index]
-            let left = currentSkin == "shenqing" ? 362 - x - width : x
-            z.frame = CGRect(x: square.minX + left * side / 362, y: square.minY + (362 - y - height) * side / 362,
+            let left = currentSkin == "shenqing" ? 362 - x - width - 20 : x
+            let top = currentSkin == "shenqing" ? y + 30 : y
+            z.frame = CGRect(x: square.minX + left * side / 362, y: square.minY + (362 - top - height) * side / 362,
                              width: width * side / 362, height: height * side / 362)
         }
         CATransaction.commit()

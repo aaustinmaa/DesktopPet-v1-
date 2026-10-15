@@ -75,7 +75,7 @@ struct AnimationTimingTests {
         #expect(!spec.once)
     }
 
-    @Test @MainActor func sleepGlyphsMirrorTheirPositionsAndHorizontalMotionForShenQing() throws {
+    @Test @MainActor func sleepGlyphsOffsetMirroredPositionsAndKeepMirroredMotionForShenQing() throws {
         let original = PetView(frame: NSRect(x: 0, y: 0, width: 362, height: 362))
         let mirrored = PetView(frame: original.frame)
         for (view, skin) in [(original, "suwudu"), (mirrored, "shenqing")] {
@@ -91,8 +91,8 @@ struct AnimationTimingTests {
         #expect(originalGlyphs.count == 3)
         #expect(mirroredGlyphs.count == 3)
         for (right, left) in zip(originalGlyphs, mirroredGlyphs) {
-            #expect(abs(left.frame.minX - (362 - right.frame.maxX)) < 0.000001)
-            #expect(left.frame.minY == right.frame.minY)
+            #expect(abs(left.frame.minX - (362 - right.frame.maxX - 20)) < 0.000001)
+            #expect(left.frame.minY == right.frame.minY - 30)
             #expect(left.frame.size == right.frame.size)
             let rightGroup = try #require(right.animation(forKey: "sleep") as? CAAnimationGroup)
             let leftGroup = try #require(left.animation(forKey: "sleep") as? CAAnimationGroup)
@@ -110,6 +110,10 @@ struct AnimationTimingTests {
             for (rightValue, leftValue) in zip(rightValues, leftValues) {
                 #expect(abs(leftValue.doubleValue + rightValue.doubleValue) < 0.000001)
             }
+        }
+        mirrored.play(.sleeping, skin: "suwudu")
+        for (originalGlyph, restoredGlyph) in zip(originalGlyphs, mirroredGlyphs) {
+            #expect(restoredGlyph.frame == originalGlyph.frame)
         }
         mirrored.play(.idle, skin: "shenqing")
         #expect(mirroredGlyphs.allSatisfy { $0.animation(forKey: "sleep") == nil })

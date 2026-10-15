@@ -1,5 +1,20 @@
 # Mac validation record
 
+## Shen Qing sleeping ZZZ placement (2026-10-15)
+
+- Applied the approved preview offset to Shen Qing only: 20 pixels left and
+  30 pixels down on the 362-by-362 canvas. SuWuDu retains its original placement;
+  all glyph sizes, travel, opacity and ten-second timing remain unchanged.
+- Two targeted sleeping tests passed, including the new position and restoring
+  SuWuDu's original position after changing characters. Preview registration was
+  checked against the approved offset and all visible glyphs remain in bounds.
+- Release compilation with the macOS 26.5 SDK passed. The development app at
+  `output/arm64/SuWuDu.app` received the new executable and current runtime sprites;
+  strict/deep signature verification passed and nested helpers were preserved.
+  No running app was restarted. No installer or DMG was rebuilt.
+- Windows source has the matching placement adjustment. Windows binaries were
+  not rebuilt on this Mac.
+
 ## Minute details and disclosure hit targets (2026-10-15)
 
 - The pomodoro table now shows counted, non-partial records, including converted

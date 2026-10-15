@@ -499,12 +499,14 @@ namespace DesktopPet.Services
         private void StartSleepZzzAnimation()
         {
             var leftPositions = new[] { 252.0, 268.0, 294.0 };
+            var topPositions = new[] { 72.0, 49.0, 4.0 };
             for (var index = 0; index < _sleepZzzImages.Length; index++)
             {
                 var left = leftPositions[index];
                 Canvas.SetLeft(_sleepZzzImages[index], IsShenQing
-                    ? 362 - left - _sleepZzzImages[index].Width
+                    ? 362 - left - _sleepZzzImages[index].Width - 20
                     : left);
+                Canvas.SetTop(_sleepZzzImages[index], topPositions[index] + (IsShenQing ? 30 : 0));
             }
             _sleepZzzLayer.Visibility = Visibility.Visible;
             StartSleepZAnimation(

@@ -271,10 +271,11 @@ function copyPixels(source, width, height, destination, destinationWidth, left, 
 
 // Exact SuWuDu Z choreography, mirrored horizontally for Shen Qing's left-facing pose.
 // Glyphs remain readable; only their positions and horizontal travel are mirrored.
+// The approved Shen Qing layout moves the mirrored origin 20px left and 30px down.
 const sleepZSpecs = [
-  { name: 'small', x: 96, y: 72, w: 14, h: 17, appear: .36, fully: .424, arrive: .72, fade: .72, gone: .8, startScale: 1, endScale: 2.29, startX: 0, startY: 0, endX: 51, endY: -56.5 },
-  { name: 'medium', x: 68, y: 49, w: 26, h: 31, appear: .18, fully: .244, arrive: .54, fade: .54, gone: .576, startScale: .54, endScale: 1.23, startX: -22, startY: 16, endX: 29, endY: -40.5 },
-  { name: 'large', x: 36, y: 4, w: 32, h: 40, appear: 0, fully: .064, arrive: .36, fade: .36, gone: .396, startScale: .43, endScale: 1, startX: -51, startY: 56.5, endX: 0, endY: 0 },
+  { name: 'small', x: 76, y: 102, w: 14, h: 17, appear: .36, fully: .424, arrive: .72, fade: .72, gone: .8, startScale: 1, endScale: 2.29, startX: 0, startY: 0, endX: 51, endY: -56.5 },
+  { name: 'medium', x: 48, y: 79, w: 26, h: 31, appear: .18, fully: .244, arrive: .54, fade: .54, gone: .576, startScale: .54, endScale: 1.23, startX: -22, startY: 16, endX: 29, endY: -40.5 },
+  { name: 'large', x: 16, y: 34, w: 32, h: 40, appear: 0, fully: .064, arrive: .36, fade: .36, gone: .396, startScale: .43, endScale: 1, startX: -51, startY: 56.5, endX: 0, endY: 0 },
 ];
 
 async function encodeSleepingGif(definition, base) {
