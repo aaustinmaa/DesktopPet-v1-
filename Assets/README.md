@@ -55,29 +55,35 @@ runtime images to `Sprites`. The stable working-atlas script must use fixed
 362-by-362 cells so the character and laptop pixels are never rescaled or
 recentered between frames.
 
-Shen Qing uses the approved coarse-pixel `shenqing-idle-v3-source.png` master.
-The eleven v3 sheets cover all twelve states (Happy holds Success frame 3).
-Each normalized sheet is 1448 by 724 with eight fixed 362-by-362 cells.
-`ExtractShenQingAtlases.ps1` slices these normalized sheets without resizing.
-To rebuild them from the imagegen source sheets, run
-`python Scripts/BuildShenQingAtlases.py` with Pillow and NumPy installed.
-This uses one nearest-neighbor scale per sheet and registers the blue crown,
-so moving props never affect character centering. Old Shen Qing frames and
-v1 atlases are preserved in `Archive`.
+Shen Qing's current artwork is in `Source/AnimationAtlases/shenqing-v4`.
+`approved-design.png` preserves the approved design board; `identity-reference.png`
+is its neutral pose. The character retains his blue crown, green side ornament,
+gray hair and amber eyes, with one continuous flat hair/robe hem and no exposed feet.
 
-The v3 outer white rim is removed with the reviewed, frame-specific masks in
-`Source/AnimationAtlases/shenqing-v3-outline-masks`. White mask pixels erase
-the corresponding registered sprite pixels to transparent; black mask pixels
-leave the original RGBA values untouched. The original source PNGs remain intact.
-These masks also clear the stray outer dark rim while preserving the inner
-contour, facial details, clothing highlights and action props. Their manifest
-checks the original registered frames before applying a mask, so replacing art
-or changing registration requires reviewing the masks instead of silently
-erasing unrelated pixels. No resizing or recoloring occurs during this step.
+All twelve states have independent 4-by-4 sheets of sixteen frames: idle, blink,
+happy, wave, heart, working, success, error, sleeping, reminder, hit and question.
+Happy no longer borrows a Success frame. Each normalized `{action}.png` is
+1448 by 1448, containing fixed 362-by-362 cells; the 192 runtime frames retain
+the `Sprites/shenqing-{action}-{01..16}.png` naming convention.
 
-Open `Source/AnimationAtlases/shenqing-v3-preview.html` to play or step through
-all twelve states. The imagegen prompts are saved alongside it in
-`shenqing-actions-v3-prompts.md`.
+Run `node Scripts/BuildShenQingV4Atlases.mjs` with Node and `sharp` available.
+`SHARP_MODULE` may point to an existing sharp installation. The script preserves
+generated RGBA, applies one nearest-neighbor scale per sheet, and registers the
+lower hair hem so local head acting survives without shifting the baseline.
+The closing frame repeats the opening frame. Previous runtime frames are saved
+in `Archive/Sprites/shenqing-before-v4` before replacement.
+`ExtractShenQingAtlases.ps1` can also slice the normalized v4 sheets without resizing.
+
+Open `Source/AnimationAtlases/shenqing-v4/preview.html` to play or step through
+all twelve animations. Each action also has a looping `{action}-preview.gif`.
+The built-in imagegen source images and exact prompts are saved as
+`{action}-source.png` and `{action}-prompt.txt`; `prompt-base.txt` records the
+shared identity and flat-base constraints. `registration.json` records the
+crop, scale, frame sequence and timing used for export.
+
+The older v3 artwork, prompts and outline masks remain historical references.
+The legacy `BuildShenQingAtlases.py` pipeline is for those eight-frame sheets;
+do not run it to rebuild current v4 assets or apply its v3 erasure masks to them.
 
 ## SuWuDu wave and reminder v3
 

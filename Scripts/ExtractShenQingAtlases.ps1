@@ -5,20 +5,20 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-$atlasDirectory = Join-Path $ProjectRoot 'Assets\Source\AnimationAtlases'
+$atlasDirectory = Join-Path $ProjectRoot 'Assets\Source\AnimationAtlases\shenqing-v4'
 $spriteDirectory = Join-Path $ProjectRoot 'Assets\Sprites'
 
-$ranges = @('idle', 'blink', 'wave', 'heart', 'working', 'success', 'error',
+$ranges = @('idle', 'blink', 'happy', 'wave', 'heart', 'working', 'success', 'error',
     'reminder', 'sleeping', 'hit', 'question') | ForEach-Object {
-    @{ Atlas = "shenqing-$_-v3.png"; Start = 0; Count = 8; Prefix = "shenqing-$_" }
+    @{ Atlas = "$_.png"; Start = 0; Count = 16; Prefix = "shenqing-$_" }
 }
 
 foreach ($range in $ranges) {
     $atlasPath = Join-Path $atlasDirectory $range.Atlas
     $atlas = [System.Drawing.Bitmap]::FromFile($atlasPath)
     try {
-        if ($atlas.Width -ne 1448 -or $atlas.Height -ne 724) {
-            throw "Expected a 1448x724 fixed-grid atlas in $atlasPath."
+        if ($atlas.Width -ne 1448 -or $atlas.Height -ne 1448) {
+            throw "Expected a 1448x1448 fixed-grid atlas in $atlasPath."
         }
 
         for ($frame = 0; $frame -lt $range.Count; $frame++) {
