@@ -1,0 +1,35 @@
+Generated with the built-in image_gen tool.
+
+PASS 1 — New prone sleeping pose
+
+Use case: style-transfer.
+Create ONE new transparent pixel-art sprite of Shen Qing gently sleeping prone, with balanced medium proportions.
+
+REFERENCE ROLES:
+Image 1 (Su Wu Du sleeping) is the precise reference for the sleeping silhouette, compact body proportions, face size, tucked hands and coarse pixel art.
+Image 2 (Shen Qing standing) is only the identity reference for blue crown, gray hair, green-and-white side ornament, dark green clothing and cream face.
+
+PRIMARY REQUEST:
+Redraw image 1's gentle sleeping pose as Shen Qing, MIRRORING the entire pose so Shen Qing faces LEFT. Keep its balanced compact proportions very close to image 1: neither wide and fat nor skinny and flat. Small tucked upper body under a rounded sleeping head; cheek rests on two little folded hands at lower left. Peacefully closed eyes, a tiny relaxed mouth. Hair falls behind the head toward the right with a short rounded end. The head is tilted slightly down; the body retains a little volume beneath it, comfortably resting instead of standing up or sprawling flat. Lower edge nearly straight. A small red heart beside the hands as in the sleeping reference.
+
+The hair mass must be only moderately rounded, closely following the sleeping reference's mirrored contour. Keep a small blue/white crown proportionate to the standing reference; don't add a tall dome of gray hair beneath it. Green/white side ornament on viewer's RIGHT. No yellow or gold. Do not make the head oversized relative to the sleeping reference, expand the shoulders, elongate arms or spread the hair sideways. Keep the visible body silhouette compact, roughly 1.15 times as wide as tall excluding the crown. This is a guideline for natural balanced proportions, not a stretched shape.
+
+STYLE:
+Match image 1's simple coarse-pixel construction with the palette and identity from image 2. Clean uniform large square pixel units, solid flat limited colors, black stair-step outline, sparse gray highlights. Readable and cute at desktop-pet size. No fine texture, gradients, soft shading or smooth vector curves.
+
+OUTPUT:
+One fully visible sprite, centered with generous transparent margins in a square canvas. Real transparent background. No ZZZ, text, grid, extra characters, pillow, bed, desk, props, floor, shadow, legs or feet.
+
+PASS 2 — Refine hair, tucked sleeves and heart
+
+Use case: precise-object-edit.
+Refine this new left-facing Shen Qing prone sleeping sprite. Keep the face angle, its size, head width, medium body proportions and same compact sleeping pose. Keep the small blue crown, gray hair, green-and-white side ornament and closed eyes.
+
+Correct these four details:
+- Round off the high gray protrusion at the upper RIGHT/rear of the head. Make the hair's upper contour one natural gently curved low dome, with no spike or shoulder-like bump.
+- Tuck the bulky green sleeve mass at lower right back underneath the head. Only two short bent forearms ending in SMALL hands under the cheek should be visible. No green triangular lumps extending sideways and nothing resembling knees, legs or feet. Both elbows are close to the face.
+- Move the separate red heart from the far left to a snug position beside the hands at the lower RIGHT of the face, partially tucked under a sleeve. It is a small held heart, not a detached object.
+- Use a tiny simple mouth instead of a large peach rectangle.
+
+Preserve the overall natural chubby-but-not-fat silhouette; do not compress the whole sprite, widen its hair, or make it taller. Keep short rounded rear hair at bottom right and a clean nearly flat baseline. Preserve gray hair, cream face, original green/blue/white palette with no yellow. Clean coarse uniform square pixel art, chunky black outline, solid colors, no texture or soft shading.
+One sprite on the same square genuinely transparent canvas, no text or ZZZ, no props, no legs or feet.
