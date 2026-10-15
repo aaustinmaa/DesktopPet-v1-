@@ -51,14 +51,22 @@ namespace DesktopPet.Services
 
         private static readonly string[] WaveFrames =
         {
-            "wave-v2-01.png",
-            "wave-v2-02.png",
-            "wave-v2-03.png",
-            "wave-v2-04.png",
-            "wave-v2-05.png",
-            "wave-v2-06.png",
-            "wave-v2-07.png",
-            "wave-v2-08.png"
+            "wave-v3-01.png",
+            "wave-v3-02.png",
+            "wave-v3-03.png",
+            "wave-v3-04.png",
+            "wave-v3-05.png",
+            "wave-v3-06.png",
+            "wave-v3-07.png",
+            "wave-v3-08.png",
+            "wave-v3-09.png",
+            "wave-v3-10.png",
+            "wave-v3-11.png",
+            "wave-v3-12.png",
+            "wave-v3-13.png",
+            "wave-v3-14.png",
+            "wave-v3-15.png",
+            "wave-v3-16.png"
         };
 
         private static readonly string[] BlinkFrames =
@@ -168,22 +176,22 @@ namespace DesktopPet.Services
 
         private static readonly string[] ReminderFrames =
         {
-            "reminder-v2-01.png",
-            "reminder-v2-02.png",
-            "reminder-v2-03.png",
-            "reminder-v2-04.png",
-            "reminder-v2-05.png",
-            "reminder-v2-06.png",
-            "reminder-v2-07.png",
-            "reminder-v2-08.png",
-            "reminder-v2-09.png",
-            "reminder-v2-10.png",
-            "reminder-v2-11.png",
-            "reminder-v2-12.png",
-            "reminder-v2-13.png",
-            "reminder-v2-14.png",
-            "reminder-v2-15.png",
-            "reminder-v2-16.png"
+            "reminder-v3-01.png",
+            "reminder-v3-02.png",
+            "reminder-v3-03.png",
+            "reminder-v3-04.png",
+            "reminder-v3-05.png",
+            "reminder-v3-06.png",
+            "reminder-v3-07.png",
+            "reminder-v3-08.png",
+            "reminder-v3-09.png",
+            "reminder-v3-10.png",
+            "reminder-v3-11.png",
+            "reminder-v3-12.png",
+            "reminder-v3-13.png",
+            "reminder-v3-14.png",
+            "reminder-v3-15.png",
+            "reminder-v3-16.png"
         };
 
         private static readonly string[] HitFrames =
@@ -335,7 +343,7 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Waving:
                     _frames = IsShenQing ? ShenQingWaveFrames : WaveFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 160 : 105);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 160 : 100);
                     break;
                 case PetState.HeartPulse:
                     _frames = IsShenQing ? ShenQingHeartFrames : HeartFrames;

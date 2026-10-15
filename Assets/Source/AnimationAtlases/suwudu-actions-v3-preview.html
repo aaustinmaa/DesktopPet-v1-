@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>苏无度 · 挥手与摇铃动作预览</title>
+  <style>
+    :root { color-scheme: dark; font: 15px/1.5 system-ui, sans-serif; background: #17201d; color: #edf3ec; }
+    * { box-sizing: border-box; }
+    body { max-width: 1000px; margin: auto; padding: 32px 24px; }
+    h1 { margin: 0 0 8px; font-size: clamp(23px, 4vw, 32px); }
+    h2 { margin: 0; font-size: 21px; }
+    p { margin: 0; color: #b8c9bc; }
+    .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+    label { display: inline-flex; align-items: center; gap: 8px; }
+    button, select { font: inherit; color: inherit; background: #31473a; border: 1px solid #647c69; border-radius: 8px; padding: 7px 13px; }
+    button { cursor: pointer; }
+    button:hover { background: #405c49; }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #e4ef83; outline-offset: 3px; }
+    main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    article { min-width: 0; padding: 20px; background: #24312a; border: 1px solid #3d4f42; border-radius: 16px; }
+    .description { margin-top: 4px; font-size: 14px; }
+    .stage { width: min(362px, 100%); aspect-ratio: 1; margin: 18px auto 12px; overflow: hidden; border-radius: 8px; }
+    .stage img { display: block; width: 100%; height: 100%; image-rendering: pixelated; object-fit: contain; }
+    main[data-background="checker"] .stage { background-color: #eeeae1; background-image: conic-gradient(#d4d1c9 25%, transparent 0 50%, #d4d1c9 0 75%, transparent 0); background-size: 24px 24px; }
+    main[data-background="light"] .stage { background: #f4f0e6; }
+    main[data-background="dark"] .stage { background: #101614; }
+    .status { text-align: center; font-variant-numeric: tabular-nums; color: #d0ddce; }
+    .controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+    .speed { display: flex; flex-wrap: wrap; width: 100%; gap: 8px; }
+    .speed input { min-width: 80px; flex: 1; accent-color: #d3e879; }
+    .speed output { width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+    .error { min-height: 1.5em; margin-top: 9px; color: #ffbba5; font-size: 13px; text-align: center; }
+    .hint { margin-top: 20px; font-size: 13px; }
+    @media (max-width: 720px) { body { padding: 24px 16px; } main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>苏无度 · 动作预览</h1>
+    <p>挥手打招呼，摇铃提醒喝水与休息。暂停后可以逐帧检查动作。</p>
+  </header>
+  <div class="toolbar">
+    <button id="play-all" type="button">全部播放</button>
+    <button id="pause-all" type="button">全部暂停</button>
+    <label for="background">预览背景
+      <select id="background">
+        <option value="checker">透明棋盘格</option>
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
+      </select>
+    </label>
+  </div>
+  <main data-background="checker" aria-label="动画预览"></main>
+  <p class="hint">原始画布为 362 × 362 像素。1× 为应用中的播放速度；逐帧按钮会暂停当前动作。</p>
+  <script>
+    'use strict';
+    const specs = [
+      { prefix: 'wave-v3', title: '挥手', description: '16 帧 · 每帧 100 ms · 一轮 1.60 秒', interval: 100 },
+      { prefix: 'reminder-v3', title: '摇铃提醒', description: '16 帧 · 每帧 90 ms · 一轮 1.44 秒', interval: 90 }
+    ];
+    const main = document.querySelector('main');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cards = specs.map(spec => {
+      const paths = Array.from({ length: 16 }, (_, index) => `../../Sprites/${spec.prefix}-${String(index + 1).padStart(2, '0')}.png`);
+      const card = document.createElement('article');
+      card.innerHTML = `
+        <h2 id="${spec.prefix}-title">${spec.title}</h2>
+        <p class="description">${spec.description}</p>
+        <div class="stage"><img width="362" height="362" alt="${spec.title}第 1 帧"></div>
+        <p class="status"></p>
+        <div class="controls">
+          <button type="button" data-action="previous" aria-label="${spec.title}上一帧">上一帧</button>
+          <button type="button" data-action="toggle" aria-label="${spec.title}播放或暂停"></button>
+          <button type="button" data-action="next" aria-label="${spec.title}下一帧">下一帧</button>
+        </div>
+        <label class="speed" for="${spec.prefix}-speed">播放速度
+          <input id="${spec.prefix}-speed" type="range" min="0.25" max="2" step="0.25" value="1">
+          <output for="${spec.prefix}-speed">1×</output>
+        </label>
+        <p class="error" role="status"></p>`;
+      card.setAttribute('aria-labelledby', `${spec.prefix}-title`);
+      main.append(card);
+      const state = {
+        ...spec, paths, card, index: 0, elapsed: 0, speed: 1, playing: !reducedMotion,
+        image: card.querySelector('img'), label: card.querySelector('.status'),
+        toggle: card.querySelector('[data-action="toggle"]'), error: card.querySelector('.error')
+      };
+      state.preloaded = paths.map(path => {
+        const image = new Image();
+        image.src = path;
+        return image;
+      });
+      state.image.addEventListener('error', () => {
+        setPlaying(state, false);
+        state.error.textContent = '图片未加载，请检查本地 Sprites 目录中的对应帧。';
+      });
+      state.image.addEventListener('load', () => { state.error.textContent = ''; });
+      state.toggle.addEventListener('click', () => setPlaying(state, !state.playing));
+      card.querySelector('[data-action="previous"]').addEventListener('click', () => step(state, -1));
+      card.querySelector('[data-action="next"]').addEventListener('click', () => step(state, 1));
+      card.querySelector('input').addEventListener('input', event => {
+        state.speed = Number(event.target.value);
+        card.querySelector('output').textContent = `${state.speed}×`;
+      });
+      paint(state);
+      setPlaying(state, state.playing);
+      return state;
+    });
+    function paint(state) {
+      state.image.src = state.paths[state.index];
+      state.image.alt = `${state.title}第 ${state.index + 1} 帧`;
+      state.label.textContent = `第 ${String(state.index + 1).padStart(2, '0')} / 16 帧`;
+    }
+    function setPlaying(state, playing) {
+      state.playing = playing;
+      state.elapsed = 0;
+      state.toggle.textContent = playing ? '暂停' : '播放';
+      state.toggle.setAttribute('aria-label', `${playing ? '暂停' : '播放'}${state.title}`);
+    }
+    function step(state, direction) {
+      setPlaying(state, false);
+      state.index = (state.index + direction + state.paths.length) % state.paths.length;
+      paint(state);
+    }
+    document.querySelector('#play-all').addEventListener('click', () => cards.forEach(state => setPlaying(state, true)));
+    document.querySelector('#pause-all').addEventListener('click', () => cards.forEach(state => setPlaying(state, false)));
+    document.querySelector('#background').addEventListener('change', event => { main.dataset.background = event.target.value; });
+    let last = null;
+    document.addEventListener('visibilitychange', () => { last = null; });
+    function tick(now) {
+      const delta = last === null ? 0 : Math.max(0, Math.min(now - last, 250));
+      last = now;
+      if (!document.hidden) cards.forEach(state => {
+        if (!state.playing) return;
+        state.elapsed += delta * state.speed;
+        const advance = Math.floor(state.elapsed / state.interval);
+        if (advance > 0) {
+          state.elapsed %= state.interval;
+          state.index = (state.index + advance) % state.paths.length;
+          paint(state);
+        }
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

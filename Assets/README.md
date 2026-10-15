@@ -78,3 +78,22 @@ erasing unrelated pixels. No resizing or recoloring occurs during this step.
 Open `Source/AnimationAtlases/shenqing-v3-preview.html` to play or step through
 all twelve states. The imagegen prompts are saved alongside it in
 `shenqing-actions-v3-prompts.md`.
+
+## SuWuDu wave and reminder v3
+
+The approved `wave-v3-source.png` and `reminder-v3-source.png` are both 4-by-4
+imagegen sheets. Preserve their long-hair silhouette covering the lower body;
+the later eight-pose reminder experiment with exposed legs was rejected.
+
+Run `node Scripts/BuildSuWuDuActionAtlases.mjs` with Node and `sharp` available
+to rebuild only these two animations. `SHARP_MODULE` can point to an existing
+sharp installation. The script preserves generated RGBA and applies one
+nearest-neighbor scale per sheet, registering the crown instead of moving props.
+It emits 16 fixed 362-by-362 frames and a 1448-by-1448 atlas per action.
+Windows and Mac play waving at 100 ms per frame and reminders at 90 ms.
+The PowerShell extractor also slices the final atlases without rescaling.
+
+Open `Source/AnimationAtlases/suwudu-actions-v3-preview.html` to play or step
+through the animations. Prompts and registration data are saved alongside it.
+Superseded v2 sources and frames are preserved in the `suwudu-actions-v2`
+subfolders under `Archive/AnimationAtlases` and `Archive/Sprites`.

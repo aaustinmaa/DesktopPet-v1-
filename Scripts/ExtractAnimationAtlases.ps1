@@ -710,9 +710,9 @@ Save-CharacterFrames `
     (Join-Path $atlasDirectory 'idle-blink-v2.png') `
     8 8 'blink-v2' `
     -ClearEdgeArtifacts
-Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'social-v2.png') `
-    0 8 'wave-v2'
+Save-FixedGridFrames `
+    (Join-Path $atlasDirectory 'wave-v3.png') `
+    16 'wave-v3'
 Save-CharacterFrames `
     (Join-Path $atlasDirectory 'heart-lift-v3.png') `
     0 8 'heart-lift-v3'
@@ -733,10 +733,9 @@ Save-CharacterFrames `
     -ClearEdgeArtifacts `
     -PreserveAspectRatio `
     -AspectScale 1.07
-Save-CharacterFrames `
-    (Join-Path $atlasDirectory 'reminder-v2.png') `
-    0 16 'reminder-v2' `
-    -ClearEdgeArtifacts
+Save-FixedGridFrames `
+    (Join-Path $atlasDirectory 'reminder-v3.png') `
+    16 'reminder-v3'
 Save-HammerFrames (Join-Path $atlasDirectory 'hammer-v2.png')
 
 Write-Host 'Animation frames extracted successfully.'

@@ -342,8 +342,8 @@ struct AnimationSpec {
         case .success: return .init(frames: frames("success-v2", 16, "success", 8), interval: shen ? 0.160 : 0.095)
         case .error: return .init(frames: frames("error-v4", 16, "error", 8), interval: shen ? 0.180 : 0.125)
         case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 8) : ["sleeping-base.png"], interval: shen ? 0.500 : 0.15)
-        case .reminder: return .init(frames: frames("reminder-v2", 16, "reminder", 8), interval: shen ? 0.180 : 0.09)
-        case .waving: return .init(frames: frames("wave-v2", 8, "wave", 8), interval: shen ? 0.160 : 0.105)
+        case .reminder: return .init(frames: frames("reminder-v3", 16, "reminder", 8), interval: shen ? 0.180 : 0.09)
+        case .waving: return .init(frames: frames("wave-v3", 16, "wave", 8), interval: shen ? 0.160 : 0.100)
         case .heart:
             var list = frames("heart-lift-v3", 8, "heart", 8)
             if !shen { list += sequence("heart-lift-v3", 7).reversed() }

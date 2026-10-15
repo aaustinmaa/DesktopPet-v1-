@@ -1,0 +1,410 @@
+{
+  "cellSize": 362,
+  "columns": 4,
+  "rows": 4,
+  "animations": [
+    {
+      "name": "wave-v3",
+      "intervalMs": 100,
+      "sourceGrid": [
+        4,
+        4
+      ],
+      "sourcePoseSequence": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        5,
+        6,
+        7,
+        8,
+        4,
+        3,
+        2,
+        1
+      ],
+      "scale": 1.1096774193548387,
+      "registration": [
+        {
+          "sourcePose": 1,
+          "crop": [
+            28,
+            38,
+            249,
+            278
+          ],
+          "destination": [
+            9,
+            31,
+            276,
+            308
+          ]
+        },
+        {
+          "sourcePose": 2,
+          "crop": [
+            341,
+            38,
+            257,
+            278
+          ],
+          "destination": [
+            8,
+            31,
+            285,
+            308
+          ]
+        },
+        {
+          "sourcePose": 3,
+          "crop": [
+            655,
+            38,
+            261,
+            278
+          ],
+          "destination": [
+            9,
+            31,
+            290,
+            308
+          ]
+        },
+        {
+          "sourcePose": 4,
+          "crop": [
+            968,
+            38,
+            270,
+            278
+          ],
+          "destination": [
+            8,
+            31,
+            300,
+            308
+          ]
+        },
+        {
+          "sourcePose": 5,
+          "crop": [
+            28,
+            351,
+            271,
+            279
+          ],
+          "destination": [
+            8,
+            30,
+            301,
+            310
+          ]
+        },
+        {
+          "sourcePose": 6,
+          "crop": [
+            341,
+            351,
+            266,
+            279
+          ],
+          "destination": [
+            8,
+            30,
+            295,
+            310
+          ]
+        },
+        {
+          "sourcePose": 7,
+          "crop": [
+            655,
+            351,
+            262,
+            279
+          ],
+          "destination": [
+            9,
+            30,
+            291,
+            310
+          ]
+        },
+        {
+          "sourcePose": 8,
+          "crop": [
+            968,
+            351,
+            270,
+            279
+          ],
+          "destination": [
+            8,
+            30,
+            300,
+            310
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reminder-v3",
+      "intervalMs": 90,
+      "sourceGrid": [
+        4,
+        4
+      ],
+      "sourcePoseSequence": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        1
+      ],
+      "scale": 1.1225806451612903,
+      "registration": [
+        {
+          "sourcePose": 1,
+          "crop": [
+            14,
+            37,
+            270,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            303,
+            280
+          ]
+        },
+        {
+          "sourcePose": 2,
+          "crop": [
+            328,
+            37,
+            289,
+            249
+          ],
+          "destination": [
+            20,
+            36,
+            324,
+            280
+          ]
+        },
+        {
+          "sourcePose": 3,
+          "crop": [
+            641,
+            37,
+            294,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            330,
+            280
+          ]
+        },
+        {
+          "sourcePose": 4,
+          "crop": [
+            955,
+            37,
+            291,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            327,
+            280
+          ]
+        },
+        {
+          "sourcePose": 5,
+          "crop": [
+            14,
+            350,
+            295,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            331,
+            280
+          ]
+        },
+        {
+          "sourcePose": 6,
+          "crop": [
+            328,
+            350,
+            291,
+            249
+          ],
+          "destination": [
+            20,
+            36,
+            327,
+            280
+          ]
+        },
+        {
+          "sourcePose": 7,
+          "crop": [
+            641,
+            350,
+            269,
+            249
+          ],
+          "destination": [
+            20,
+            35,
+            302,
+            280
+          ]
+        },
+        {
+          "sourcePose": 8,
+          "crop": [
+            955,
+            350,
+            290,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            326,
+            280
+          ]
+        },
+        {
+          "sourcePose": 9,
+          "crop": [
+            14,
+            664,
+            294,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            330,
+            280
+          ]
+        },
+        {
+          "sourcePose": 10,
+          "crop": [
+            328,
+            664,
+            298,
+            249
+          ],
+          "destination": [
+            19,
+            36,
+            335,
+            280
+          ]
+        },
+        {
+          "sourcePose": 11,
+          "crop": [
+            641,
+            664,
+            295,
+            249
+          ],
+          "destination": [
+            20,
+            36,
+            331,
+            280
+          ]
+        },
+        {
+          "sourcePose": 12,
+          "crop": [
+            955,
+            664,
+            287,
+            249
+          ],
+          "destination": [
+            20,
+            36,
+            322,
+            280
+          ]
+        },
+        {
+          "sourcePose": 13,
+          "crop": [
+            14,
+            977,
+            269,
+            249
+          ],
+          "destination": [
+            19,
+            35,
+            302,
+            280
+          ]
+        },
+        {
+          "sourcePose": 14,
+          "crop": [
+            328,
+            977,
+            290,
+            249
+          ],
+          "destination": [
+            20,
+            35,
+            326,
+            280
+          ]
+        },
+        {
+          "sourcePose": 15,
+          "crop": [
+            641,
+            977,
+            289,
+            249
+          ],
+          "destination": [
+            20,
+            35,
+            324,
+            280
+          ]
+        }
+      ]
+    }
+  ]
+}
