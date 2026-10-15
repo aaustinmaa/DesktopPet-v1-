@@ -1,0 +1,11 @@
+Use case: stylized-concept.
+Asset type: a new transparent pixel-art sleeping pose concept sprite for the desktop pet Shen Qing.
+
+Use the attached image ONLY as the authoritative character identity, costume, palette, coarse pixel-art style and pixel proportions. Draw a fresh cute CHIN-IN-HANDS SLEEPING pose.
+Pose: compact sitting bust with elbows tucked close at the flat lower edge. BOTH SMALL PALMS visibly cup the underside of the chin and lower cheeks, holding up the sleepy head. Short bent green sleeves below the palms. The chin gently sinks into the hands; eyes are peacefully closed as simple short black arcs, mouth tiny and relaxed. Head leans slightly toward the viewer's LEFT in a soft three-quarter view. The cheek is slightly squished by a hand, a tiny warm blush. Read instantly as dozing off while propping the chin up. Keep the face clearly visible, hands immediately touching the chin, elbows supported beneath. Cuddly and quiet.
+
+Identity: long gray hair with chunky pale gray highlights, cream face, dark green clothing, small BLUE/CYAN/WHITE diamond-shaped crown copied from the reference, GREEN/WHITE side ornament visible on the viewer's RIGHT. A small red heart at lower chest between the folded sleeves, partly tucked below the hands. Keep the original palette and black stepped outline.
+Proportions: a compact rounded head, a LOW rounded hair dome above the forehead with only a modest gap to the small crown. The crown is a little ornament, not a large tall cross. Hair hangs neatly along the sides to a straight flat base. The whole character excluding crown is roughly as tall as wide; avoid a tall triangle/cone of hair, bulky hair helmet, broad shoulders, massive forearms or long outstretched sleeves. Hands remain small and readable.
+
+Style: faithful chunky 2D pixel sprite, consistent coarse square pixel grid, flat solid limited colors, sparse chunky highlights, crisp black stair-stepped contours. Match the source's simple cute face and limited detail. No gradients, soft light, painterly texture or smooth vector curves.
+Framing: ONE character only centered and fully visible, square true transparent canvas with generous margins. No sheet, no text, no ZZZ, no bed, pillow, desk, props, shadow, visible legs or feet. This is a candidate for approval, not an installed animation.
