@@ -9,7 +9,7 @@ $atlasDirectory = Join-Path $ProjectRoot 'Assets\Source\AnimationAtlases\shenqin
 $spriteDirectory = Join-Path $ProjectRoot 'Assets\Sprites'
 
 $ranges = @('idle', 'blink', 'happy', 'wave', 'heart', 'working', 'success', 'error',
-    'reminder', 'sleeping', 'hit', 'question') | ForEach-Object {
+    'reminder', 'hit', 'question') | ForEach-Object {
     @{ Atlas = "$_.png"; Start = 0; Count = 16; Prefix = "shenqing-$_" }
 }
 
@@ -50,4 +50,17 @@ foreach ($range in $ranges) {
     }
 }
 
-Write-Host 'Shen Qing animation frames extracted successfully.'
+$sleepingPath = Join-Path $atlasDirectory 'sleeping.png'
+$sleeping = [System.Drawing.Bitmap]::FromFile($sleepingPath)
+try {
+    if ($sleeping.Width -ne 362 -or $sleeping.Height -ne 362) {
+        throw "Expected a 362x362 sleeping base in $sleepingPath."
+    }
+}
+finally {
+    $sleeping.Dispose()
+}
+Copy-Item -LiteralPath $sleepingPath `
+    -Destination (Join-Path $spriteDirectory 'shenqing-sleeping-base.png') -Force
+
+Write-Host 'Shen Qing animation frames and sleeping base extracted successfully.'

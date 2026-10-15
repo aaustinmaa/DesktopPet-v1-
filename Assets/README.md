@@ -60,11 +60,16 @@ Shen Qing's current artwork is in `Source/AnimationAtlases/shenqing-v4`.
 is its neutral pose. The character retains his blue crown, green side ornament,
 gray hair and amber eyes, with one continuous flat hair/robe hem and no exposed feet.
 
-All twelve states have independent 4-by-4 sheets of sixteen frames: idle, blink,
-happy, wave, heart, working, success, error, sleeping, reminder, hit and question.
-Happy no longer borrows a Success frame. Each normalized `{action}.png` is
-1448 by 1448, containing fixed 362-by-362 cells; the 192 runtime frames retain
+Eleven states have independent 4-by-4 sheets of sixteen frames: idle, blink,
+happy, wave, heart, working, success, error, reminder, hit and question.
+Happy no longer borrows a Success frame. These normalized `{action}.png` files
+are 1448 by 1448, containing fixed 362-by-362 cells; the 176 runtime frames retain
 the `Sprites/shenqing-{action}-{01..16}.png` naming convention.
+Sleeping instead uses the single 362-by-362 `sleeping.png`, copied to
+`Sprites/shenqing-sleeping-base.png`. It reuses SuWuDu's three separate
+`sleeping-z-{small,medium,large}.png` layers and their ten-second choreography.
+The layers' positions and horizontal movement are mirrored for Shen Qing's
+left-facing pose; the Z glyph images themselves remain unflipped.
 
 Run `node Scripts/BuildShenQingV4Atlases.mjs` with Node and `sharp` available.
 `SHARP_MODULE` may point to an existing sharp installation. The script preserves
@@ -72,26 +77,35 @@ generated RGBA, applies one nearest-neighbor scale per sheet, and registers the
 lower hair hem so local head acting survives without shifting the baseline.
 The closing frame repeats the opening frame. Previous runtime frames are saved
 in `Archive/Sprites/shenqing-before-v4` before replacement.
-`ExtractShenQingAtlases.ps1` can also slice the normalized v4 sheets without resizing.
+`ExtractShenQingAtlases.ps1` can also slice the eleven normalized v4 sheets
+without resizing and copy the single sleeping base.
+The superseded sixteen-frame sleeping sprites and source sheet are retained in
+`Archive/Sprites/shenqing-sleeping-before-layers` and
+`Archive/AnimationAtlases/shenqing-sleeping-before-layers`; the latter also keeps
+the previous normalized sleeping sheet and its exact prompt.
 
 Open `Source/AnimationAtlases/shenqing-v4/preview.html` to play or step through
-all twelve animations. Each action also has a looping `{action}-preview.gif`.
-Shen Qing's idle and working sheets use continuous, small movements with open
-eyes throughout: gentle breathing at 140 ms per frame and subtle typing at
-120 ms per frame, without long frozen holds. Blinking is a separate action at
+all twelve animations. Sheet animations also have a looping `{action}-preview.gif`.
+Shen Qing's idle gently opens and closes both hands at 170 ms per frame, keeping
+the red heart fixed at the chest. Working uses subtle typing at 120 ms per frame.
+Both keep the eyes open throughout and use continuous small movements without
+long frozen holds. Waving also keeps the eyes open and uses 120 ms per frame.
+Blinking is a separate action at
 80 ms per frame; automatic idle gestures remain 60–120 seconds apart.
 The exported loops arrange neighboring generated poses into gradual movement;
 `sourcePoseSequence` records this order without repainting the source artwork.
-Reminder playback uses 160 ms per frame. The hit reaction raises the heart within
-240 ms and holds the closed-eye pose across the hammer's 430 ms impact, then
-retraces the movement once without the later wink/blink poses. Repeated idle
-strikes restart both the hammer and Shen Qing's reaction together.
+Reminder playback uses 160 ms per frame. The hit reaction follows SuWuDu's
+closed-eye dip and rebound over all sixteen frames in 1.06 seconds; the lowest
+poses, frames 8 and 9, span the hammer's 430 ms impact. Repeated idle strikes
+restart both the hammer and Shen Qing's reaction together.
 Run `node Scripts/BuildShenQingV4Atlases.mjs --timing-only` to refresh GIFs,
 the preview and timing metadata from existing sprites without rewriting any PNGs.
-The built-in imagegen source images and exact prompts are saved as
-`{action}-source.png` and `{action}-prompt.txt`; `prompt-base.txt` records the
-shared identity and flat-base constraints. `registration.json` records the
-crop, scale, frame sequence and timing used for export.
+The built-in imagegen sheet sources and exact prompts are saved as
+`{action}-source.png` and `{action}-prompt.txt`. Sleeping uses
+`sleeping-base-source.png` and `sleeping-prompt.txt` for its static base instead.
+`prompt-base.txt` records the shared identity and flat-base constraints.
+`registration.json` records the crop, scale, frame sequence and timing used for
+export.
 
 The older v3 artwork, prompts and outline masks remain historical references.
 The legacy `BuildShenQingAtlases.py` pipeline is for those eight-frame sheets;

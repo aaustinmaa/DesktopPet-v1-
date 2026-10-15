@@ -11,6 +11,7 @@ final class PetPanel: NSPanel {
     let sprite = CALayer()
     let hammer = CALayer()
     private var sleepLayers: [CALayer] = []
+    private var currentSkin = "suwudu"
     private var cache: [String: CGImage] = [:]
     private var generation = 0
     private var down = NSPoint.zero
@@ -56,7 +57,8 @@ final class PetPanel: NSPanel {
         let coordinates: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [(252, 72, 14, 17), (268, 49, 26, 31), (294, 4, 32, 40)]
         for (index, z) in sleepLayers.enumerated() {
             let (x, y, width, height) = coordinates[index]
-            z.frame = CGRect(x: square.minX + x * side / 362, y: square.minY + (362 - y - height) * side / 362,
+            let left = currentSkin == "shenqing" ? 362 - x - width : x
+            z.frame = CGRect(x: square.minX + left * side / 362, y: square.minY + (362 - y - height) * side / 362,
                              width: width * side / 362, height: height * side / 362)
         }
         CATransaction.commit()
@@ -70,6 +72,11 @@ final class PetPanel: NSPanel {
     func play(_ state: PetState, skin: String) {
         generation += 1
         let current = generation
+        if currentSkin != skin {
+            currentSkin = skin
+            needsLayout = true
+            layoutSubtreeIfNeeded()
+        }
         let spec = AnimationSpec.make(state, skin: skin)
         let images = spec.frames.compactMap(load)
         sprite.removeAllAnimations()
@@ -99,7 +106,7 @@ final class PetPanel: NSPanel {
         for (index, z) in sleepLayers.enumerated() {
             z.removeAllAnimations()
             z.opacity = 0
-            if state == .sleeping && skin == "suwudu" {
+            if state == .sleeping {
                 // Same ten-second choreography as SpriteAnimator.StartSleepZAnimation.
                 let specs: [[Double]] = [
                     [0.36, 0.424, 0.72, 0.72, 0.8, 1, 2.29, 0, 0, 51, -56.5],
@@ -108,6 +115,7 @@ final class PetPanel: NSPanel {
                 ]
                 let s = specs[index]
                 let factor = Double(min(bounds.width, bounds.height)) / 362
+                let horizontalDirection = skin == "shenqing" ? -1.0 : 1.0
                 let fade = CAKeyframeAnimation(keyPath: "opacity")
                 fade.values = s[0] > 0 ? [0, 0, 1, 1, 0, 0] : [0, 1, 1, 0, 0]
                 let fadeTimes = s[0] > 0 ? [0, s[0], s[1], s[3], s[4], 1] : [0, s[1], s[3], s[4], 1]
@@ -123,7 +131,7 @@ final class PetPanel: NSPanel {
                 }
                 let group = CAAnimationGroup()
                 group.animations = [fade, motion("transform.scale", s[5], s[6]),
-                                    motion("transform.translation.x", s[7] * factor, s[9] * factor),
+                                    motion("transform.translation.x", s[7] * factor * horizontalDirection, s[9] * factor * horizontalDirection),
                                     motion("transform.translation.y", -s[8] * factor, -s[10] * factor)]
                 group.duration = 10
                 group.repeatCount = .infinity

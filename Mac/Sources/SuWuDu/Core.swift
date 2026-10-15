@@ -349,7 +349,7 @@ struct AnimationSpec {
             sequence(shen ? "shenqing-" + shenName : mac, shen ? shenCount : count)
         }
         switch state {
-        case .idle: return .init(frames: frames("idle-open-close-v5", 16, "idle", 16), interval: shen ? 0.140 : 0.170)
+        case .idle: return .init(frames: frames("idle-open-close-v5", 16, "idle", 16), interval: 0.170)
         case .blink: return .init(frames: frames("blink-v2", 8, "blink", 16), interval: shen ? 0.080 : 0.165, once: true)
         case .happy: return .init(frames: shen ? sequence("shenqing-happy", 16) : ["happy.png"], interval: shen ? 0.140 : 0.15)
         case .question: return .init(frames: shen ? sequence("shenqing-question", 16) : ["question.png"], interval: shen ? 0.160 : 0.15)
@@ -360,7 +360,7 @@ struct AnimationSpec {
             return .init(frames: list, interval: 0.05)
         case .success: return .init(frames: frames("success-v2", 16, "success", 16), interval: shen ? 0.120 : 0.095)
         case .error: return .init(frames: frames("error-v4", 16, "error", 16), interval: shen ? 0.140 : 0.125)
-        case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 16) : ["sleeping-base.png"], interval: shen ? 0.180 : 0.15)
+        case .sleeping: return .init(frames: [shen ? "shenqing-sleeping-base.png" : "sleeping-base.png"], interval: 0.15)
         case .reminder: return .init(frames: frames("reminder-v3", 16, "reminder", 16), interval: shen ? 0.160 : 0.09)
         case .waving: return .init(frames: frames("wave-v3", 16, "wave", 16), interval: shen ? 0.120 : 0.100)
         case .heart:
@@ -368,15 +368,11 @@ struct AnimationSpec {
             if !shen { list += sequence("heart-lift-v3", 7).reversed() }
             return .init(frames: list, interval: shen ? 0.140 : 0.115, once: true)
         case .hit:
-            if shen {
-                let list = [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 16].map {
-                    String(format: "shenqing-hit-%02d.png", $0)
-                }
-                let holds = [0.060, 0.060, 0.060, 0.060, 0.090, 0.150, 0.080,
-                             0.080, 0.080, 0.060, 0.060, 0.060, 0.080]
-                return .init(frames: list, interval: 0.060, once: true, frameDurations: holds)
-            }
-            return .init(frames: sequence("idle-hit-v1", 16), interval: 0.075, once: true)
+            let holds: [Double]? = shen
+                ? [0.040, 0.040, 0.040, 0.040, 0.060, 0.060, 0.060, 0.090,
+                   0.090, 0.070, 0.070, 0.080, 0.080, 0.080, 0.080, 0.080]
+                : nil
+            return .init(frames: frames("idle-hit-v1", 16, "hit", 16), interval: 0.075, once: true, frameDurations: holds)
         }
     }
 }

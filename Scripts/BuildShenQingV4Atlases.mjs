@@ -1,6 +1,6 @@
 // Mechanically register imagegen's Shen Qing v4 artwork; never repaint pixels.
 // Usage: SHARP_MODULE=/path/to/sharp node Scripts/BuildShenQingV4Atlases.mjs [--check] [--timing-only] [idle ...]
-// With no action names all twelve sheets are preflighted before any output changes.
+// With no action names all eleven sheets and the layered sleep pose are preflighted.
 // --timing-only reads existing runtime PNGs and writes only GIFs, preview and timing metadata.
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
@@ -19,8 +19,8 @@ const margin = 8;
 const targetHeight = 304;
 const targetAnchor = { x: 170, y: 337 };
 const definitions = [
-  { name: 'idle', label: '待机', interval: 140,
-    sourceSequence: [1, 2, 3, 4, 9, 6, 5, 7, 8, 5, 6, 10, 11, 12, 14, 1] },
+  { name: 'idle', label: '待机', interval: 170,
+    sourceSequence: [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 1] },
   { name: 'blink', label: '眨眼', interval: 80 },
   { name: 'happy', label: '开心', interval: 140 },
   { name: 'wave', label: '挥手', interval: 120 },
@@ -29,11 +29,10 @@ const definitions = [
     sourceSequence: [1, 2, 3, 5, 7, 6, 8, 5, 3, 9, 10, 11, 12, 3, 2, 1] },
   { name: 'success', label: '成功', interval: 120 },
   { name: 'error', label: '出错', interval: 140 },
-  { name: 'sleeping', label: '睡眠', interval: 180 },
+  { name: 'sleeping', label: '睡眠', interval: 10000, sequence: [1] },
   { name: 'reminder', label: '摇铃提醒', interval: 160 },
-  { name: 'hit', label: '点击反应', interval: 60,
-    sequence: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 16],
-    durations: [60, 60, 60, 60, 90, 150, 80, 80, 80, 60, 60, 60, 80] },
+  { name: 'hit', label: '点击反应', interval: 75,
+    durations: [40, 40, 40, 40, 60, 60, 60, 90, 90, 70, 70, 80, 80, 80, 80, 80] },
   { name: 'question', label: '疑问', interval: 160 },
 ];
 const args = process.argv.slice(2);
@@ -65,8 +64,17 @@ async function encodePreviewGif(definition, runtimeFrames) {
   if (!runtimeFrames[gifFrameSequence[0] - 1].equals(runtimeFrames[gifFrameSequence.at(-1) - 1])) {
     throw new Error(`${definition.name}: closing runtime frame must equal the opening frame`);
   }
-  gifFrameSequence.pop();
-  gifFrameDurationsMs[0] += gifFrameDurationsMs.pop();
+  while (gifFrameSequence.length > 1 && runtimeFrames[gifFrameSequence[0] - 1].equals(runtimeFrames[gifFrameSequence.at(-1) - 1])) {
+    gifFrameSequence.pop();
+    gifFrameDurationsMs[0] += gifFrameDurationsMs.pop();
+  }
+  // Explicitly merge identical poses while preserving their hold time.
+  for (let index = gifFrameSequence.length - 1; index > 0; index--) {
+    if (!runtimeFrames[gifFrameSequence[index] - 1].equals(runtimeFrames[gifFrameSequence[index - 1] - 1])) continue;
+    gifFrameDurationsMs[index - 1] += gifFrameDurationsMs[index];
+    gifFrameSequence.splice(index, 1);
+    gifFrameDurationsMs.splice(index, 1);
+  }
   const gif = await sharp(Buffer.concat(gifFrameSequence.map(frame => runtimeFrames[frame - 1])), {
     raw: { width: cellSize, height: cellSize * gifFrameSequence.length, channels: 4, pageHeight: cellSize },
   }).gif({ delay: gifFrameDurationsMs, loop: 0, dither: 0 }).toBuffer();
@@ -81,6 +89,11 @@ async function encodePreviewGif(definition, runtimeFrames) {
 
 async function preflightTiming(definition, existingManifest) {
   if (!existingManifest) throw new Error(`${definition.name}: --timing-only needs an existing registration entry`);
+  if (definition.name === 'sleeping') {
+    const base = await sharp(path.join(spriteDir, 'shenqing-sleeping-base.png')).ensureAlpha().raw().toBuffer();
+    const { gif, timing } = await encodeSleepingGif(definition, base);
+    return { definition, gif, manifest: { ...existingManifest, ...timing } };
+  }
   const frames = await Promise.all(Array.from({ length: 16 }, async (_, index) => {
     const filename = path.join(spriteDir, `shenqing-${definition.name}-${String(index + 1).padStart(2, '0')}.png`);
     const { data, info } = await sharp(await fs.readFile(filename)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -166,7 +179,7 @@ function mainComponent(data, width, height) {
   return { labels, body: largest };
 }
 
-function measure(data, width, height, description, sourceOuterEdges) {
+function measure(data, width, height, description, sourceOuterEdges, crownSearchHeight = 0.36) {
   // Source bounds are recorded separately from the reviewed visible-art crop.
   const content = pixelBounds(data, width, height, (r, g, b, a) => a > 0);
   if (!content) throw new Error(`${description}: empty source cell`);
@@ -184,7 +197,7 @@ function measure(data, width, height, description, sourceOuterEdges) {
   }
   // Sleep Zs and question glyphs are on the left, outside this crown-only region.
   const crown = pixelBounds(data, width, height, (r, g, b, a, x, y) =>
-    a >= 128 && x >= width * 0.30 && x <= width * 0.70 && y < height * 0.36
+    a >= 128 && x >= width * 0.30 && x <= width * 0.70 && y < height * crownSearchHeight
     && b > 100 && g > 60 && b > r * 1.3 && b - r > 35);
   if (!crown || crown.count < 8 || crown.x1 - crown.x0 > width * 0.35) {
     throw new Error(`${description}: missing or ambiguous blue crown`);
@@ -250,7 +263,76 @@ function copyPixels(source, width, height, destination, destinationWidth, left, 
   }
 }
 
+// Exact SuWuDu Z choreography, mirrored horizontally for Shen Qing's left-facing pose.
+// Glyphs remain readable; only their positions and horizontal travel are mirrored.
+const sleepZSpecs = [
+  { name: 'small', x: 96, y: 72, w: 14, h: 17, appear: .36, fully: .424, arrive: .72, fade: .72, gone: .8, startScale: 1, endScale: 2.29, startX: 0, startY: 0, endX: 51, endY: -56.5 },
+  { name: 'medium', x: 68, y: 49, w: 26, h: 31, appear: .18, fully: .244, arrive: .54, fade: .54, gone: .576, startScale: .54, endScale: 1.23, startX: -22, startY: 16, endX: 29, endY: -40.5 },
+  { name: 'large', x: 36, y: 4, w: 32, h: 40, appear: 0, fully: .064, arrive: .36, fade: .36, gone: .396, startScale: .43, endScale: 1, startX: -51, startY: 56.5, endX: 0, endY: 0 },
+];
+
+async function encodeSleepingGif(definition, base) {
+  const glyphs = await Promise.all(sleepZSpecs.map(z => fs.readFile(path.join(spriteDir, `sleeping-z-${z.name}.png`))));
+  const frames = [];
+  for (let frame = 0; frame < 100; frame++) {
+    const t = frame / 100;
+    const overlays = [];
+    for (const [index, z] of sleepZSpecs.entries()) {
+      const opacity = t < z.appear || t >= z.gone ? 0
+        : t < z.fully ? (t - z.appear) / (z.fully - z.appear)
+        : t <= z.fade ? 1 : (z.gone - t) / (z.gone - z.fade);
+      if (opacity <= 0) continue;
+      const progress = Math.max(0, Math.min(1, (t - z.appear) / (z.arrive - z.appear)));
+      const scale = z.startScale + (z.endScale - z.startScale) * progress;
+      const width = Math.round(z.w * scale), height = Math.round(z.h * scale);
+      const left = Math.round(z.x - z.startX - (z.endX - z.startX) * progress + (z.w - width) / 2);
+      const top = Math.round(z.y + z.startY + (z.endY - z.startY) * progress + (z.h - height) / 2);
+      const pixels = await sharp(glyphs[index]).resize(width, height, { kernel: 'nearest', fit: 'fill' }).ensureAlpha().raw().toBuffer();
+      for (let p = 3; p < pixels.length; p += 4) pixels[p] = Math.round(pixels[p] * opacity);
+      overlays.push({ input: pixels, raw: { width, height, channels: 4 }, left, top });
+    }
+    frames.push(await sharp(base, { raw: { width: cellSize, height: cellSize, channels: 4 } }).composite(overlays).raw().toBuffer());
+  }
+  const gif = await sharp(Buffer.concat(frames), {
+    raw: { width: cellSize, height: cellSize * frames.length, channels: 4, pageHeight: cellSize },
+  }).gif({ delay: frames.map(() => 100), loop: 0, dither: 0 }).toBuffer();
+  const encoded = await sharp(gif, { animated: true }).metadata();
+  if (encoded.delay.reduce((sum, value) => sum + value, 0) !== 10000) throw new Error('sleeping: GIF must preserve the full 10-second Z cycle');
+  return { gif, timing: { ...timingFor(definition), layeredZzz: sleepZSpecs, gifFrameDurationsMs: encoded.delay } };
+}
+
+async function preflightSleeping(definition) {
+  const sourcePath = path.join(atlasDir, 'sleeping-base-source.png');
+  const source = await fs.readFile(sourcePath);
+  const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const visible = pixelBounds(data, info.width, info.height, (r, g, b, a) => a >= 16);
+  if (!visible) throw new Error('sleeping: empty source');
+  const su = await sharp(path.join(spriteDir, 'sleeping-base.png')).ensureAlpha().raw().toBuffer();
+  const { body } = mainComponent(su, cellSize, cellSize);
+  if (!body) throw new Error('sleeping: missing SuWuDu body reference');
+  const target = { left: cellSize - body.x1 - 1, top: body.y0, width: body.x1 - body.x0 + 1, height: body.y1 - body.y0 + 1 };
+  const crop = { left: Math.max(0, visible.x0 - 3), top: Math.max(0, visible.y0 - 3) };
+  crop.width = Math.min(info.width, visible.x1 + 4) - crop.left;
+  crop.height = Math.min(info.height, visible.y1 + 4) - crop.top;
+  const scale = Math.min(target.width / crop.width, target.height / crop.height);
+  const width = Math.round(crop.width * scale), height = Math.round(crop.height * scale);
+  const destination = { width, height, left: Math.round(target.left + (target.width - width) / 2), top: target.top + target.height - height };
+  if (!fits(destination)) throw new Error('sleeping: base would clip');
+  const pixels = await sharp(source).extract(crop).resize(width, height, { kernel: 'nearest', fit: 'fill' }).ensureAlpha().raw().toBuffer();
+  const base = Buffer.alloc(cellSize * cellSize * 4);
+  copyPixels(pixels, width, height, base, cellSize, destination.left, destination.top);
+  const atlasPng = await sharp(base, { raw: { width: cellSize, height: cellSize, channels: 4 } }).png().toBuffer();
+  const { gif, timing } = await encodeSleepingGif(definition, base);
+  return { definition, framePngs: [atlasPng], atlasPng, gif, manifest: {
+    name: definition.name, ...timing, source: path.relative(root, sourcePath),
+    sourceSha256: createHash('sha256').update(source).digest('hex'), sourceSize: [info.width, info.height],
+    sourceGrid: [1, 1], frameCount: 1, sourcePoseSequence: [1], registrationMode: 'mirrored-suwudu-sleeping-base',
+    runtimeFile: 'shenqing-sleeping-base.png', referenceBody: body, target, crop, scale, destination,
+  } };
+}
+
 async function preflight(definition) {
+  if (definition.name === 'sleeping') return preflightSleeping(definition);
   const sourcePath = path.join(atlasDir, `${definition.name}-source.png`);
   const source = await fs.readFile(sourcePath);
   const metadata = await sharp(source).metadata();
@@ -282,7 +364,8 @@ async function preflight(definition) {
     const data = await sharp(source).extract(cell).ensureAlpha().raw().toBuffer();
     measurements.push({ sourcePose: index + 1, cell,
       ...measure(data, cell.width, cell.height, `${definition.name} pose ${index + 1}`,
-        { left: column === 0, right: column === 3, top: row === 0, bottom: row === 3 }) });
+        { left: column === 0, right: column === 3, top: row === 0, bottom: row === 3 },
+        definition.name === 'hit' ? 0.65 : 0.36) });
   }
   const medianHeight = median(measurements.map(frame => frame.crownToHemHeight));
   const requestedScale = targetHeight / medianHeight;
@@ -372,17 +455,28 @@ async function archivePrevious() {
   }
 }
 
-function previewHtml(animations) {
+async function previewHtml(animations) {
   const available = new Map(animations.map(animation => [animation.name, animation]));
+  const sleepingSpecs = available.get('sleeping')?.layeredZzz ?? sleepZSpecs;
+  const sleepingGlyphs = available.has('sleeping')
+    ? await Promise.all(sleepingSpecs.map(async z => {
+      const png = await fs.readFile(path.join(spriteDir, `sleeping-z-${z.name}.png`));
+      return `<img class="sleep-z" alt="" aria-hidden="true" draggable="false" src="data:image/png;base64,${png.toString('base64')}" style="left:${z.x / 362 * 100}%;top:${z.y / 362 * 100}%;width:${z.w / 362 * 100}%;height:${z.h / 362 * 100}%">`;
+    })) : [];
   const cards = definitions.map(definition => {
     const animation = available.get(definition.name);
     if (!animation) return `<article><h2>${definition.label}</h2><p>尚未导出</p></article>`;
+    if (definition.name === 'sleeping') {
+      return `<article data-action="sleeping" data-sleeping>
+        <h2>睡眠</h2><div class="stage"><div class="sprite sleep-base" role="img" aria-label="沈青睡眠" style="background-image:url('sleeping.png')"></div>${sleepingGlyphs.join('')}</div>
+        <p class="counter">分层 ZZZ · 10 秒循环</p><p><a href="sleeping.png">睡姿图</a> · <a href="sleeping-preview.gif">GIF</a></p></article>`;
+    }
     const sequence = animation.playbackFrameSequence ?? Array.from({ length: 16 }, (_, index) => index + 1);
     const durations = animation.frameDurationsMs ?? sequence.map(() => animation.intervalMs);
     const seconds = durations.reduce((sum, duration) => sum + duration, 0) / 1000;
-    const note = definition.name === 'idle' ? ' · 轻呼吸，全程睁眼'
+    const note = definition.name === 'idle' ? ' · 双手轻开合，红心固定'
       : definition.name === 'working' ? ' · 小幅打字，全程睁眼'
-      : definition.name === 'hit' ? ' · 及时闭眼举心，一次收回' : '';
+      : definition.name === 'hit' ? ' · 闭眼下压，轻轻回弹' : '';
     return `<article data-action="${definition.name}" data-sequence="${sequence.join(',')}" data-durations="${durations.join(',')}">
       <h2>${definition.label}</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青${definition.label}" style="background-image:url('${definition.name}.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
@@ -392,15 +486,18 @@ function previewHtml(animations) {
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>沈青 · 动画预览</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
-</style><header><h1>沈青 · 12 套动画</h1><p>待机轻轻呼吸，工作小幅打字：持续自然微动，不再长时间定格。暂停后可手动查看每套全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
+.stage{position:relative}.sleep-base{background-size:100% 100%;background-position:0 0}.sleep-z{position:absolute;transform-origin:50% 50%;opacity:0;image-rendering:pixelated;pointer-events:none}
+</style><header><h1>沈青 · 12 套动画</h1><p>待机双手轻开合、红心固定，工作小幅打字；敲打时闭眼下压再回弹，睡眠时 ZZZ 轻轻飘动。暂停可同时停住所有动作，并手动查看逐帧动画的全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
 <script>
-const cards=Array.from(document.querySelectorAll('[data-action]')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
+const cards=Array.from(document.querySelectorAll('[data-action]:not([data-sleeping])')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
+const sleepSpecs=${JSON.stringify(sleepingSpecs)},sleepImages=Array.from(document.querySelectorAll('[data-sleeping] .sleep-z'));let sleepElapsed=0;
+function drawSleep(){const t=sleepElapsed/10000;for(let index=0;index<sleepImages.length;index++){const z=sleepSpecs[index],image=sleepImages[index];const opacity=t<z.appear||t>=z.gone?0:t<z.fully?(t-z.appear)/(z.fully-z.appear):t<=z.fade?1:(z.gone-t)/(z.gone-z.fade);const progress=Math.max(0,Math.min(1,(t-z.appear)/(z.arrive-z.appear)));const scale=z.startScale+(z.endScale-z.startScale)*progress;const dx=-(z.startX+(z.endX-z.startX)*progress),dy=z.startY+(z.endY-z.startY)*progress;image.style.opacity=opacity;image.style.transform='translate('+(dx/z.w*100)+'%,'+(dy/z.h*100)+'%) scale('+scale+')'}}
 const toggle=document.getElementById('toggle');let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 function draw(card){card.element.querySelector('.sprite').style.backgroundPosition=(card.index%4/3*100)+'% '+(Math.floor(card.index/4)/3*100)+'%';card.element.querySelector('.counter').textContent=(card.index+1)+' / 16'}
 function setPlaying(value){if(value){for(const card of cards){if(card.sequence[card.cursor]!==card.index){let cursor=card.sequence.indexOf(card.index);if(cursor<0)cursor=card.sequence.findIndex(frame=>frame>card.index);card.cursor=cursor<0?0:cursor;card.index=card.sequence[card.cursor];card.elapsed=0;draw(card)}}}playing=value;toggle.textContent=value?'暂停全部':'播放全部';toggle.setAttribute('aria-pressed',String(value))}
 toggle.addEventListener('click',()=>setPlaying(!playing));
 for(const card of cards){draw(card);card.element.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{setPlaying(false);card.index=(card.index+Number(button.dataset.step)+16)%16;card.elapsed=0;draw(card)}))}
-setPlaying(playing);let previous=performance.now();function tick(now){const delta=Math.min(now-previous,250);previous=now;if(playing){for(const card of cards){card.elapsed+=delta;let changed=false;while(card.elapsed>=card.durations[card.cursor]){card.elapsed-=card.durations[card.cursor];card.cursor=(card.cursor+1)%card.sequence.length;card.index=card.sequence[card.cursor];changed=true}if(changed)draw(card)}}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+drawSleep();setPlaying(playing);let previous=performance.now();function tick(now){const delta=Math.min(now-previous,250);previous=now;if(playing){for(const card of cards){card.elapsed+=delta;let changed=false;while(card.elapsed>=card.durations[card.cursor]){card.elapsed-=card.durations[card.cursor];card.cursor=(card.cursor+1)%card.sequence.length;card.index=card.sequence[card.cursor];changed=true}if(changed)draw(card)}sleepElapsed=(sleepElapsed+delta)%10000;drawSleep()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
 </script></html>\n`;
 }
 
@@ -420,7 +517,7 @@ for (const definition of selected) {
   prepared.push(result);
   console.log(timingOnly
     ? `Timing ${definition.name}: ${result.manifest.playbackFrameSequence.length} playback frames; ${result.manifest.totalDurationMs}ms; GIF delays verified`
-    : `Preflight ${definition.name}: 16 frames; scale ${result.manifest.scale.toFixed(5)}; crown-to-hem ${result.manifest.normalizedMedianCrownToHemHeight.toFixed(1)}px`);
+    : `Preflight ${definition.name}: ${result.manifest.frameCount} frames; scale ${result.manifest.scale.toFixed(5)}; ${result.manifest.registrationMode}`);
 }
 if (checkOnly) {
   console.log(`Validated ${prepared.length} sheets; no files changed.`);
@@ -438,14 +535,15 @@ if (checkOnly) {
     const name = result.definition.name;
     if (!timingOnly) {
       for (const [index, png] of result.framePngs.entries()) {
-        await fs.writeFile(path.join(spriteDir, `shenqing-${name}-${String(index + 1).padStart(2, '0')}.png`), png);
+        const filename = name === 'sleeping' ? 'shenqing-sleeping-base.png' : `shenqing-${name}-${String(index + 1).padStart(2, '0')}.png`;
+        await fs.writeFile(path.join(spriteDir, filename), png);
       }
       await fs.writeFile(path.join(atlasDir, `${name}.png`), result.atlasPng);
     }
     await fs.writeFile(path.join(atlasDir, `${name}-preview.gif`), result.gif);
     console.log(timingOnly ? `${name}: updated GIF timing; PNG artwork unchanged`
-      : `${name}: 16 RGBA frames at 362x362; atlas at 1448x1448`);
+      : `${name}: ${result.manifest.frameCount} RGBA frames at 362x362`);
   }
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-  await fs.writeFile(path.join(atlasDir, 'preview.html'), previewHtml(animations));
+  await fs.writeFile(path.join(atlasDir, 'preview.html'), await previewHtml(animations));
 }

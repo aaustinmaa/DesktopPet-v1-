@@ -233,29 +233,13 @@ namespace DesktopPet.Services
             BuildFrames("shenqing-error", 1, 16);
         private static readonly string[] ShenQingReminderFrames =
             BuildFrames("shenqing-reminder", 1, 16);
-        private static readonly string[] ShenQingSleepingFrames =
-            BuildFrames("shenqing-sleeping", 1, 16);
         private static readonly string[] ShenQingQuestionFrames =
             BuildFrames("shenqing-question", 1, 16);
         private static readonly string[] ShenQingHitFrames =
-        {
-            "shenqing-hit-01.png",
-            "shenqing-hit-02.png",
-            "shenqing-hit-03.png",
-            "shenqing-hit-04.png",
-            "shenqing-hit-05.png",
-            "shenqing-hit-06.png",
-            "shenqing-hit-07.png",
-            "shenqing-hit-06.png",
-            "shenqing-hit-05.png",
-            "shenqing-hit-04.png",
-            "shenqing-hit-03.png",
-            "shenqing-hit-02.png",
-            "shenqing-hit-16.png"
-        };
+            BuildFrames("shenqing-hit", 1, 16);
         private static readonly int[] ShenQingHitDurations =
         {
-            60, 60, 60, 60, 90, 150, 80, 80, 80, 60, 60, 60, 80
+            40, 40, 40, 40, 60, 60, 60, 90, 90, 70, 70, 80, 80, 80, 80, 80
         };
 
         public PetState CurrentState { get; private set; } = PetState.Idle;
@@ -355,9 +339,9 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Sleeping:
                     _frames = IsShenQing
-                        ? ShenQingSleepingFrames
+                        ? new[] { "shenqing-sleeping-base.png" }
                         : new[] { "sleeping-base.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 180 : 150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
                     break;
                 case PetState.Reminder:
                     _frames = IsShenQing ? ShenQingReminderFrames : ReminderFrames;
@@ -376,7 +360,7 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Hit:
                     _frames = IsShenQing ? ShenQingHitFrames : HitFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 60 : 75);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
                     _frameDurations = IsShenQing ? ShenQingHitDurations : null;
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
@@ -384,13 +368,13 @@ namespace DesktopPet.Services
                     break;
                 default:
                     _frames = IsShenQing ? ShenQingIdleFrames : IdleFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 140 : 170);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(170);
                     break;
             }
 
             ShowFrame(_frames[0]);
             ApplyCurrentFrameDuration();
-            if (state == PetState.Sleeping && !IsShenQing)
+            if (state == PetState.Sleeping)
                 StartSleepZzzAnimation();
             if (_frames.Length > 1)
                 _frameTimer.Start();
@@ -500,6 +484,14 @@ namespace DesktopPet.Services
 
         private void StartSleepZzzAnimation()
         {
+            var leftPositions = new[] { 252.0, 268.0, 294.0 };
+            for (var index = 0; index < _sleepZzzImages.Length; index++)
+            {
+                var left = leftPositions[index];
+                Canvas.SetLeft(_sleepZzzImages[index], IsShenQing
+                    ? 362 - left - _sleepZzzImages[index].Width
+                    : left);
+            }
             _sleepZzzLayer.Visibility = Visibility.Visible;
             StartSleepZAnimation(
                 2, 0, 0.064, 0.36, 0.36, 0.396,
@@ -527,6 +519,11 @@ namespace DesktopPet.Services
             double endX,
             double endY)
         {
+            if (IsShenQing)
+            {
+                startX = -startX;
+                endX = -endX;
+            }
             var duration = TimeSpan.FromSeconds(10);
             var opacity = new DoubleAnimationUsingKeyFrames
             {
