@@ -84,6 +84,35 @@ import Foundation
         return commitFocusAssignments(FocusMatchingPlan(changes: changes, source: "manual"))
     }
 
+    @discardableResult func appendFocusSessions(_ sessions: [FocusSession], taskIDs: [String]) -> Bool {
+        let requested = Set(taskIDs)
+        let known = Set((data.tasks ?? []).map(\.id))
+        guard requested.isSubset(of: known) else {
+            matchingError = FocusAssignmentError.missingTask.localizedDescription; return false
+        }
+        guard !requested.isEmpty else { matchingError = nil; return true }
+        let candidates = sessions.filter { !isConversionRecord($0) }.map { session in
+            let existing = Set(session.allocations.map(\.taskID))
+            let target = requested.isSubset(of: existing) ? session.allocations
+                : FocusTaskAllocationRules.equal(Array(existing.union(requested)))
+            return FocusAssignmentChange(session: session, targetAllocations: target)
+        }
+        guard !candidates.isEmpty else { matchingError = nil; return true }
+        do {
+            // Check the whole selected snapshot, including records that already contain
+            // the requested tasks, before committing any changes in this batch.
+            try data.validateAssignments(FocusMatchingPlan(changes: candidates, source: "manual"))
+        } catch { matchingError = error.localizedDescription; return false }
+        let changes = candidates.filter {
+            !FocusTaskAllocationRules.same($0.expectedAllocations, $0.targetAllocations)
+        }
+        guard !changes.isEmpty else {
+            // A repeated add must preserve custom minutes and the previous undo action.
+            matchingError = nil; return true
+        }
+        return commitFocusAssignments(FocusMatchingPlan(changes: changes, source: "manual"))
+    }
+
     @discardableResult func undoFocusAssignments() -> Bool {
         guard let transaction = focusAssignmentUndo else { return false }
         let previous = data

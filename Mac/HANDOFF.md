@@ -4,6 +4,25 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Batch task association appends by default — 2026-10-14
+
+The task-card batch shortcut and the selected-record action now append tasks.
+The main action is **追加任务…** and opens a selection-only sheet. Each record
+unions its own existing task IDs with the chosen additions; a different record's
+tasks are never copied into it. If new IDs are added, all final tasks on that
+record default to equal shares. Duplicate-only additions preserve its exact
+custom minutes, and a wholly duplicate operation does not replace undo history.
+Unassigned records split their minutes equally among the added tasks.
+
+Per-record minute editing remains available. The more menu retains explicit
+**重新分配用时…** for replacing a complete allocation and **清空任务关联** for
+clearing it. Existing stale-record, atomic application and whole-batch undo
+protections apply to the append path. This is a Mac development change; Windows
+implementation remains pending. All 7 targeted append tests passed; native renders
+checked the append sheet and task-card shortcuts. The development build passed
+140 tests in 23 suites, production compilation and strict signature verification,
+producing `output/arm64/SuWuDu.app`. See `VALIDATION.md` for verification details.
+
 ## Multiple tasks per pomodoro and fixed matching contract — 2026-10-14
 
 Records and active runs now retain task allocation vectors. The user-facing editor

@@ -99,6 +99,7 @@ struct FocusAllocationDraft {
     let tasks: [FocusTask]
     let totalMinutes: Double
     let minutesScope: String
+    let addingTasks: Bool
     let failureMessage: (() -> String?)?
     let onSave: ([FocusTaskAllocation]) -> Bool
     @State private var draft: FocusAllocationDraft
@@ -107,12 +108,13 @@ struct FocusAllocationDraft {
     @FocusState private var focusedTaskID: String?
 
     init(title: String, tasks: [FocusTask], allocations: [FocusTaskAllocation], totalMinutes: Double,
-         minutesScope: String = "共",
+         minutesScope: String = "共", addingTasks: Bool = false,
          failureMessage: (() -> String?)? = nil,
          onSave: @escaping ([FocusTaskAllocation]) -> Bool) {
         self.title = title; self.tasks = tasks; self.failureMessage = failureMessage; self.onSave = onSave
         self.totalMinutes = totalMinutes
         self.minutesScope = minutesScope
+        self.addingTasks = addingTasks
         _draft = State(initialValue: FocusAllocationDraft(allocations: allocations, totalMinutes: totalMinutes))
     }
 
@@ -135,8 +137,8 @@ struct FocusAllocationDraft {
             }
             HStack(spacing: 10) {
                 TextField("搜索任务", text: $search)
-                Button("均分") { equalize() }.disabled(allocations.count < 2)
-                Button("清空") { changeSelection([]) }
+                if !addingTasks { Button("均分") { equalize() }.disabled(allocations.count < 2) }
+                Button(addingTasks ? "清空选择" : "清空") { changeSelection([]) }
             }
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -154,12 +156,13 @@ struct FocusAllocationDraft {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(PetTheme.border))
             if let saveError { Text(saveError).font(.caption).foregroundStyle(.red) }
             HStack {
-                if !allocations.isEmpty {
+                if !addingTasks && !allocations.isEmpty {
                     Text("\(minutesScope) \(FocusAllocationPresentation.number(totalMinutes)) 分钟").font(.callout.weight(.semibold)).monospacedDigit()
                 }
                 Spacer()
                 Button("取消") { dismiss() }
-                Button("保存") { save() }.buttonStyle(PetButtonStyle(primary: true)).disabled(!draft.hasChanges)
+                Button(addingTasks ? "追加" : "保存") { save() }.buttonStyle(PetButtonStyle(primary: true))
+                    .disabled(addingTasks ? allocations.isEmpty : !draft.hasChanges)
             }
         }.padding(24).frame(width: 520).petPage()
             .onChange(of: focusedTaskID) { old, _ in
@@ -179,7 +182,7 @@ struct FocusAllocationDraft {
                     .strikethrough(task.isCompleted)
             }.toggleStyle(.checkbox)
             Spacer(minLength: 4)
-            if isSelected {
+            if isSelected && !addingTasks {
                 TextField("分钟", text: Binding(get: { draft.minuteDrafts[task.id] ?? "" }, set: {
                     draft.setMinutesText($0, taskID: task.id)
                 }))

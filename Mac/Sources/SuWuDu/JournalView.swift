@@ -111,6 +111,7 @@ enum JournalExport {
         var id = UUID()
         var sessions: [FocusSession]
         var initial: [FocusTaskAllocation]
+        var addingTasks = false
         var sameDuration: Bool { sessions.allSatisfy { $0.taskMinutes == sessions.first?.taskMinutes } }
         var totalMinutes: Double {
             sameDuration ? Double(sessions.first?.taskMinutes ?? 0) : sessions.reduce(0) { $0 + Double($1.taskMinutes) }
@@ -171,15 +172,19 @@ enum JournalExport {
             .sheet(isPresented: $showingTargets) { TargetScheduleView(model: model, initialDate: date) }
             .sheet(isPresented: $showingExport) { exportSheet }
             .sheet(item: $allocationEdit) { request in
-                FocusAllocationEditor(title: request.sessions.count == 1 ? "分配任务" : "分配 \(request.sessions.count) 条记录",
+                FocusAllocationEditor(title: request.addingTasks ? "追加任务 · \(request.sessions.count) 条" : request.sessions.count == 1 ? "分配任务" : "重新分配 · \(request.sessions.count) 条",
                     tasks: tasks, allocations: request.initial, totalMinutes: request.totalMinutes, minutesScope: request.minutesScope,
+                    addingTasks: request.addingTasks,
                     failureMessage: { model.matchingError ?? model.error }) { allocations in
-                    guard model.assignFocusSessions(request.sessions, allocations: allocations) else { return false }
+                    let saved = request.addingTasks
+                        ? model.appendFocusSessions(request.sessions, taskIDs: allocations.map(\.taskID))
+                        : model.assignFocusSessions(request.sessions, allocations: allocations)
+                    guard saved else { return false }
                     status = "已更新 · \(request.sessions.count) 条"
                     selected = []; selectionAnchor = nil
                     return true
                 }
-                .help("批量分配时，每条记录按相同的时间比例分配给所选任务。")
+                .help(request.addingTasks ? "保留每条记录原有的任务；新增任务后均分用时，重复添加不改变原分配。" : "用所选任务和用时替换这些记录的原分配。")
             }
     }
     private var header: some View {
@@ -280,8 +285,13 @@ enum JournalExport {
                 if !selected.isEmpty {
                     HStack(spacing: 8) {
                         Text("已选 \(selected.count) 条").font(.caption.weight(.semibold))
-                        Button("关联任务…") { editAllocations(day.sessions.filter { selected.contains($0.id) }) }
-                            .help("为所选记录选择多个任务并分配用时。")
+                        Button("追加任务…") { editAllocations(day.sessions.filter { selected.contains($0.id) }, addingTasks: true) }
+                            .help("保留各条记录已有的任务，追加后均分用时。")
+                        Menu {
+                            Button("重新分配用时…") { editAllocations(day.sessions.filter { selected.contains($0.id) }) }
+                            Button("清空任务关联") { assignSelection(nil) }
+                        } label: { Image(systemName: "ellipsis") }
+                            .menuStyle(.borderlessButton).fixedSize().accessibilityLabel("更多关联操作").help("更多关联操作")
                         Spacer()
                         Button("取消选择") { selected = []; selectionAnchor = nil }
                     }
@@ -487,18 +497,21 @@ enum JournalExport {
     private func assignSelection(_ taskID: String?) {
         guard !selected.isEmpty, editor.save() else { return }
         let live = model.data.journalDay(dateKey).sessions.filter { selected.contains($0.id) }
-        guard model.assignFocusSessions(live, to: taskID) else { return }
-        status = taskID == nil ? "已取消关联 · \(live.count) 条" : "已关联 · \(live.count) 条"
+        let saved = taskID.map { model.appendFocusSessions(live, taskIDs: [$0]) }
+            ?? model.assignFocusSessions(live, to: nil)
+        guard saved else { return }
+        status = taskID == nil ? "已取消关联 · \(live.count) 条" : "已更新 · \(live.count) 条"
         selected = []; selectionAnchor = nil
     }
-    private func editAllocations(_ sessions: [FocusSession]) {
+    private func editAllocations(_ sessions: [FocusSession], addingTasks: Bool = false) {
         guard !sessions.isEmpty, editor.save() else { return }
         let ids = Set(sessions.map(\.id))
         let live = model.data.journalDay(dateKey).sessions.filter { ids.contains($0.id) && selectable($0) }
         guard !live.isEmpty else { return }
         let initial = live[0].allocations
         allocationEdit = AllocationEdit(sessions: live,
-            initial: live.allSatisfy { FocusTaskAllocationRules.same($0.allocations, initial) } ? initial : [])
+            initial: !addingTasks && live.allSatisfy { FocusTaskAllocationRules.same($0.allocations, initial) } ? initial : [],
+            addingTasks: addingTasks)
     }
     private func allocationLabel(_ session: FocusSession) -> String {
         FocusAllocationPresentation.label(session.allocations, tasks: tasks, totalMinutes: Double(session.taskMinutes))
@@ -592,7 +605,7 @@ struct HelpView: View {
                 Text("完整专注自动记录，提前停止时记录已完成的整分钟。暂停不计时，Mac 睡眠或应用重启后保持暂停。每天 21:00 开始下一记录日，跨界分钟按实际片段分配。记录窗口支持目标、分钟调整、补记、删除、每日 / 单次 Notes、复制及日期范围导出。完成专注后进入休息，休息结束时提醒；重新开始可以提前结束休息。")
                 Text("任务与番茄匹配").font(.headline)
                 Text("从启动面板、菜单栏或桌宠右键打开“任务与专注”。任务统一放在一张清单，支持预计番茄数、截止日期、可选截止时间、说明和手动完成；预计数是投入预算。截止日期按日历判断，与 21:00 记录日分界独立。可粘贴清单预览导入，备忘也能转为任务。")
-                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格一行一条，点击任务列调整用时；Shift 连选后点“关联任务”可批量分配。同长度的批量记录直接按每条分钟分配；时长不同时按合计分钟分配，再按记录时长分摊；可清空、撤销最近一次关联。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
+                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格一行一条，点击任务列调整用时；Shift 连选后点“追加任务”，或点击任务卡片的“追加到 N 条”，会保留每条记录原有的任务。新增任务后均分用时，重复添加不改变原分配。更多菜单中的“重新分配用时”用于统一替换所选记录的任务与用时：同长度按每条分钟填写，不同时长按合计分钟填写再按比例分摊；也可明确清空关联。最近一次修改可整批撤销。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
                 Text("在备忘中点击“AI 提取”，AI 会提取任务并保留原文出处。“任务 - 数字”或紧接下一行的数字表示预计番茄数；例如“Cs370 - 15, catchup cheat sheet +5”会分成课程任务 15 颗和对应 cheat sheet 5 颗，课程号不计入预算。明确截止日期由 AI 根据本地日期和时区整理，不明确的值留空。检查、修改和勾选后整批导入，原备忘保留。该操作向设置中的服务发送专用指令、当前备忘、日期/时区及固定输出格式；应用检查返回格式、数值和原文出处。离线时可手动转任务或粘贴清单。")
                 Text("任务清单中的“完成历史”保存已完成任务，显示完成时间、说明、原文出处及累计投入。展开可查看关联专注明细、跳转到对应记录日，也可重新打开任务继续执行。旧任务如果没有保存完成时间，会显示时间未记录。")
                 Text("“AI 匹配”和“AI 建议”使用设置中的 ChatGPT／OpenAI API，发送当前范围的记录序号、真实时间、实际分钟、任务及当前分配、单次 Notes。可以说“第一颗补课 10 分钟、网站 15 分钟”“第二颗再加笔记”或“清空第三颗关联”。多个任务未指定用时则均分；AI 返回固定格式的完整分配，未知任务或无法确定的记录会省略。先查看修改前后各任务的分钟数，再应用整批结果；记录有新修改时会阻止覆盖，应用后可撤销。离线“Notes 匹配”只识别明确且唯一的完整任务名。")

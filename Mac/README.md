@@ -84,13 +84,19 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   changed to 10 and 15 minutes. Starting a run captures the complete allocation;
   changing the selection during a run affects the next run. Pause/recovery keeps
   the captured allocation.
-- Edit a record's task minutes directly, or use Shift/multiple selection to
-  allocate a batch. When all selected records have the same actual duration, the
-  editor uses minutes per record and shows **每条 25 分钟**, for example; entering
-  10/15 applies that split to every 25-minute record. When durations differ, the
-  editor uses their combined actual minutes, shows **合计 … 分钟**, and applies
-  the resulting proportions to each record. Clear associations or undo the most
-  recent whole batch.
+- Use Shift/multiple selection and **追加任务…**, or a task card's batch shortcut,
+  to add tasks to existing records. The append sheet selects tasks only. Each
+  record keeps its own task IDs and adds the chosen IDs; tasks are not copied
+  between records. Adding a new task defaults that record's complete final task
+  set to equal shares. If all chosen tasks are already present, its exact custom
+  minutes stay unchanged; a wholly duplicate operation also leaves undo history
+  untouched. Unassigned records divide their time equally among the added tasks.
+- Edit a record's task minutes directly when needed. The more menu also provides
+  explicit **重新分配用时…**, which replaces the complete allocation, and
+  **清空任务关联**. For reallocation, equal-duration batches use minutes per record
+  with a **每条 … 分钟** footer; mixed-duration batches use combined minutes with
+  a **合计 … 分钟** footer and apply the resulting proportions to each record.
+  Batch changes remain atomic, reject stale records and support whole-batch undo.
   Compact table rows show time, minutes, tasks and a single-line note; hover to
   read the full note or expand one row to edit. Task grouping and history show
   each task's allocated minutes without counting the whole record for every task.
@@ -281,7 +287,13 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Current multi-task/matching validation (2026-10-14):** The Mac development build
+**Current append-association validation (2026-10-14):** All 7 targeted append tests
+passed. Native renders checked the append sheet and task-card shortcuts. The
+development build passed 140 tests in 23 suites, production compilation and strict
+signature verification, producing `output/arm64/SuWuDu.app`. Prior records below
+refer to their original versions. See [`VALIDATION.md`](VALIDATION.md).
+
+**Previous multi-task/matching validation (2026-10-14):** The Mac development build
 passed all 133 tests in 22 suites, production compilation and strict signature
 verification, producing `output/arm64/SuWuDu.app`. Native renders checked the
 compact table at 1120/760 pixels and the minute-allocation editor. No live AI

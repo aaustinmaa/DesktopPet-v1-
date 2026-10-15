@@ -1,5 +1,30 @@
 # Mac validation record
 
+## Batch association appends existing task sets (2026-10-14)
+
+- Both the task-card shortcut and the main selected-record action append tasks.
+  **追加任务…** opens a task-selection sheet; allocation minutes are edited through
+  the existing record editor or explicit **重新分配用时…** action. The more menu
+  also retains **清空任务关联**.
+- Each record combines only its own existing IDs with the selected additions.
+  Adding new IDs defaults its final task set to equal shares; already associated
+  IDs are not duplicated. Duplicate-only additions preserve exact custom minutes,
+  and a wholly duplicate action preserves the previous undo transaction.
+  Unassigned records split their minutes equally among the selected tasks.
+- All 7 targeted `FocusTaskAppendTests` passed, covering different prior tasks,
+  mixed assigned/unassigned selections, duplicate-only additions, stale snapshots,
+  unknown tasks, duplicate records, conversion records, persistence rollback and
+  whole-batch undo.
+- Native renders verified the append sheet with one selected task and the task-card
+  shortcuts. The append sheet displays task selection without misleading minute
+  fields. The isolated Journal host did not expose accessible controls for a
+  selected-toolbar render; that routing was checked in source. The temporary render
+  harness was removed.
+- The required development build passed **140 tests in 23 suites**, production
+  compilation and strict signature verification, producing `output/arm64/SuWuDu.app`.
+  Earlier entries retain their original results.
+- Windows implementation is unchanged and pending; installers are outside scope.
+
 ## Multiple task allocations and fixed matching contract (2026-10-14)
 
 - Current change: one pomodoro can allocate actual minutes to multiple tasks,

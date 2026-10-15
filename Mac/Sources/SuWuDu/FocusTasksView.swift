@@ -179,9 +179,9 @@ import SwiftUI
             }
             HStack(spacing: 8) {
                 if selectedSessionCount > 0 {
-                    Button("关联 \(selectedSessionCount) 条") { assignSelection(task.id) }
+                    Button("追加到 \(selectedSessionCount) 条") { assignSelection(task.id) }
                         .buttonStyle(PetButtonStyle(primary: true))
-                        .help("将已选的专注记录关联到这个任务。")
+                        .help("把这个任务加入所选记录，保留已有任务；新增后均分用时，重复添加不变。")
                 } else if !task.isCompleted {
                     Button(isOnlyCurrentTask(task.id) ? "已设为当前" : "设为当前") {
                         taskError = model.selectFocusTask(task.id) ? nil : (model.matchingError ?? model.error ?? "任务选择未保存，请重试。")
