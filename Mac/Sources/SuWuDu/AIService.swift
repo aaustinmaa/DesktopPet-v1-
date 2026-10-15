@@ -61,7 +61,8 @@ struct CompanionReply {
         }
         if settings.provider == "claude" {
             return try Self.structuredCompanionReply(await claude.structuredReply(prompt,
-                instructions: Self.instructions(settings.petName), schema: Self.companionSchema, screenshot: screenshot))
+                instructions: Self.instructions(settings.petName), schema: Self.companionSchema,
+                model: settings.claudeModel, effort: settings.claudeEffort, screenshot: screenshot))
         }
         guard settings.provider == "openai" else {
             throw AppError.message("当前 AI 连接方式无效，请在设置中重新选择。")
@@ -106,7 +107,8 @@ struct CompanionReply {
                 instructions: FocusTaskMatching.instructions, schema: schema)
         } else if settings.provider == "claude" {
             raw = try await claude.structuredReply(prompt,
-                instructions: FocusTaskMatching.instructions, schema: schema)
+                instructions: FocusTaskMatching.instructions, schema: schema,
+                model: settings.claudeModel, effort: settings.claudeEffort)
         } else if settings.provider == "openai" {
             let key = try Keychain.read()
             guard !key.isEmpty else { throw AppError.message("请在设置中填写 OpenAI API key。") }
@@ -158,7 +160,8 @@ struct CompanionReply {
                 instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema)
         } else if settings.provider == "claude" {
             raw = try await claude.structuredReply(prompt,
-                instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema)
+                instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema,
+                model: settings.claudeModel, effort: settings.claudeEffort)
         } else if settings.provider == "openai" {
             let key = try Keychain.read()
             guard !key.isEmpty else { throw AppError.message("请在设置中填写 OpenAI API key。") }

@@ -16,6 +16,13 @@ import Testing
         if waitForLogin, request.arguments.contains("login") {
             return try await withCheckedThrowingContinuation { suspendedLogin = $0 }
         }
+        if let input = try? JSONSerialization.jsonObject(with: request.input) as? [String: Any],
+           input["type"] as? String == "control_request", let id = input["request_id"] as? String {
+            return .init(stdout: try JSONSerialization.data(withJSONObject: [
+                "type": "control_response", "response": ["subtype": "success", "request_id": id,
+                    "response": ["models": [["value": "default", "displayName": "Default"]]]]
+            ]), exitCode: 0)
+        }
         guard !results.isEmpty else { throw AppError.message("Missing test response") }
         return results.removeFirst()
     }
@@ -84,7 +91,7 @@ import Testing
         #expect(client.signedIn)
         #expect(client.account == "person@example.test")
         #expect(!client.loginPending)
-        #expect(runner.requests.count == 2)
+        #expect(runner.requests.count == 3)
         #expect(runner.requests[0].arguments.suffix(3) == ["auth", "login", "--claudeai"])
         #expect(runner.requests[0].timeout == 300)
         #expect(runner.requests.allSatisfy { !$0.arguments.contains("--console") && !$0.arguments.contains("setup-token") })
@@ -123,10 +130,10 @@ import Testing
         let client = client(runner, directory: directory)
         #expect(try await client.structuredReply("private memo", instructions: "protocol", schema: schema) == #"{"reply":"hello"}"#)
         await #expect(throws: (any Error).self) { try await client.structuredReply("second memo", instructions: "protocol", schema: schema) }
-        #expect(runner.requests.count == 3)
+        #expect(runner.requests.count == 4)
         #expect(runner.requests[0].arguments.contains("status"))
-        #expect(runner.requests[2].arguments.contains("status"))
-        let inference = runner.requests[1]
+        #expect(runner.requests[3].arguments.contains("status"))
+        let inference = runner.requests[2]
         #expect(!inference.arguments.contains("private memo"))
         #expect(String(decoding: inference.input, as: UTF8.self).contains("private memo"))
         #expect(inference.arguments.contains("--safe-mode"))

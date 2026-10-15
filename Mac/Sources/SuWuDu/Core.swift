@@ -30,6 +30,8 @@ struct Settings: Codable, Equatable {
     var apiModel = ""
     var codexModel = ""
     var reasoning = ""
+    var claudeModel: String?
+    var claudeEffort: String?
     var memory = true
     var screenVision = true
     var windowX: Double?
@@ -48,6 +50,10 @@ struct Settings: Codable, Equatable {
         microSeconds = min(300, max(1, microSeconds))
         if !["suwudu", "shenqing"].contains(skin) { skin = "suwudu" }
         if !["codex", "claude", "openai", "offline"].contains(provider) { provider = "offline" }
+        claudeModel = claudeModel?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if claudeModel?.isEmpty == true { claudeModel = nil }
+        claudeEffort = claudeEffort?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !["low", "medium", "high", "xhigh", "max"].contains(claudeEffort ?? "") { claudeEffort = nil }
         if windowX?.isFinite == false { windowX = nil }
         if windowY?.isFinite == false { windowY = nil }
     }

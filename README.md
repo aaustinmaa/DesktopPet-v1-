@@ -14,7 +14,7 @@ AI 备忘提取统一返回六字段任务 JSON（名称、预计番茄数、规
 
 AI 番茄匹配也使用固定严格协议：每条结果包含记录 ID、完整任务分配和原因；AI 将自然语言里的分钟或比例转换为规范份额，应用校验后预览，不再自行解析用户语句。明确清空与省略不修改有不同语义，未知或有歧义时保持原记录。任务卡快捷操作和多选记录的“追加任务…”默认保留每条记录自己的旧任务，再加入新任务并均分；重复追加已有任务时保留原自定义分钟，整批无变化时保留撤销记录。“追加任务…”只选择任务；单条编辑可调整分钟，更多菜单保留明确的“重新分配用时…”和“清空任务关联”。旧单任务关联按 100% 保留。详见 [Mac 匹配协议](Mac/README.md#matching-ai-contract)。
 
-Mac 在 **设置 → AI 与记忆 → Claude 登录** 中点击 **连接我的 Claude**，完成官方浏览器授权并保存设置后，聊天、备忘 AI 提取和番茄 AI 匹配共用此连接。账号区与 ChatGPT 使用一致排版，提供“刷新账号”和“退出登录”。开发版随附未修改的官方 Claude Code，无需另装 Claude Desktop。连接失败或订阅额度不足不会自动切换到 API；如果用户在 Claude 账户中开启了额外用量付费，仍按该账户设置计费，可在 [Claude 官方用量设置](https://claude.ai/settings/usage) 中关闭。Windows 的 Claude 接入暂未实现。
+Mac 在 **设置 → AI 与记忆 → Claude 登录** 中点击 **连接我的 Claude**，完成官方浏览器授权并保存设置后，聊天、备忘 AI 提取和番茄 AI 匹配共用此连接。账号区与 ChatGPT 使用一致排版，提供“刷新账号和模型”“退出登录”，以及“模型”“推理强度”选择；保存后聊天、备忘提取和番茄匹配共用选择，默认仍由官方组件自动选择。开发版随附未修改的官方 Claude Code，无需另装 Claude Desktop。连接失败或订阅额度不足不会自动切换到 API；如果用户在 Claude 账户中开启了额外用量付费，仍按该账户设置计费，可在 [Claude 官方用量设置](https://claude.ai/settings/usage) 中关闭。Windows 的 Claude 接入暂未实现。
 
 使用与开发构建见 [Mac/README.md](Mac/README.md)，平台差异见 [Mac/WINDOWS_PARITY.md](Mac/WINDOWS_PARITY.md)。Mac 开发入口为 `Mac/output/arm64/SuWuDu.app`；开发构建不带 `--dmg`。应用内使用说明也已更新。
 

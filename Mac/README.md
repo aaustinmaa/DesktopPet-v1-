@@ -63,8 +63,8 @@ restored after checksum verification.
 In **设置 → AI 与记忆**, select **Claude 登录**, click **连接我的 Claude**,
 complete the official browser authorization, then save settings. Chat (including
 optional screen attachments), memo extraction and pomodoro matching share this
-connection. The account controls match the ChatGPT layout, with **刷新账号** and
-**退出登录**; login can still be cancelled while pending.
+connection. The account controls match the ChatGPT layout, with **刷新账号和模型**
+and **退出登录**; login can still be cancelled while pending.
 Each user signs in with their own supported Claude plan. Claude Desktop and a
 separately installed CLI are not required; the app uses its bundled official
 Claude Code, with the vendor signature and binary bytes preserved.
@@ -88,8 +88,23 @@ Claude receives the same dedicated instructions and fixed JSON schemas as the
 other providers. The app accepts only a successful structured result, validates
 memo/matching data with the existing local validators, then shows the existing
 editable preview. Failed, interrupted or malformed output never imports tasks or
-changes records. Chat uses a schema for `reply`, `emotion` and `action`. Model
-selection follows the official CLI's default for the signed-in plan.
+changes records. Chat uses a schema for `reply`, `emotion` and `action`.
+
+**模型** and **推理强度** use the same picker layout as ChatGPT. **自动选择**
+and **模型默认** retain the official CLI defaults. Refresh reads the official
+CLI's `initialize` control-response `models` catalog; this is metadata discovery,
+without a user turn or model inference. Only effort values supported by the
+selected model are shown (`low`, `medium`, `high`, `xhigh`, `max`); `ultracode` is
+not offered. Changing the model resets effort to its default. The independent
+`claudeModel` / `claudeEffort` settings are shared by chat, memo extraction and
+pomodoro matching after saving.
+
+Saved selections missing from the current catalog remain visible as unavailable
+and are validated before sending; failures never silently replace the selected
+model or switch to API billing. The CLI catalog does not provide reliable
+subscription billing entitlement fields, so Fable and its aliases, plus explicit
+`[1m]` paid variants, are currently excluded. The account panel contains no extra
+subscription caption or usage button.
 
 The pinned runtime is **Claude Code 2.1.300**, fetched from Anthropic's official
 release host with SHA-256 and Developer ID verification by

@@ -31,6 +31,7 @@ struct ClaudeCommandResult {
     @Published var account = "尚未检查登录状态"
     @Published var signedIn = false
     @Published var loginPending = false
+    @Published var models: [ClaudeModel] = []
 
     private let executable: URL
     private let directory: URL
@@ -50,18 +51,21 @@ struct ClaudeCommandResult {
     func refresh() async throws {
         guard !loginPending else { return }
         let expectedGeneration = generation
+        let status: ClaudeAccountStatus
         do {
-            let status = try await checkAccount(id: UUID())
-            try Task.checkCancellation()
-            guard generation == expectedGeneration else { throw CancellationError() }
-            apply(status)
+            status = try await checkAccount(id: UUID())
         } catch {
             if generation == expectedGeneration, !(error is CancellationError) {
                 signedIn = false
                 account = "尚未登录"
+                models = []
             }
             throw error
         }
+        try Task.checkCancellation()
+        guard generation == expectedGeneration else { throw CancellationError() }
+        apply(status)
+        if status.connected { try await loadModels(id: UUID(), generation: expectedGeneration) }
     }
 
     func login() async throws {
@@ -70,6 +74,7 @@ struct ClaudeCommandResult {
         generation = UUID()
         loginID = id
         loginPending = true
+        models = []
         account = "等待浏览器授权"
         defer {
             if loginID == id { loginID = nil; loginPending = false }
@@ -89,9 +94,11 @@ struct ClaudeCommandResult {
             if loginID == id {
                 signedIn = false
                 account = error is CancellationError ? "已取消登录" : "尚未登录"
+                models = []
             }
             throw error
         }
+        try await loadModels(id: id, generation: generation)
     }
 
     func cancelLogin() {
@@ -102,10 +109,12 @@ struct ClaudeCommandResult {
         loginPending = false
         signedIn = false
         account = "已取消登录"
+        models = []
     }
 
     func logout() async throws {
         shutdown()
+        models = []
         let expectedGeneration = generation
         let result = try await run(id: UUID(), arguments: ["auth", "logout"], timeout: 30)
         try Task.checkCancellation()
@@ -122,6 +131,7 @@ struct ClaudeCommandResult {
     }
 
     func structuredReply(_ prompt: String, instructions: String, schema: [String: Any],
+                         model: String? = nil, effort: String? = nil,
                          screenshot: URL? = nil) async throws -> String {
         try Task.checkCancellation()
         guard !loginPending else { throw AppError.message("请先完成 Claude 浏览器授权。") }
@@ -130,7 +140,7 @@ struct ClaudeCommandResult {
         do { status = try await checkAccount(id: id) }
         catch {
             if generation == expectedGeneration, !(error is CancellationError) {
-                signedIn = false; account = "尚未登录"
+                signedIn = false; account = "尚未登录"; models = []
             }
             throw error
         }
@@ -138,18 +148,25 @@ struct ClaudeCommandResult {
         guard generation == expectedGeneration else { throw CancellationError() }
         apply(status)
         guard status.connected else { throw AppError.message("请先在设置中登录 Claude。") }
+        let selectedModel = model?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let selectedEffort = effort?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if models.isEmpty { try await loadModels(id: id, generation: expectedGeneration) }
+        guard let available = models.first(where: { $0.id == selectedModel }) else {
+            throw AppError.message("所选 Claude 模型当前不可用，请在设置中刷新并重新选择。")
+        }
+        guard selectedEffort.isEmpty || available.efforts.contains(selectedEffort) else {
+            throw AppError.message("此 Claude 模型不支持所选推理强度，请在设置中重新选择。")
+        }
         let input = try Self.input(prompt: prompt, screenshot: screenshot)
         let schemaData = try JSONSerialization.data(withJSONObject: schema, options: [.sortedKeys])
         guard schemaData.count <= 200_000, instructions.utf8.count <= 100_000 else {
             throw AppError.message("Claude 请求内容过长，请缩短后重试。")
         }
-        let arguments = [
-            "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
-            "--tools", "", "--disallowedTools", "mcp__*", "--strict-mcp-config",
-            "--mcp-config", "{\"mcpServers\":{}}", "--disable-slash-commands",
-            "--permission-mode", "dontAsk", "--permission-prompts", "none", "--no-session-persistence",
+        var arguments = Self.sessionArguments + [
             "--system-prompt", instructions, "--json-schema", String(decoding: schemaData, as: UTF8.self)
         ]
+        if !selectedModel.isEmpty { arguments += ["--model", selectedModel] }
+        if !selectedEffort.isEmpty { arguments += ["--effort", selectedEffort] }
         let result = try await run(id: id, arguments: arguments, input: input, timeout: 180)
         try Task.checkCancellation()
         guard generation == expectedGeneration else { throw CancellationError() }
@@ -157,8 +174,31 @@ struct ClaudeCommandResult {
     }
 
     private func apply(_ status: ClaudeAccountStatus) {
+        if !status.connected || status.label != account { models = [] }
         signedIn = status.connected
         account = status.label
+    }
+
+    private static let sessionArguments = [
+        "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
+        "--tools", "", "--disallowedTools", "mcp__*", "--strict-mcp-config",
+        "--mcp-config", "{\"mcpServers\":{}}", "--disable-slash-commands",
+        "--permission-mode", "dontAsk", "--permission-prompts", "none", "--no-session-persistence"
+    ]
+
+    private func loadModels(id: UUID, generation expectedGeneration: UUID) async throws {
+        models = []
+        let requestID = UUID().uuidString
+        // The official SDK initialize handshake exposes capabilities without sending a user turn.
+        var input = try JSONSerialization.data(withJSONObject: [
+            "type": "control_request", "request_id": requestID,
+            "request": ["subtype": "initialize", "hooks": NSNull()]
+        ])
+        input.append(0x0A)
+        let result = try await run(id: id, arguments: Self.sessionArguments, input: input, timeout: 30)
+        try Task.checkCancellation()
+        guard generation == expectedGeneration else { throw CancellationError() }
+        models = try ClaudeModel.parseCatalog(result, requestID: requestID)
     }
 
     private func checkAccount(id: UUID) async throws -> ClaudeAccountStatus {

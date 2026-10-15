@@ -1,5 +1,32 @@
 # Mac validation record
 
+## Claude model and effort selection (2026-10-14)
+
+- Claude settings now match ChatGPT's **模型** / **推理强度** picker layout and
+  **刷新账号和模型** action. Independent saved settings reach chat, memo extraction
+  and pomodoro matching. Changing models resets effort; missing saved choices
+  remain visible and requests reject unsupported selections before inference.
+- Official CLI 2.1.300's initialize-only control protocol was checked with an
+  isolated HOME/config directory, no credentials or user turn. Runtime models
+  and their effort capabilities populate the pickers. Default selections also
+  require an allowed catalog entry; Fable/paid variants cannot bypass this check
+  through the default alias. No model or API fallback was added.
+- **37 targeted permanent tests passed**: 12 model/protocol, 5 settings, 8 provider
+  and 12 client/process tests. Coverage includes metadata parsing and failures,
+  selected/default arguments, unavailable defaults, independent preferences and
+  legacy settings, and all three feature routes forwarding the saved choices.
+- One additional temporary native render test passed. The actual Claude settings
+  component was visually checked at 620 points with fake account/model metadata,
+  showing Opus/high, the shared celadon style and no extra captions/buttons. The
+  temporary harness was removed before the development build.
+- Release compilation with the macOS 26.5 SDK passed. The executable was updated
+  in `output/arm64/SuWuDu.app`, preserving the existing runtime components; the
+  refreshed app passed strict/deep signature verification. The running user app
+  was not restarted.
+- No live-account model inference was performed; tests use isolated protocol
+  responses and do not establish the user's account entitlement. Windows and
+  installers remain outside this change.
+
 ## Claude login presentation (2026-10-14)
 
 - The picker now says **Claude 登录**. Account controls use the ChatGPT button

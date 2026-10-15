@@ -135,6 +135,28 @@ import Testing
         }
     }
 
+    @Test func modelAndEffortSelectionReachesAllThreeClaudeFeatures() async throws {
+        let fixture = try Fixture(output: ["reply": "继续加油。", "emotion": "happy", "action": "none"])
+        defer { fixture.remove() }
+        var selected = settings
+        selected.claudeModel = "sonnet"
+        selected.claudeEffort = "high"
+        selected.codexModel = "unrelated-codex-model"
+        selected.reasoning = "low"
+        _ = try await fixture.service.reply(text: "hello", context: "", settings: selected,
+                                          screenshot: nil, memoryReply: nil)
+        fixture.runner.output = ["tasks": []]
+        _ = try await fixture.service.extractMemoTasks(memo, settings: selected)
+        fixture.runner.output = ["matches": []]
+        _ = try await fixture.service.matchFocusTasks(matching, settings: selected)
+        #expect(fixture.runner.inferences.count == 3)
+        #expect(fixture.runner.statusChecks == 3)
+        for request in fixture.runner.inferences {
+            #expect(try request.value(after: "--model") == "sonnet")
+            #expect(try request.value(after: "--effort") == "high")
+        }
+    }
+
     private func errorText(_ body: () async throws -> Void) async -> String {
         do { try await body(); Issue.record("Expected a Claude-specific failure"); return "" }
         catch { return error.localizedDescription }
@@ -161,12 +183,25 @@ import Testing
     var failure: String?
     var status: [String: Any] = ["loggedIn": true, "authMethod": "claude.ai", "apiProvider": "firstParty", "subscriptionType": "pro"]
     var statusChecks: Int { requests.filter { $0.arguments.contains("status") }.count }
-    var inferences: [ClaudeCommandRequest] { requests.filter { $0.arguments.contains("-p") } }
+    var inferences: [ClaudeCommandRequest] { requests.filter { $0.arguments.contains("--json-schema") } }
     init(output: [String: Any]) { self.output = output }
     func run(_ request: ClaudeCommandRequest) async throws -> ClaudeCommandResult {
         requests.append(request)
         if request.arguments.contains("status") {
             return .init(stdout: try JSONSerialization.data(withJSONObject: status), exitCode: 0)
+        }
+        if let control = try JSONSerialization.jsonObject(with: request.input) as? [String: Any],
+           control["type"] as? String == "control_request" {
+            let id = try #require(control["request_id"] as? String)
+            let response: [String: Any] = ["type": "control_response", "response": [
+                "subtype": "success", "request_id": id, "response": ["models": [
+                    ["value": "default", "displayName": "Default", "supportsEffort": true,
+                     "supportedEffortLevels": ["low", "medium", "high"]],
+                    ["value": "sonnet", "displayName": "Sonnet", "supportsEffort": true,
+                     "supportedEffortLevels": ["low", "medium", "high"]]
+                ]]
+            ]]
+            return .init(stdout: try JSONSerialization.data(withJSONObject: response), exitCode: 0)
         }
         let result: [String: Any]
         if let failure { result = ["type": "result", "subtype": "error_during_execution", "is_error": true, "errors": [failure]] }

@@ -4,6 +4,22 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Claude model and effort selection — 2026-10-14
+
+Claude settings now include **模型** / **推理强度** pickers matching ChatGPT,
+plus **刷新账号和模型**. Defaults are **自动选择** / **模型默认**. The official
+CLI `initialize` control response supplies `models` metadata without a user turn
+or inference. Independent `claudeModel` / `claudeEffort` settings feed chat, memo
+extraction and pomodoro matching after saving; changing model resets effort.
+Only the selected model's supported `low`, `medium`, `high`, `xhigh`, and `max`
+values are offered. `ultracode` is excluded.
+
+Unavailable saved selections remain visible and are validated before inference;
+errors do not silently substitute a model or fall back to API billing. Because
+the catalog lacks reliable subscription billing entitlement fields, Fable and its
+aliases and explicit `[1m]` paid variants are omitted. The panel retains no extra
+subscription caption or usage button. Windows selection support remains pending.
+
 ## Claude login presentation — 2026-10-14
 
 The provider label is now **Claude 登录**. Its account controls use the same

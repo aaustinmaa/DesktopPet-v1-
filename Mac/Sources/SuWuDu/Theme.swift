@@ -98,6 +98,7 @@ struct SettingsDraft {
         apply(\.microbreaks); apply(\.microMin); apply(\.microMax); apply(\.microSeconds)
         apply(\.microStartSound); apply(\.microEndSound); apply(\.provider); apply(\.apiModel)
         apply(\.codexModel); apply(\.reasoning); apply(\.memory); apply(\.screenVision)
+        apply(\.claudeModel); apply(\.claudeEffort)
         if value.skin != original.skin && value.petName == original.petName && ["苏无度", "沈青"].contains(original.petName) {
             result.petName = value.skin == "shenqing" ? "沈青" : "苏无度"
         }
