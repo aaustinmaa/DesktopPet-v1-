@@ -2,7 +2,7 @@
 
 Mode: built-in `image_gen`, transparent RGBA output. The user selected the two 4 × 4 sheets from the second generation round. The later 4 × 2 reminder experiment was rejected because it exposed distinct legs/feet; it is not used or stored in the project. Preserve the long-hair silhouette hiding the lower body in future revisions.
 
-Selected originals: `wave-v3-source.png` and `reminder-v3-source.png`. Each is the unmodified imagegen output. Their normalized runtime atlases are `wave-v3.png` and `reminder-v3.png` (1448 × 1448, 4 × 4 cells of 362 × 362).
+The wave still uses the selected `wave-v3-source.png`. The original reminder described below is preserved in `Assets/Archive/AnimationAtlases/suwudu-reminder-before-wave-match`; its active replacement follows the wave's narrower silhouette and palette, with its prompt in `reminder-wave-match-prompts.md`. Active originals remain unmodified imagegen output. Their normalized runtime atlases are `wave-v3.png` and `reminder-v3.png` (1448 × 1448, 4 × 4 cells of 362 × 362).
 
 ## Generation prompts
 

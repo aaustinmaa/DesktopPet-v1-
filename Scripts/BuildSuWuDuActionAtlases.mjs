@@ -6,7 +6,6 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
-const sharp = require(process.env.SHARP_MODULE || 'sharp');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const atlasDir = path.join(root, 'Assets/Source/AnimationAtlases');
 const spriteDir = path.join(root, 'Assets/Sprites');
@@ -20,10 +19,21 @@ const definitions = [
   },
   {
     name: 'reminder-v3', rows: 4, interval: 90,
-    // Use the user-selected 16-pose sheet; finish on the exact opening pose.
+    // Reviewed transparent gutters in the wave-matched source: the first bell
+    // extends beyond the nominal quarter-width boundary in rows 2 and 4.
+    columnEdges: [0, 325, 627, 940, 1254],
+    // Finish on the exact opening pose.
     sequence: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0],
   },
 ];
+const animationName = process.argv[2];
+if (process.argv.length > 3 || (animationName && !definitions.some(definition => definition.name === animationName))) {
+  throw new Error(`Usage: node Scripts/BuildSuWuDuActionAtlases.mjs [${definitions.map(definition => definition.name).join('|')}]`);
+}
+const selectedDefinitions = animationName
+  ? definitions.filter(definition => definition.name === animationName)
+  : definitions;
+const sharp = require(process.env.SHARP_MODULE || 'sharp');
 
 function contentBands(data, width, height) {
   const bands = [];
@@ -63,11 +73,18 @@ function copyPixels(source, width, height, destination, destinationWidth, x, y) 
   }
 }
 
+const manifestPath = path.join(atlasDir, 'suwudu-actions-v3-registration.json');
+// A targeted rebuild retains registration for every unselected animation.
+const manifest = animationName
+  ? JSON.parse(await fs.readFile(manifestPath, 'utf8'))
+  : { cellSize, columns: 4, rows: 4, animations: [] };
 await fs.mkdir(spriteDir, { recursive: true });
-const manifest = { cellSize, columns: 4, rows: 4, animations: [] };
-for (const definition of definitions) {
+for (const definition of selectedDefinitions) {
   const source = path.join(atlasDir, `${definition.name}-source.png`);
   const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (definition.columnEdges && definition.columnEdges[4] !== info.width) {
+    throw new Error(`${source}: review column gutters for the changed source dimensions`);
+  }
   const bands = contentBands(data, info.width, info.height);
   if (bands.length !== definition.rows) throw new Error(`${source}: unexpected row layout`);
   // One scale for the whole sheet, independent of the moving hand and bell.
@@ -78,8 +95,8 @@ for (const definition of definitions) {
   const measurements = [];
   for (const index of new Set(definition.sequence)) {
     const column = index % 4;
-    const left = Math.round(column * info.width / 4);
-    const right = Math.round((column + 1) * info.width / 4);
+    const left = definition.columnEdges?.[column] ?? Math.round(column * info.width / 4);
+    const right = definition.columnEdges?.[column + 1] ?? Math.round((column + 1) * info.width / 4);
     const [bandTop, bandBottom] = bands[Math.floor(index / 4)];
     const top = Math.max(0, bandTop - 3);
     const bottom = Math.min(info.height - 1, bandBottom + 3);
@@ -127,9 +144,12 @@ for (const definition of definitions) {
   }
   await sharp(atlas, { raw: { width: cellSize * 4, height: cellSize * 4, channels: 4 } })
     .png().toFile(path.join(atlasDir, `${definition.name}.png`));
-  manifest.animations.push({ name: definition.name, intervalMs: definition.interval,
+  const animation = { name: definition.name, intervalMs: definition.interval,
     sourceGrid: [4, definition.rows], sourcePoseSequence: definition.sequence.map(i => i + 1),
-    scale, registration });
+    scale, registration };
+  const existingIndex = manifest.animations.findIndex(entry => entry.name === definition.name);
+  if (existingIndex >= 0) manifest.animations[existingIndex] = animation;
+  else manifest.animations.push(animation);
   console.log(`${definition.name}: 16 RGBA frames, 362x362; atlas 1448x1448`);
 }
-await fs.writeFile(path.join(atlasDir, 'suwudu-actions-v3-registration.json'), JSON.stringify(manifest, null, 2) + '\n');
+await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
