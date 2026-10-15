@@ -1,5 +1,31 @@
 # Mac validation record
 
+## Page dismissal and minimize/restore focus (2026-10-15)
+
+- Reproduced the reported chain with separate native AppKit processes: closing
+  Settings promoted the covered Launcher, and minimizing Launcher promoted the
+  Journal. Save and Cancel share the same close callback; neither opens a page.
+- All five pages now use `AppPageWindow`. Explicit opening selects the target
+  before app activation. Closing suppresses automatic successor selection;
+  minimizing keeps that suppression through the native completion notification.
+  Pending open/close requests and Show All wait for the corresponding minimize
+  and restore animations before changing focus.
+- The final production source passed the extended native scenario: text entry,
+  close veto, minimize/dismissal without exposing the covered page, explicit
+  restore with retained draft/frame, repeated/no-op requests, opening during an
+  animation, stable Show All order, and closing during an animation.
+- Reusable checks are in `scripts/test-page-windows.sh` (use
+  `--sdk=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk`; optional
+  `--mode=perform-minimize`). They use only disposable test windows and fail
+  visibly if foreground activation cannot be established. The final full
+  four-mode batch was blocked by macOS denying activation to the synthetic
+  process before any lifecycle action; it is not recorded as passing. Individual
+  close/title-bar-close/minimize controls passed during the investigation.
+- Release compilation passed. `output/arm64/SuWuDu.app` was refreshed and its
+  strict/deep signature verified, preserving all 455 existing runtime resource,
+  framework and helper entries. The running app was not restarted. No Windows
+  output, installer or DMG was changed.
+
 ## Desktop quick menu preserves other windows (2026-10-15)
 
 - The desktop quick menu no longer activates the whole application. Root and

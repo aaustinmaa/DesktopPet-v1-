@@ -31,7 +31,7 @@ import Sparkle
     private var desktop: DesktopController!
     private var status: NSStatusItem!
     private var shortcut: RecoveryHotKey?
-    private var windows: [String: NSWindow] = [:]
+    private var windows: [String: AppPageWindow] = [:]
     private var subscriptions: Set<AnyCancellable> = []
     private var updater: SPUStandardUpdaterController?
     private var workspaceObservers: [NSObjectProtocol] = []
@@ -123,7 +123,7 @@ import Sparkle
     @objc private func recall() {
         desktop.recover()
         // AppKit orders these front to back. Restore in reverse to preserve focus.
-        let ordered = NSApp.orderedWindows.filter { window in
+        let ordered = NSApp.orderedWindows.compactMap { $0 as? AppPageWindow }.filter { window in
             windows.values.contains { $0 === window } && (window.isVisible || window.isMiniaturized)
         }
         let minimized = windows.values.filter { window in
@@ -131,22 +131,12 @@ import Sparkle
         }.sorted { $0.title < $1.title }
         let opened = ordered + minimized
         guard !opened.isEmpty else { openLauncher(); return }
-        NSApp.activate(ignoringOtherApps: true)
-        for window in opened.reversed() {
-            if window.isMiniaturized { window.deminiaturize(nil) }
-            window.orderFront(nil)
-        }
-        opened.first?.makeKeyAndOrderFront(nil)
-    }
-    private func activateWindow(_ window: NSWindow) {
-        NSApp.activate(ignoringOtherApps: true)
-        if window.isMiniaturized { window.deminiaturize(nil) }
-        window.makeKeyAndOrderFront(nil)
+        AppPageWindow.presentTogether(opened)
     }
     private func openDockWindow(_ id: String) {
         // Selecting an open chat must not create a new conversation or resize it.
         if let window = windows[id], window.isVisible || window.isMiniaturized {
-            activateWindow(window)
+            window.present()
             return
         }
         switch id {
@@ -237,12 +227,12 @@ import Sparkle
         return menu
     }
     private func show<V: View>(_ id: String, title: String, view: V, size: NSSize, replace: Bool = false) {
-        let window: NSWindow
+        let window: AppPageWindow
         if let existing = windows[id] {
             window = existing
             if replace { window.contentView = NSHostingView(rootView: view) }
         } else {
-            window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
+            window = AppPageWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
             window.title = title
             window.identifier = NSUserInterfaceItemIdentifier(id)
             window.isReleasedWhenClosed = false
@@ -251,7 +241,7 @@ import Sparkle
             window.center()
             windows[id] = window
         }
-        activateWindow(window)
+        window.present()
     }
     private func openLauncher() {
         show("launcher", title: "苏无度 · 沈青", view: LauncherView(model: model, recover: { [weak self] in self?.desktop.recover() },
@@ -281,7 +271,7 @@ import Sparkle
         show("journal", title: "任务与专注", view: JournalView(model: model, editor: editor), size: NSSize(width: 1120, height: 820))
     }
     private func openChat() {
-        if model.busy, let window = windows["chat"] { NSApp.activate(ignoringOtherApps: true); window.makeKeyAndOrderFront(nil); return }
+        if model.busy, let window = windows["chat"] { window.present(); return }
         if let window = windows["chat"] { window.setContentSize(NSSize(width: 440, height: 480)) }
         show("chat", title: "和我聊聊", view: ChatView(model: model, selected: model.newChat(), settings: { [weak self] in self?.openSettings() },
             resizeSidebar: { [weak self] expanded in
