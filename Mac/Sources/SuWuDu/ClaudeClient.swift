@@ -58,7 +58,7 @@ struct ClaudeCommandResult {
         } catch {
             if generation == expectedGeneration, !(error is CancellationError) {
                 signedIn = false
-                account = "未连接 Claude 订阅"
+                account = "尚未登录"
             }
             throw error
         }
@@ -84,11 +84,11 @@ struct ClaudeCommandResult {
             try Task.checkCancellation()
             guard loginID == id else { throw CancellationError() }
             apply(status)
-            guard status.connected else { throw AppError.message("尚未完成 Claude 订阅授权，请重新连接。") }
+            guard status.connected else { throw AppError.message("尚未完成 Claude 登录授权，请重新登录。") }
         } catch {
             if loginID == id {
                 signedIn = false
-                account = error is CancellationError ? "已取消连接" : "未连接 Claude 订阅"
+                account = error is CancellationError ? "已取消登录" : "尚未登录"
             }
             throw error
         }
@@ -101,7 +101,7 @@ struct ClaudeCommandResult {
         runner.cancel(id)
         loginPending = false
         signedIn = false
-        account = "已取消连接"
+        account = "已取消登录"
     }
 
     func logout() async throws {
@@ -112,7 +112,7 @@ struct ClaudeCommandResult {
         guard generation == expectedGeneration else { throw CancellationError() }
         guard result.exitCode == 0 else { throw AppError.message("Claude 退出登录失败，请重试。") }
         signedIn = false
-        account = "未连接 Claude 订阅"
+        account = "已退出登录"
     }
 
     func shutdown() {
@@ -130,14 +130,14 @@ struct ClaudeCommandResult {
         do { status = try await checkAccount(id: id) }
         catch {
             if generation == expectedGeneration, !(error is CancellationError) {
-                signedIn = false; account = "未连接 Claude 订阅"
+                signedIn = false; account = "尚未登录"
             }
             throw error
         }
         try Task.checkCancellation()
         guard generation == expectedGeneration else { throw CancellationError() }
         apply(status)
-        guard status.connected else { throw AppError.message("请先在设置中连接 Claude 订阅。") }
+        guard status.connected else { throw AppError.message("请先在设置中登录 Claude。") }
         let input = try Self.input(prompt: prompt, screenshot: screenshot)
         let schemaData = try JSONSerialization.data(withJSONObject: schema, options: [.sortedKeys])
         guard schemaData.count <= 200_000, instructions.utf8.count <= 100_000 else {
@@ -283,7 +283,7 @@ struct ClaudeCommandResult {
             throw AppError.message("此连接仅接受 Claude 订阅登录，未发送请求，也不会使用 API 凭据。")
         }
         if !loggedIn, method == "none", result.exitCode == 0 || result.exitCode == 1 {
-            return Self(connected: false, label: "未连接 Claude 订阅")
+            return Self(connected: false, label: "尚未登录")
         }
         guard loggedIn, method == "claude.ai", result.exitCode == 0 else {
             throw AppError.message("无法确认 Claude 订阅登录，请重新连接。")
@@ -294,7 +294,7 @@ struct ClaudeCommandResult {
             }
         }
         let email = (object["email"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return Self(connected: true, label: email.isEmpty ? "已连接 Claude 订阅" : String(email.prefix(254)))
+        return Self(connected: true, label: email.isEmpty ? "已连接 Claude" : String(email.prefix(254)))
     }
 }
 

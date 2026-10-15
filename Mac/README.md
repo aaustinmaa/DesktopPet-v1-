@@ -60,10 +60,11 @@ restored after checksum verification.
 
 ## Claude subscription on Mac
 
-In **设置 → AI 与记忆**, select **Claude（订阅）**, click **连接我的 Claude**,
+In **设置 → AI 与记忆**, select **Claude 登录**, click **连接我的 Claude**,
 complete the official browser authorization, then save settings. Chat (including
 optional screen attachments), memo extraction and pomodoro matching share this
-connection. Refresh/disconnect and cancellation are available in the same panel.
+connection. The account controls match the ChatGPT layout, with **刷新账号** and
+**退出登录**; login can still be cancelled while pending.
 Each user signs in with their own supported Claude plan. Claude Desktop and a
 separately installed CLI are not required; the app uses its bundled official
 Claude Code, with the vendor signature and binary bytes preserved.
@@ -79,10 +80,9 @@ OpenAI API remains a separate, explicitly selected provider.
 
 **Billing boundary:** the subscription's limits and any *usage credits / extra
 usage* enabled in the user's Claude account still apply. This integration cannot
-turn off that account setting. **订阅用量** opens
-[Claude usage settings](https://claude.ai/settings/usage), where users can disable
-extra paid usage. “No API fallback” does not promise unlimited usage or override
-an already enabled Claude overage setting.
+turn off that account setting. Users can disable extra paid usage directly in
+[Claude usage settings](https://claude.ai/settings/usage). “No API fallback” does
+not promise unlimited usage or override an already enabled Claude overage setting.
 
 Claude receives the same dedicated instructions and fixed JSON schemas as the
 other providers. The app accepts only a successful structured result, validates

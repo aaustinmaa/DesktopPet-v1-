@@ -96,7 +96,7 @@ struct CompanionReply {
     func matchFocusTasks(_ snapshot: FocusMatchRequest, settings: Settings) async throws -> [FocusMatchProposal] {
         try Task.checkCancellation()
         guard settings.provider != "offline" else {
-            throw AppError.message("一句话整理需要 AI：请在设置中连接 ChatGPT、Claude 订阅或 OpenAI API。本机关键词建议可离线使用。")
+            throw AppError.message("一句话整理需要 AI：请在设置中连接 ChatGPT、Claude 或 OpenAI API。本机关键词建议可离线使用。")
         }
         let prompt = try FocusTaskMatching.prompt(snapshot)
         let schema = FocusTaskMatching.schema(for: snapshot)
@@ -149,7 +149,7 @@ struct CompanionReply {
     func extractMemoTasks(_ snapshot: FocusMemoExtractionRequest, settings: Settings) async throws -> [FocusMemoTaskProposal] {
         try Task.checkCancellation()
         guard settings.provider != "offline" else {
-            throw AppError.message("备忘录自动整理需要 AI：请在设置中连接 ChatGPT、Claude 订阅或 OpenAI API。也可以继续手动转为任务。")
+            throw AppError.message("备忘录自动整理需要 AI：请在设置中连接 ChatGPT、Claude 或 OpenAI API。也可以继续手动转为任务。")
         }
         let prompt = try FocusMemoExtraction.prompt(snapshot)
         let raw: String

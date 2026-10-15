@@ -70,7 +70,7 @@ import Testing
         let client = client(runner, directory: directory)
         try await client.refresh()
         #expect(!client.signedIn)
-        #expect(client.account == "未连接 Claude 订阅")
+        #expect(client.account == "尚未登录")
         #expect(runner.requests.count == 1)
         #expect(runner.requests[0].arguments.suffix(3) == ["auth", "status", "--json"])
         #expect(!runner.requests[0].arguments.contains("login"))
@@ -207,7 +207,7 @@ import Testing
         #expect(runner.cancelled.count == 1)
         #expect(!client.loginPending)
         #expect(!client.signedIn)
-        #expect(client.account == "已取消连接")
+        #expect(client.account == "已取消登录")
     }
 
     @Test func processRunnerCapturesBothPipesAndExitCode() async throws {

@@ -1,5 +1,17 @@
 # Mac validation record
 
+## Claude login presentation (2026-10-14)
+
+- The picker now says **Claude 登录**. Account controls use the ChatGPT button
+  style and spacing, with **连接我的 Claude**, **刷新账号** and **退出登录**.
+  The subscription caption and extra usage button were removed; status wording
+  and current instructions/documentation were updated to match.
+- Release compilation with the macOS 26.5 SDK passed. The development executable
+  was refreshed in `output/arm64/SuWuDu.app` and the app signature was verified.
+  Existing runtime components were retained. No live login, full test suite,
+  installer build or unrelated feature verification was performed for this
+  presentation-only change.
+
 ## Claude subscription integration (2026-10-14)
 
 - Mac settings provide official Claude browser login, status, refresh, disconnect

@@ -12,14 +12,13 @@ import AppKit
     private var requestActive: Bool { model.busy || model.matchingBusy || model.memoExtractionBusy }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text(client.account).textSelection(.enabled)
-            HStack(spacing: 8) {
+            HStack {
                 Group {
                     Button("连接我的 Claude") { perform(.login) { try await client.login() } }
-                        .buttonStyle(PetButtonStyle(primary: !client.signedIn))
-                    Button("刷新状态") { perform(.refresh) { try await client.refresh() } }
-                    Button("断开连接") { perform(.logout) { try await client.logout() } }
+                    Button("刷新账号") { perform(.refresh) { try await client.refresh() } }
+                    Button("退出登录") { perform(.logout) { try await client.logout() } }
                         .disabled(!client.signedIn)
                 }.disabled(operation != nil || client.loginPending || requestActive)
                 if operation != nil { ProgressView().controlSize(.small) }
@@ -27,11 +26,6 @@ import AppKit
                     Button("取消") { cancelOperation() }
                 }
             }
-            HStack(spacing: 8) {
-                Text("使用 Claude 订阅，不自动转用 API").foregroundStyle(PetTheme.muted)
-                Link("订阅用量", destination: URL(string: "https://claude.ai/settings/usage")!)
-                    .help("不会自动改用 API；若 Claude 账号已开启额外用量付费，仍按该账号设置计费。可在此关闭。")
-            }.font(.caption)
         }
         .task { perform(.refresh) { try await client.refresh() } }
         .onDisappear { cancelOperation() }

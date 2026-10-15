@@ -186,7 +186,7 @@ import UniformTypeIdentifiers
         PetCard("AI 与记忆") {
             Picker("聊天方式", selection: binding(\.provider)) {
                 Text("ChatGPT 登录").tag("codex")
-                Text("Claude（订阅）").tag("claude")
+                Text("Claude 登录").tag("claude")
                 Text("OpenAI API").tag("openai")
                 Text("离线陪伴").tag("offline")
             }.pickerStyle(.segmented).disabled(model.busy)

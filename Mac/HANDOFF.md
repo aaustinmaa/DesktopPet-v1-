@@ -4,6 +4,14 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Claude login presentation — 2026-10-14
+
+The provider label is now **Claude 登录**. Its account controls use the same
+layout and wording as ChatGPT: **连接我的 Claude**, **刷新账号**, and
+**退出登录**. The subscription caption and extra usage button were removed from
+the settings panel. Subscription billing behavior is unchanged; documentation
+links directly to [Claude usage settings](https://claude.ai/settings/usage).
+
 ## Claude subscription integration — 2026-10-14
 
 Mac settings now offer **Claude（订阅）** with official browser login, status,
