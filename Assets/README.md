@@ -76,11 +76,16 @@ in `Archive/Sprites/shenqing-before-v4` before replacement.
 
 Open `Source/AnimationAtlases/shenqing-v4/preview.html` to play or step through
 all twelve animations. Each action also has a looping `{action}-preview.gif`.
-Shen Qing now spends most of each idle/work cycle holding an open-eyed pose:
-idle lasts 20.32 seconds and working lasts 28.96 seconds. Closed-eye frames stay
-brief, and working skips pose 15's additional blink. The standalone blink keeps
-its original 80 ms frame timing; automatic idle gestures occur every 60–120 seconds.
-Other actions use slower playback without changing the artwork.
+Shen Qing's idle and working sheets use continuous, small movements with open
+eyes throughout: gentle breathing at 140 ms per frame and subtle typing at
+120 ms per frame, without long frozen holds. Blinking is a separate action at
+80 ms per frame; automatic idle gestures remain 60–120 seconds apart.
+The exported loops arrange neighboring generated poses into gradual movement;
+`sourcePoseSequence` records this order without repainting the source artwork.
+Reminder playback uses 160 ms per frame. The hit reaction raises the heart within
+240 ms and holds the closed-eye pose across the hammer's 430 ms impact, then
+retraces the movement once without the later wink/blink poses. Repeated idle
+strikes restart both the hammer and Shen Qing's reaction together.
 Run `node Scripts/BuildShenQingV4Atlases.mjs --timing-only` to refresh GIFs,
 the preview and timing metadata from existing sprites without rewriting any PNGs.
 The built-in imagegen source images and exact prompts are saved as

@@ -10,1087 +10,7 @@
   "animations": [
     {
       "name": "idle",
-      "intervalMs": 320,
-      "source": "Assets/Source/AnimationAtlases/shenqing-v4/idle-source.png",
-      "sourceSha256": "efda05db229ec42c5bc4007e0d9f31d859961cab0f3a1f227c2de211eee004e8",
-      "sourceSize": [
-        1254,
-        1254
-      ],
-      "sourceGrid": [
-        4,
-        4
-      ],
-      "cellEdges": {
-        "rowEdges": [
-          0,
-          324,
-          632,
-          954,
-          1254
-        ],
-        "columnEdgesByRow": [
-          [
-            0,
-            314,
-            627,
-            941,
-            1254
-          ],
-          [
-            0,
-            315,
-            627,
-            941,
-            1254
-          ],
-          [
-            0,
-            314,
-            627,
-            941,
-            1254
-          ],
-          [
-            0,
-            314,
-            627,
-            941,
-            1254
-          ]
-        ],
-        "gutterAlphaTolerance": 1,
-        "searchRadius": 24
-      },
-      "frameCount": 16,
-      "sourcePoseSequence": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        1
-      ],
-      "registrationMode": "lower-hair-hem",
-      "targetAnchor": {
-        "x": 170,
-        "y": 337
-      },
-      "targetHeight": 304,
-      "medianCrownToHemHeight": 270,
-      "normalizedMedianCrownToHemHeight": 304,
-      "cropPolicy": {
-        "visibleAlphaThreshold": 16,
-        "padding": 3,
-        "preserveRgbaInsideCrop": true
-      },
-      "requestedScale": 1.125925925925926,
-      "scale": 1.125925925925926,
-      "margin": 8,
-      "registration": [
-        {
-          "sourcePose": 1,
-          "sourceCell": {
-            "left": 0,
-            "top": 0,
-            "width": 314,
-            "height": 324
-          },
-          "crop": {
-            "left": 35,
-            "top": 33,
-            "width": 257,
-            "height": 290
-          },
-          "sourceAnchor": {
-            "x": 146,
-            "y": 318
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 318
-          },
-          "crown": {
-            "x0": 111,
-            "y0": 47,
-            "x1": 183,
-            "y1": 105,
-            "count": 2058
-          },
-          "body": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 287,
-            "y1": 318
-          },
-          "content": {
-            "x0": 34,
-            "y0": 34,
-            "x1": 291,
-            "y1": 322,
-            "count": 51448
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 288,
-            "y1": 319,
-            "count": 49265
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            284,
-            318
-          ],
-          "crownToHemHeight": 272,
-          "destination": {
-            "width": 289,
-            "height": 327,
-            "left": 45,
-            "top": 16
-          }
-        },
-        {
-          "sourcePose": 2,
-          "sourceCell": {
-            "left": 314,
-            "top": 0,
-            "width": 313,
-            "height": 324
-          },
-          "crop": {
-            "left": 348,
-            "top": 33,
-            "width": 257,
-            "height": 290
-          },
-          "sourceAnchor": {
-            "x": 459.5,
-            "y": 318
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 318
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 47,
-            "x1": 182,
-            "y1": 105,
-            "count": 2041
-          },
-          "body": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 287,
-            "y1": 318
-          },
-          "content": {
-            "x0": 8,
-            "y0": 34,
-            "x1": 296,
-            "y1": 321,
-            "count": 51552
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 36,
-            "x1": 287,
-            "y1": 319,
-            "count": 49321
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            284,
-            318
-          ],
-          "crownToHemHeight": 272,
-          "destination": {
-            "width": 289,
-            "height": 327,
-            "left": 45,
-            "top": 16
-          }
-        },
-        {
-          "sourcePose": 3,
-          "sourceCell": {
-            "left": 627,
-            "top": 0,
-            "width": 314,
-            "height": 324
-          },
-          "crop": {
-            "left": 662,
-            "top": 33,
-            "width": 257,
-            "height": 290
-          },
-          "sourceAnchor": {
-            "x": 773,
-            "y": 318
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 318
-          },
-          "crown": {
-            "x0": 111,
-            "y0": 47,
-            "x1": 182,
-            "y1": 105,
-            "count": 2038
-          },
-          "body": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 287,
-            "y1": 318
-          },
-          "content": {
-            "x0": 35,
-            "y0": 32,
-            "x1": 305,
-            "y1": 321,
-            "count": 51371
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 288,
-            "y1": 319,
-            "count": 49283
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            284,
-            318
-          ],
-          "crownToHemHeight": 272,
-          "destination": {
-            "width": 289,
-            "height": 327,
-            "left": 45,
-            "top": 16
-          }
-        },
-        {
-          "sourcePose": 4,
-          "sourceCell": {
-            "left": 941,
-            "top": 0,
-            "width": 313,
-            "height": 324
-          },
-          "crop": {
-            "left": 975,
-            "top": 33,
-            "width": 257,
-            "height": 290
-          },
-          "sourceAnchor": {
-            "x": 1086.5,
-            "y": 318
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 318
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 47,
-            "x1": 182,
-            "y1": 105,
-            "count": 2084
-          },
-          "body": {
-            "x0": 38,
-            "y0": 36,
-            "x1": 287,
-            "y1": 318
-          },
-          "content": {
-            "x0": 33,
-            "y0": 33,
-            "x1": 296,
-            "y1": 321,
-            "count": 51583
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 36,
-            "x1": 287,
-            "y1": 319,
-            "count": 49352
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            284,
-            318
-          ],
-          "crownToHemHeight": 272,
-          "destination": {
-            "width": 289,
-            "height": 327,
-            "left": 45,
-            "top": 16
-          }
-        },
-        {
-          "sourcePose": 5,
-          "sourceCell": {
-            "left": 0,
-            "top": 324,
-            "width": 315,
-            "height": 308
-          },
-          "crop": {
-            "left": 35,
-            "top": 343,
-            "width": 257,
-            "height": 289
-          },
-          "sourceAnchor": {
-            "x": 146,
-            "y": 627
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 303
-          },
-          "crown": {
-            "x0": 111,
-            "y0": 34,
-            "x1": 182,
-            "y1": 90,
-            "count": 1986
-          },
-          "body": {
-            "x0": 38,
-            "y0": 23,
-            "x1": 288,
-            "y1": 303
-          },
-          "content": {
-            "x0": 35,
-            "y0": 2,
-            "x1": 313,
-            "y1": 306,
-            "count": 50919
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 22,
-            "x1": 288,
-            "y1": 304,
-            "count": 49116
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            269,
-            303
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 289,
-            "height": 325,
-            "left": 45,
-            "top": 18
-          }
-        },
-        {
-          "sourcePose": 6,
-          "sourceCell": {
-            "left": 315,
-            "top": 324,
-            "width": 312,
-            "height": 308
-          },
-          "crop": {
-            "left": 348,
-            "top": 344,
-            "width": 258,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 459.5,
-            "y": 627
-          },
-          "localAnchor": {
-            "x": 144.5,
-            "y": 303
-          },
-          "crown": {
-            "x0": 109,
-            "y0": 33,
-            "x1": 180,
-            "y1": 90,
-            "count": 1975
-          },
-          "body": {
-            "x0": 37,
-            "y0": 23,
-            "x1": 286,
-            "y1": 303
-          },
-          "content": {
-            "x0": 1,
-            "y0": 17,
-            "x1": 307,
-            "y1": 306,
-            "count": 51338
-          },
-          "visible": {
-            "x0": 36,
-            "y0": 23,
-            "x1": 287,
-            "y1": 304,
-            "count": 49178
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            269,
-            303
-          ],
-          "crownToHemHeight": 271,
-          "destination": {
-            "width": 290,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 7,
-          "sourceCell": {
-            "left": 627,
-            "top": 324,
-            "width": 314,
-            "height": 308
-          },
-          "crop": {
-            "left": 662,
-            "top": 344,
-            "width": 257,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 773,
-            "y": 627
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 303
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 34,
-            "x1": 182,
-            "y1": 90,
-            "count": 2006
-          },
-          "body": {
-            "x0": 38,
-            "y0": 23,
-            "x1": 287,
-            "y1": 303
-          },
-          "content": {
-            "x0": 1,
-            "y0": 20,
-            "x1": 291,
-            "y1": 306,
-            "count": 50927
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 23,
-            "x1": 288,
-            "y1": 304,
-            "count": 49104
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            269,
-            303
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 289,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 8,
-          "sourceCell": {
-            "left": 941,
-            "top": 324,
-            "width": 313,
-            "height": 308
-          },
-          "crop": {
-            "left": 975,
-            "top": 344,
-            "width": 258,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 1086.5,
-            "y": 627
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 303
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 34,
-            "x1": 182,
-            "y1": 90,
-            "count": 1985
-          },
-          "body": {
-            "x0": 38,
-            "y0": 24,
-            "x1": 287,
-            "y1": 303
-          },
-          "content": {
-            "x0": 34,
-            "y0": 20,
-            "x1": 294,
-            "y1": 306,
-            "count": 51207
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 23,
-            "x1": 288,
-            "y1": 304,
-            "count": 49186
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            270,
-            303
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 290,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 9,
-          "sourceCell": {
-            "left": 0,
-            "top": 632,
-            "width": 314,
-            "height": 322
-          },
-          "crop": {
-            "left": 35,
-            "top": 654,
-            "width": 257,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 146,
-            "y": 937
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 305
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 36,
-            "x1": 182,
-            "y1": 93,
-            "count": 2038
-          },
-          "body": {
-            "x0": 38,
-            "y0": 26,
-            "x1": 288,
-            "y1": 305
-          },
-          "content": {
-            "x0": 34,
-            "y0": 22,
-            "x1": 291,
-            "y1": 321,
-            "count": 51781
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 25,
-            "x1": 288,
-            "y1": 306,
-            "count": 49019
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            272,
-            305
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 289,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 10,
-          "sourceCell": {
-            "left": 314,
-            "top": 632,
-            "width": 313,
-            "height": 322
-          },
-          "crop": {
-            "left": 348,
-            "top": 654,
-            "width": 258,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 459.5,
-            "y": 937
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 305
-          },
-          "crown": {
-            "x0": 109,
-            "y0": 36,
-            "x1": 182,
-            "y1": 93,
-            "count": 2058
-          },
-          "body": {
-            "x0": 38,
-            "y0": 26,
-            "x1": 287,
-            "y1": 305
-          },
-          "content": {
-            "x0": 4,
-            "y0": 23,
-            "x1": 298,
-            "y1": 316,
-            "count": 51932
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 25,
-            "x1": 288,
-            "y1": 306,
-            "count": 49082
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            272,
-            305
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 290,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 11,
-          "sourceCell": {
-            "left": 627,
-            "top": 632,
-            "width": 314,
-            "height": 322
-          },
-          "crop": {
-            "left": 662,
-            "top": 654,
-            "width": 257,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 773,
-            "y": 937
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 305
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 36,
-            "x1": 182,
-            "y1": 93,
-            "count": 2067
-          },
-          "body": {
-            "x0": 38,
-            "y0": 26,
-            "x1": 287,
-            "y1": 305
-          },
-          "content": {
-            "x0": 17,
-            "y0": 22,
-            "x1": 291,
-            "y1": 317,
-            "count": 51888
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 25,
-            "x1": 288,
-            "y1": 306,
-            "count": 49006
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            272,
-            305
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 289,
-            "height": 324,
-            "left": 45,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 12,
-          "sourceCell": {
-            "left": 941,
-            "top": 632,
-            "width": 313,
-            "height": 322
-          },
-          "crop": {
-            "left": 975,
-            "top": 654,
-            "width": 258,
-            "height": 288
-          },
-          "sourceAnchor": {
-            "x": 1087,
-            "y": 937
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 305
-          },
-          "crown": {
-            "x0": 109,
-            "y0": 36,
-            "x1": 182,
-            "y1": 93,
-            "count": 2049
-          },
-          "body": {
-            "x0": 38,
-            "y0": 26,
-            "x1": 287,
-            "y1": 305
-          },
-          "content": {
-            "x0": 34,
-            "y0": 23,
-            "x1": 296,
-            "y1": 316,
-            "count": 52105
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 25,
-            "x1": 288,
-            "y1": 306,
-            "count": 49093
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            272,
-            305
-          ],
-          "crownToHemHeight": 270,
-          "destination": {
-            "width": 290,
-            "height": 324,
-            "left": 44,
-            "top": 19
-          }
-        },
-        {
-          "sourcePose": 13,
-          "sourceCell": {
-            "left": 0,
-            "top": 954,
-            "width": 314,
-            "height": 300
-          },
-          "crop": {
-            "left": 35,
-            "top": 959,
-            "width": 257,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 146,
-            "y": 1238
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 284
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 19,
-            "x1": 182,
-            "y1": 75,
-            "count": 1977
-          },
-          "body": {
-            "x0": 38,
-            "y0": 9,
-            "x1": 287,
-            "y1": 285
-          },
-          "content": {
-            "x0": 35,
-            "y0": 0,
-            "x1": 299,
-            "y1": 287,
-            "count": 50154
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 8,
-            "x1": 288,
-            "y1": 285,
-            "count": 48357
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            251,
-            284
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 289,
-            "height": 320,
-            "left": 45,
-            "top": 23
-          }
-        },
-        {
-          "sourcePose": 14,
-          "sourceCell": {
-            "left": 314,
-            "top": 954,
-            "width": 313,
-            "height": 300
-          },
-          "crop": {
-            "left": 348,
-            "top": 959,
-            "width": 258,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 459.5,
-            "y": 1239
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 285
-          },
-          "crown": {
-            "x0": 109,
-            "y0": 19,
-            "x1": 181,
-            "y1": 75,
-            "count": 1970
-          },
-          "body": {
-            "x0": 38,
-            "y0": 9,
-            "x1": 287,
-            "y1": 285
-          },
-          "content": {
-            "x0": 33,
-            "y0": 5,
-            "x1": 306,
-            "y1": 287,
-            "count": 50458
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 8,
-            "x1": 288,
-            "y1": 285,
-            "count": 48424
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            252,
-            285
-          ],
-          "crownToHemHeight": 267,
-          "destination": {
-            "width": 290,
-            "height": 320,
-            "left": 45,
-            "top": 22
-          }
-        },
-        {
-          "sourcePose": 15,
-          "sourceCell": {
-            "left": 627,
-            "top": 954,
-            "width": 314,
-            "height": 300
-          },
-          "crop": {
-            "left": 662,
-            "top": 959,
-            "width": 257,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 773,
-            "y": 1239
-          },
-          "localAnchor": {
-            "x": 146,
-            "y": 285
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 19,
-            "x1": 182,
-            "y1": 75,
-            "count": 1991
-          },
-          "body": {
-            "x0": 38,
-            "y0": 8,
-            "x1": 287,
-            "y1": 285
-          },
-          "content": {
-            "x0": 35,
-            "y0": 5,
-            "x1": 307,
-            "y1": 299,
-            "count": 50321
-          },
-          "visible": {
-            "x0": 38,
-            "y0": 8,
-            "x1": 288,
-            "y1": 285,
-            "count": 48360
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            252,
-            285
-          ],
-          "crownToHemHeight": 267,
-          "destination": {
-            "width": 289,
-            "height": 320,
-            "left": 45,
-            "top": 22
-          }
-        },
-        {
-          "sourcePose": 16,
-          "sourceCell": {
-            "left": 941,
-            "top": 954,
-            "width": 313,
-            "height": 300
-          },
-          "crop": {
-            "left": 975,
-            "top": 959,
-            "width": 258,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 1086.75,
-            "y": 1239
-          },
-          "localAnchor": {
-            "x": 145.75,
-            "y": 285
-          },
-          "crown": {
-            "x0": 109,
-            "y0": 19,
-            "x1": 182,
-            "y1": 75,
-            "count": 1965
-          },
-          "body": {
-            "x0": 38,
-            "y0": 9,
-            "x1": 287,
-            "y1": 285
-          },
-          "content": {
-            "x0": 34,
-            "y0": 6,
-            "x1": 294,
-            "y1": 287,
-            "count": 50409
-          },
-          "visible": {
-            "x0": 37,
-            "y0": 8,
-            "x1": 288,
-            "y1": 285,
-            "count": 48431
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            252,
-            285
-          ],
-          "crownToHemHeight": 267,
-          "destination": {
-            "width": 290,
-            "height": 320,
-            "left": 44,
-            "top": 22
-          }
-        }
-      ],
+      "intervalMs": 140,
       "playbackFrameSequence": [
         1,
         2,
@@ -1110,24 +30,24 @@
         16
       ],
       "frameDurationsMs": [
-        16000,
-        320,
-        320,
-        320,
-        320,
-        320,
-        80,
-        80,
-        320,
-        320,
-        320,
-        320,
-        320,
-        320,
-        320,
-        320
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ],
-      "totalDurationMs": 20320,
+      "totalDurationMs": 2240,
       "gifFrameSequence": [
         1,
         2,
@@ -1146,21 +66,1101 @@
         15
       ],
       "gifFrameDurationsMs": [
-        16320,
-        320,
-        320,
-        320,
-        320,
-        320,
-        80,
-        80,
-        320,
-        320,
-        320,
-        320,
-        320,
-        320,
-        320
+        280,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
+      ],
+      "source": "Assets/Source/AnimationAtlases/shenqing-v4/idle-source.png",
+      "sourceSha256": "6ff996b4be142728510a040dec174fb13f29ce63f83f929a97afc457fe986fc3",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceGrid": [
+        4,
+        4
+      ],
+      "cellEdges": {
+        "rowEdges": [
+          0,
+          321,
+          630,
+          942,
+          1254
+        ],
+        "columnEdgesByRow": [
+          [
+            0,
+            314,
+            627,
+            938,
+            1254
+          ],
+          [
+            0,
+            317,
+            627,
+            941,
+            1254
+          ],
+          [
+            0,
+            313,
+            625,
+            940,
+            1254
+          ],
+          [
+            0,
+            314,
+            632,
+            941,
+            1254
+          ]
+        ],
+        "gutterAlphaTolerance": 1,
+        "searchRadius": 24
+      },
+      "frameCount": 16,
+      "sourcePoseSequence": [
+        1,
+        2,
+        3,
+        4,
+        9,
+        6,
+        5,
+        7,
+        8,
+        5,
+        6,
+        10,
+        11,
+        12,
+        14,
+        1
+      ],
+      "registrationMode": "lower-hair-hem",
+      "targetAnchor": {
+        "x": 170,
+        "y": 337
+      },
+      "targetHeight": 304,
+      "medianCrownToHemHeight": 263.5,
+      "normalizedMedianCrownToHemHeight": 304,
+      "cropPolicy": {
+        "visibleAlphaThreshold": 16,
+        "padding": 3,
+        "preserveRgbaInsideCrop": true
+      },
+      "requestedScale": 1.1537001897533208,
+      "scale": 1.1537001897533208,
+      "margin": 8,
+      "registration": [
+        {
+          "sourcePose": 1,
+          "sourceCell": {
+            "left": 0,
+            "top": 0,
+            "width": 314,
+            "height": 321
+          },
+          "crop": {
+            "left": 38,
+            "top": 32,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 148,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 309
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 46,
+            "x1": 182,
+            "y1": 104,
+            "count": 2067
+          },
+          "body": {
+            "x0": 42,
+            "y0": 36,
+            "x1": 288,
+            "y1": 309
+          },
+          "content": {
+            "x0": 35,
+            "y0": 32,
+            "x1": 301,
+            "y1": 319,
+            "count": 50017
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 35,
+            "x1": 288,
+            "y1": 310,
+            "count": 47684
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 43,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 2,
+          "sourceCell": {
+            "left": 314,
+            "top": 0,
+            "width": 313,
+            "height": 321
+          },
+          "crop": {
+            "left": 352,
+            "top": 32,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 461,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 147,
+            "y": 309
+          },
+          "crown": {
+            "x0": 110,
+            "y0": 46,
+            "x1": 182,
+            "y1": 104,
+            "count": 2094
+          },
+          "body": {
+            "x0": 41,
+            "y0": 36,
+            "x1": 287,
+            "y1": 309
+          },
+          "content": {
+            "x0": 38,
+            "y0": 33,
+            "x1": 304,
+            "y1": 317,
+            "count": 49948
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 35,
+            "x1": 288,
+            "y1": 310,
+            "count": 47665
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 3,
+          "sourceCell": {
+            "left": 627,
+            "top": 0,
+            "width": 311,
+            "height": 321
+          },
+          "crop": {
+            "left": 665,
+            "top": 32,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 775,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 309
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 46,
+            "x1": 182,
+            "y1": 103,
+            "count": 2064
+          },
+          "body": {
+            "x0": 42,
+            "y0": 36,
+            "x1": 288,
+            "y1": 309
+          },
+          "content": {
+            "x0": 39,
+            "y0": 33,
+            "x1": 295,
+            "y1": 318,
+            "count": 49921
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 35,
+            "x1": 288,
+            "y1": 310,
+            "count": 47658
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 43,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 4,
+          "sourceCell": {
+            "left": 938,
+            "top": 0,
+            "width": 316,
+            "height": 321
+          },
+          "crop": {
+            "left": 978,
+            "top": 32,
+            "width": 255,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 1088,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 150,
+            "y": 309
+          },
+          "crown": {
+            "x0": 113,
+            "y0": 46,
+            "x1": 185,
+            "y1": 104,
+            "count": 2086
+          },
+          "body": {
+            "x0": 44,
+            "y0": 36,
+            "x1": 290,
+            "y1": 309
+          },
+          "content": {
+            "x0": 1,
+            "y0": 32,
+            "x1": 297,
+            "y1": 319,
+            "count": 50174
+          },
+          "visible": {
+            "x0": 43,
+            "y0": 35,
+            "x1": 291,
+            "y1": 310,
+            "count": 47694
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 294,
+            "height": 325,
+            "left": 43,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 5,
+          "sourceCell": {
+            "left": 0,
+            "top": 321,
+            "width": 317,
+            "height": 309
+          },
+          "crop": {
+            "left": 38,
+            "top": 344,
+            "width": 254,
+            "height": 279
+          },
+          "sourceAnchor": {
+            "x": 147.5,
+            "y": 618
+          },
+          "localAnchor": {
+            "x": 147.5,
+            "y": 297
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 37,
+            "x1": 182,
+            "y1": 93,
+            "count": 1957
+          },
+          "body": {
+            "x0": 42,
+            "y0": 27,
+            "x1": 288,
+            "y1": 298
+          },
+          "content": {
+            "x0": 37,
+            "y0": 23,
+            "x1": 315,
+            "y1": 305,
+            "count": 49158
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 26,
+            "x1": 288,
+            "y1": 298,
+            "count": 47100
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            265,
+            297
+          ],
+          "crownToHemHeight": 261,
+          "destination": {
+            "width": 293,
+            "height": 322,
+            "left": 44,
+            "top": 21
+          }
+        },
+        {
+          "sourcePose": 6,
+          "sourceCell": {
+            "left": 317,
+            "top": 321,
+            "width": 310,
+            "height": 309
+          },
+          "crop": {
+            "left": 352,
+            "top": 344,
+            "width": 254,
+            "height": 279
+          },
+          "sourceAnchor": {
+            "x": 461,
+            "y": 618
+          },
+          "localAnchor": {
+            "x": 144,
+            "y": 297
+          },
+          "crown": {
+            "x0": 108,
+            "y0": 36,
+            "x1": 178,
+            "y1": 93,
+            "count": 1996
+          },
+          "body": {
+            "x0": 38,
+            "y0": 27,
+            "x1": 284,
+            "y1": 298
+          },
+          "content": {
+            "x0": 9,
+            "y0": 24,
+            "x1": 307,
+            "y1": 307,
+            "count": 49926
+          },
+          "visible": {
+            "x0": 38,
+            "y0": 26,
+            "x1": 285,
+            "y1": 298,
+            "count": 47041
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            265,
+            297
+          ],
+          "crownToHemHeight": 262,
+          "destination": {
+            "width": 293,
+            "height": 322,
+            "left": 44,
+            "top": 21
+          }
+        },
+        {
+          "sourcePose": 7,
+          "sourceCell": {
+            "left": 627,
+            "top": 321,
+            "width": 314,
+            "height": 309
+          },
+          "crop": {
+            "left": 665,
+            "top": 345,
+            "width": 254,
+            "height": 278
+          },
+          "sourceAnchor": {
+            "x": 774.5,
+            "y": 618
+          },
+          "localAnchor": {
+            "x": 147.5,
+            "y": 297
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 38,
+            "x1": 182,
+            "y1": 94,
+            "count": 2008
+          },
+          "body": {
+            "x0": 42,
+            "y0": 28,
+            "x1": 288,
+            "y1": 298
+          },
+          "content": {
+            "x0": 23,
+            "y0": 24,
+            "x1": 303,
+            "y1": 305,
+            "count": 49619
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 27,
+            "x1": 288,
+            "y1": 298,
+            "count": 46936
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            265,
+            297
+          ],
+          "crownToHemHeight": 260,
+          "destination": {
+            "width": 293,
+            "height": 321,
+            "left": 44,
+            "top": 22
+          }
+        },
+        {
+          "sourcePose": 8,
+          "sourceCell": {
+            "left": 941,
+            "top": 321,
+            "width": 313,
+            "height": 309
+          },
+          "crop": {
+            "left": 978,
+            "top": 345,
+            "width": 255,
+            "height": 278
+          },
+          "sourceAnchor": {
+            "x": 1088,
+            "y": 618
+          },
+          "localAnchor": {
+            "x": 147,
+            "y": 297
+          },
+          "crown": {
+            "x0": 110,
+            "y0": 38,
+            "x1": 181,
+            "y1": 94,
+            "count": 2016
+          },
+          "body": {
+            "x0": 41,
+            "y0": 28,
+            "x1": 287,
+            "y1": 297
+          },
+          "content": {
+            "x0": 14,
+            "y0": 24,
+            "x1": 294,
+            "y1": 305,
+            "count": 49304
+          },
+          "visible": {
+            "x0": 40,
+            "y0": 27,
+            "x1": 288,
+            "y1": 298,
+            "count": 46953
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            265,
+            297
+          ],
+          "crownToHemHeight": 260,
+          "destination": {
+            "width": 294,
+            "height": 321,
+            "left": 43,
+            "top": 22
+          }
+        },
+        {
+          "sourcePose": 9,
+          "sourceCell": {
+            "left": 0,
+            "top": 630,
+            "width": 313,
+            "height": 312
+          },
+          "crop": {
+            "left": 38,
+            "top": 656,
+            "width": 254,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 148,
+            "y": 931
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 301
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 39,
+            "x1": 182,
+            "y1": 96,
+            "count": 2073
+          },
+          "body": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 288,
+            "y1": 301
+          },
+          "content": {
+            "x0": 0,
+            "y0": 26,
+            "x1": 305,
+            "y1": 304,
+            "count": 49437
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 29,
+            "x1": 288,
+            "y1": 302,
+            "count": 47500
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            268,
+            301
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 293,
+            "height": 323,
+            "left": 43,
+            "top": 20
+          }
+        },
+        {
+          "sourcePose": 10,
+          "sourceCell": {
+            "left": 313,
+            "top": 630,
+            "width": 312,
+            "height": 312
+          },
+          "crop": {
+            "left": 352,
+            "top": 656,
+            "width": 254,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 461,
+            "y": 931
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 301
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 39,
+            "x1": 183,
+            "y1": 96,
+            "count": 2119
+          },
+          "body": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 288,
+            "y1": 301
+          },
+          "content": {
+            "x0": 1,
+            "y0": 6,
+            "x1": 307,
+            "y1": 310,
+            "count": 49691
+          },
+          "visible": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 289,
+            "y1": 302,
+            "count": 47469
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            268,
+            301
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 293,
+            "height": 323,
+            "left": 44,
+            "top": 20
+          }
+        },
+        {
+          "sourcePose": 11,
+          "sourceCell": {
+            "left": 625,
+            "top": 630,
+            "width": 315,
+            "height": 312
+          },
+          "crop": {
+            "left": 665,
+            "top": 656,
+            "width": 254,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 774.75,
+            "y": 931
+          },
+          "localAnchor": {
+            "x": 149.75,
+            "y": 301
+          },
+          "crown": {
+            "x0": 113,
+            "y0": 39,
+            "x1": 184,
+            "y1": 96,
+            "count": 2079
+          },
+          "body": {
+            "x0": 44,
+            "y0": 29,
+            "x1": 290,
+            "y1": 301
+          },
+          "content": {
+            "x0": 1,
+            "y0": 18,
+            "x1": 293,
+            "y1": 306,
+            "count": 49677
+          },
+          "visible": {
+            "x0": 43,
+            "y0": 29,
+            "x1": 290,
+            "y1": 302,
+            "count": 47443
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            268,
+            301
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 293,
+            "height": 323,
+            "left": 43,
+            "top": 20
+          }
+        },
+        {
+          "sourcePose": 12,
+          "sourceCell": {
+            "left": 940,
+            "top": 630,
+            "width": 314,
+            "height": 312
+          },
+          "crop": {
+            "left": 979,
+            "top": 656,
+            "width": 254,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 1088,
+            "y": 931
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 301
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 39,
+            "x1": 183,
+            "y1": 96,
+            "count": 2114
+          },
+          "body": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 288,
+            "y1": 301
+          },
+          "content": {
+            "x0": 1,
+            "y0": 21,
+            "x1": 299,
+            "y1": 306,
+            "count": 49683
+          },
+          "visible": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 289,
+            "y1": 302,
+            "count": 47481
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            268,
+            301
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 293,
+            "height": 323,
+            "left": 44,
+            "top": 20
+          }
+        },
+        {
+          "sourcePose": 13,
+          "sourceCell": {
+            "left": 0,
+            "top": 942,
+            "width": 314,
+            "height": 312
+          },
+          "crop": {
+            "left": 38,
+            "top": 962,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 148,
+            "y": 1239
+          },
+          "localAnchor": {
+            "x": 148,
+            "y": 297
+          },
+          "crown": {
+            "x0": 111,
+            "y0": 34,
+            "x1": 182,
+            "y1": 90,
+            "count": 1996
+          },
+          "body": {
+            "x0": 42,
+            "y0": 24,
+            "x1": 288,
+            "y1": 297
+          },
+          "content": {
+            "x0": 38,
+            "y0": 20,
+            "x1": 305,
+            "y1": 311,
+            "count": 49817
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 23,
+            "x1": 288,
+            "y1": 298,
+            "count": 47818
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            264,
+            297
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 43,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 14,
+          "sourceCell": {
+            "left": 314,
+            "top": 942,
+            "width": 318,
+            "height": 312
+          },
+          "crop": {
+            "left": 352,
+            "top": 962,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 461.5,
+            "y": 1239
+          },
+          "localAnchor": {
+            "x": 147.5,
+            "y": 297
+          },
+          "crown": {
+            "x0": 110,
+            "y0": 34,
+            "x1": 182,
+            "y1": 90,
+            "count": 2042
+          },
+          "body": {
+            "x0": 42,
+            "y0": 24,
+            "x1": 287,
+            "y1": 297
+          },
+          "content": {
+            "x0": 14,
+            "y0": 21,
+            "x1": 316,
+            "y1": 311,
+            "count": 49781
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 23,
+            "x1": 288,
+            "y1": 298,
+            "count": 47791
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            264,
+            297
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 15,
+          "sourceCell": {
+            "left": 632,
+            "top": 942,
+            "width": 309,
+            "height": 312
+          },
+          "crop": {
+            "left": 665,
+            "top": 962,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 774.75,
+            "y": 1239
+          },
+          "localAnchor": {
+            "x": 142.75,
+            "y": 297
+          },
+          "crown": {
+            "x0": 106,
+            "y0": 34,
+            "x1": 177,
+            "y1": 90,
+            "count": 2003
+          },
+          "body": {
+            "x0": 37,
+            "y0": 24,
+            "x1": 283,
+            "y1": 297
+          },
+          "content": {
+            "x0": 4,
+            "y0": 20,
+            "x1": 306,
+            "y1": 302,
+            "count": 49629
+          },
+          "visible": {
+            "x0": 36,
+            "y0": 23,
+            "x1": 283,
+            "y1": 298,
+            "count": 47775
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            264,
+            297
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 43,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 16,
+          "sourceCell": {
+            "left": 941,
+            "top": 942,
+            "width": 313,
+            "height": 312
+          },
+          "crop": {
+            "left": 979,
+            "top": 962,
+            "width": 254,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 1088,
+            "y": 1239
+          },
+          "localAnchor": {
+            "x": 147,
+            "y": 297
+          },
+          "crown": {
+            "x0": 110,
+            "y0": 34,
+            "x1": 182,
+            "y1": 90,
+            "count": 2027
+          },
+          "body": {
+            "x0": 41,
+            "y0": 24,
+            "x1": 287,
+            "y1": 297
+          },
+          "content": {
+            "x0": 2,
+            "y0": 20,
+            "x1": 294,
+            "y1": 302,
+            "count": 49868
+          },
+          "visible": {
+            "x0": 41,
+            "y0": 23,
+            "x1": 288,
+            "y1": 298,
+            "count": 47783
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            264,
+            297
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 293,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        }
       ]
     },
     {
@@ -2328,7 +2328,7 @@
     },
     {
       "name": "happy",
-      "intervalMs": 300,
+      "intervalMs": 140,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/happy-source.png",
       "sourceSha256": "f0ac702727e7841088bf8946c765be435fd72002691889a887d96c08da8f3e06",
       "sourceSize": [
@@ -3436,24 +3436,24 @@
         16
       ],
       "frameDurationsMs": [
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ],
-      "totalDurationMs": 4800,
+      "totalDurationMs": 2240,
       "gifFrameSequence": [
         1,
         2,
@@ -3472,26 +3472,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        600,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300
+        280,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ]
     },
     {
       "name": "wave",
-      "intervalMs": 250,
+      "intervalMs": 120,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/wave-source.png",
       "sourceSha256": "1d1b5d9adbaa80c1336e6b9cdccbc27ff8717433b5572ac26dfbf6969280de1d",
       "sourceSize": [
@@ -4591,24 +4591,24 @@
         16
       ],
       "frameDurationsMs": [
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
       ],
-      "totalDurationMs": 4000,
+      "totalDurationMs": 1920,
       "gifFrameSequence": [
         1,
         2,
@@ -4627,26 +4627,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        500,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250
+        240,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
       ]
     },
     {
       "name": "heart",
-      "intervalMs": 280,
+      "intervalMs": 140,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/heart-source.png",
       "sourceSha256": "965db42616b539a84fc195fe21f9a2229a1a6d15ff7efc8a6421ce521f79f534",
       "sourceSize": [
@@ -5746,24 +5746,24 @@
         16
       ],
       "frameDurationsMs": [
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ],
-      "totalDurationMs": 4480,
+      "totalDurationMs": 2240,
       "gifFrameSequence": [
         1,
         2,
@@ -5782,1106 +5782,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        560,
         280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280,
-        280
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ]
     },
     {
       "name": "working",
-      "intervalMs": 900,
-      "source": "Assets/Source/AnimationAtlases/shenqing-v4/working-source.png",
-      "sourceSha256": "7adea92590c8690b07171bd1c78648b39dcdec1e86bea763395a446a61f37f20",
-      "sourceSize": [
-        1254,
-        1254
-      ],
-      "sourceGrid": [
-        4,
-        4
-      ],
-      "cellEdges": {
-        "rowEdges": [
-          0,
-          325,
-          634,
-          950,
-          1254
-        ],
-        "columnEdgesByRow": [
-          [
-            0,
-            314,
-            625,
-            941,
-            1254
-          ],
-          [
-            0,
-            314,
-            623,
-            941,
-            1254
-          ],
-          [
-            0,
-            311,
-            632,
-            942,
-            1254
-          ],
-          [
-            0,
-            313,
-            625,
-            941,
-            1254
-          ]
-        ],
-        "gutterAlphaTolerance": 1,
-        "searchRadius": 24
-      },
-      "frameCount": 16,
-      "sourcePoseSequence": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        1
-      ],
-      "registrationMode": "lower-hair-hem",
-      "targetAnchor": {
-        "x": 170,
-        "y": 337
-      },
-      "targetHeight": 304,
-      "medianCrownToHemHeight": 266,
-      "normalizedMedianCrownToHemHeight": 304,
-      "cropPolicy": {
-        "visibleAlphaThreshold": 16,
-        "padding": 3,
-        "preserveRgbaInsideCrop": true
-      },
-      "requestedScale": 1.1428571428571428,
-      "scale": 1.1428571428571428,
-      "margin": 8,
-      "registration": [
-        {
-          "sourcePose": 1,
-          "sourceCell": {
-            "left": 0,
-            "top": 0,
-            "width": 314,
-            "height": 325
-          },
-          "crop": {
-            "left": 43,
-            "top": 33,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 151,
-            "y": 311
-          },
-          "localAnchor": {
-            "x": 151,
-            "y": 311
-          },
-          "crown": {
-            "x0": 116,
-            "y0": 46,
-            "x1": 185,
-            "y1": 104,
-            "count": 1981
-          },
-          "body": {
-            "x0": 46,
-            "y0": 36,
-            "x1": 288,
-            "y1": 311
-          },
-          "content": {
-            "x0": 42,
-            "y0": 33,
-            "x1": 292,
-            "y1": 319,
-            "count": 50658
-          },
-          "visible": {
-            "x0": 46,
-            "y0": 36,
-            "x1": 289,
-            "y1": 312,
-            "count": 47888
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            278,
-            311
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 2,
-          "sourceCell": {
-            "left": 314,
-            "top": 0,
-            "width": 311,
-            "height": 325
-          },
-          "crop": {
-            "left": 356,
-            "top": 33,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 464.5,
-            "y": 311
-          },
-          "localAnchor": {
-            "x": 150.5,
-            "y": 311
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 46,
-            "x1": 185,
-            "y1": 104,
-            "count": 1999
-          },
-          "body": {
-            "x0": 46,
-            "y0": 36,
-            "x1": 288,
-            "y1": 311
-          },
-          "content": {
-            "x0": 39,
-            "y0": 33,
-            "x1": 298,
-            "y1": 321,
-            "count": 51162
-          },
-          "visible": {
-            "x0": 45,
-            "y0": 36,
-            "x1": 288,
-            "y1": 312,
-            "count": 47868
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            278,
-            311
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 3,
-          "sourceCell": {
-            "left": 625,
-            "top": 0,
-            "width": 316,
-            "height": 325
-          },
-          "crop": {
-            "left": 670,
-            "top": 33,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 777.5,
-            "y": 311
-          },
-          "localAnchor": {
-            "x": 152.5,
-            "y": 311
-          },
-          "crown": {
-            "x0": 117,
-            "y0": 46,
-            "x1": 187,
-            "y1": 104,
-            "count": 1989
-          },
-          "body": {
-            "x0": 48,
-            "y0": 36,
-            "x1": 290,
-            "y1": 311
-          },
-          "content": {
-            "x0": 1,
-            "y0": 33,
-            "x1": 293,
-            "y1": 319,
-            "count": 50564
-          },
-          "visible": {
-            "x0": 48,
-            "y0": 36,
-            "x1": 291,
-            "y1": 312,
-            "count": 47879
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            278,
-            311
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 47,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 4,
-          "sourceCell": {
-            "left": 941,
-            "top": 0,
-            "width": 313,
-            "height": 325
-          },
-          "crop": {
-            "left": 983,
-            "top": 33,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 1091.5,
-            "y": 311
-          },
-          "localAnchor": {
-            "x": 150.5,
-            "y": 311
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 46,
-            "x1": 184,
-            "y1": 104,
-            "count": 1979
-          },
-          "body": {
-            "x0": 46,
-            "y0": 36,
-            "x1": 288,
-            "y1": 311
-          },
-          "content": {
-            "x0": 42,
-            "y0": 33,
-            "x1": 293,
-            "y1": 323,
-            "count": 50708
-          },
-          "visible": {
-            "x0": 45,
-            "y0": 36,
-            "x1": 288,
-            "y1": 312,
-            "count": 47879
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            278,
-            311
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 5,
-          "sourceCell": {
-            "left": 0,
-            "top": 325,
-            "width": 314,
-            "height": 309
-          },
-          "crop": {
-            "left": 43,
-            "top": 346,
-            "width": 250,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 151,
-            "y": 625
-          },
-          "localAnchor": {
-            "x": 151,
-            "y": 300
-          },
-          "crown": {
-            "x0": 116,
-            "y0": 35,
-            "x1": 185,
-            "y1": 92,
-            "count": 1989
-          },
-          "body": {
-            "x0": 46,
-            "y0": 25,
-            "x1": 288,
-            "y1": 301
-          },
-          "content": {
-            "x0": 42,
-            "y0": 22,
-            "x1": 311,
-            "y1": 305,
-            "count": 50338
-          },
-          "visible": {
-            "x0": 46,
-            "y0": 24,
-            "x1": 289,
-            "y1": 301,
-            "count": 47944
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            267,
-            300
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 325,
-            "left": 46,
-            "top": 18
-          }
-        },
-        {
-          "sourcePose": 6,
-          "sourceCell": {
-            "left": 314,
-            "top": 325,
-            "width": 309,
-            "height": 309
-          },
-          "crop": {
-            "left": 356,
-            "top": 346,
-            "width": 251,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 464.5,
-            "y": 625
-          },
-          "localAnchor": {
-            "x": 150.5,
-            "y": 300
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 35,
-            "x1": 185,
-            "y1": 92,
-            "count": 1988
-          },
-          "body": {
-            "x0": 46,
-            "y0": 25,
-            "x1": 288,
-            "y1": 301
-          },
-          "content": {
-            "x0": 6,
-            "y0": 19,
-            "x1": 299,
-            "y1": 304,
-            "count": 50703
-          },
-          "visible": {
-            "x0": 45,
-            "y0": 24,
-            "x1": 289,
-            "y1": 301,
-            "count": 48017
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            267,
-            300
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 287,
-            "height": 325,
-            "left": 46,
-            "top": 18
-          }
-        },
-        {
-          "sourcePose": 7,
-          "sourceCell": {
-            "left": 623,
-            "top": 325,
-            "width": 318,
-            "height": 309
-          },
-          "crop": {
-            "left": 670,
-            "top": 346,
-            "width": 250,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 777.5,
-            "y": 625
-          },
-          "localAnchor": {
-            "x": 154.5,
-            "y": 300
-          },
-          "crown": {
-            "x0": 119,
-            "y0": 35,
-            "x1": 189,
-            "y1": 92,
-            "count": 2019
-          },
-          "body": {
-            "x0": 50,
-            "y0": 25,
-            "x1": 292,
-            "y1": 300
-          },
-          "content": {
-            "x0": 1,
-            "y0": 22,
-            "x1": 311,
-            "y1": 307,
-            "count": 50735
-          },
-          "visible": {
-            "x0": 50,
-            "y0": 24,
-            "x1": 293,
-            "y1": 301,
-            "count": 47981
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            267,
-            300
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 325,
-            "left": 47,
-            "top": 18
-          }
-        },
-        {
-          "sourcePose": 8,
-          "sourceCell": {
-            "left": 941,
-            "top": 325,
-            "width": 313,
-            "height": 309
-          },
-          "crop": {
-            "left": 983,
-            "top": 346,
-            "width": 250,
-            "height": 284
-          },
-          "sourceAnchor": {
-            "x": 1091.5,
-            "y": 625
-          },
-          "localAnchor": {
-            "x": 150.5,
-            "y": 300
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 35,
-            "x1": 184,
-            "y1": 92,
-            "count": 1981
-          },
-          "body": {
-            "x0": 46,
-            "y0": 25,
-            "x1": 288,
-            "y1": 301
-          },
-          "content": {
-            "x0": 6,
-            "y0": 22,
-            "x1": 294,
-            "y1": 305,
-            "count": 50588
-          },
-          "visible": {
-            "x0": 45,
-            "y0": 24,
-            "x1": 288,
-            "y1": 301,
-            "count": 48039
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            267,
-            300
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 325,
-            "left": 46,
-            "top": 18
-          }
-        },
-        {
-          "sourcePose": 9,
-          "sourceCell": {
-            "left": 0,
-            "top": 634,
-            "width": 311,
-            "height": 316
-          },
-          "crop": {
-            "left": 43,
-            "top": 660,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 151,
-            "y": 938
-          },
-          "localAnchor": {
-            "x": 151,
-            "y": 304
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 39,
-            "x1": 185,
-            "y1": 97,
-            "count": 1990
-          },
-          "body": {
-            "x0": 46,
-            "y0": 29,
-            "x1": 288,
-            "y1": 304
-          },
-          "content": {
-            "x0": 0,
-            "y0": 26,
-            "x1": 292,
-            "y1": 312,
-            "count": 50379
-          },
-          "visible": {
-            "x0": 46,
-            "y0": 29,
-            "x1": 289,
-            "y1": 305,
-            "count": 47872
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            271,
-            304
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 10,
-          "sourceCell": {
-            "left": 311,
-            "top": 634,
-            "width": 321,
-            "height": 316
-          },
-          "crop": {
-            "left": 356,
-            "top": 660,
-            "width": 251,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 464.5,
-            "y": 938
-          },
-          "localAnchor": {
-            "x": 153.5,
-            "y": 304
-          },
-          "crown": {
-            "x0": 118,
-            "y0": 39,
-            "x1": 188,
-            "y1": 97,
-            "count": 2007
-          },
-          "body": {
-            "x0": 49,
-            "y0": 29,
-            "x1": 291,
-            "y1": 304
-          },
-          "content": {
-            "x0": 1,
-            "y0": 26,
-            "x1": 319,
-            "y1": 312,
-            "count": 50651
-          },
-          "visible": {
-            "x0": 48,
-            "y0": 29,
-            "x1": 292,
-            "y1": 305,
-            "count": 47908
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            271,
-            304
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 287,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 11,
-          "sourceCell": {
-            "left": 632,
-            "top": 634,
-            "width": 310,
-            "height": 316
-          },
-          "crop": {
-            "left": 670,
-            "top": 660,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 777.5,
-            "y": 938
-          },
-          "localAnchor": {
-            "x": 145.5,
-            "y": 304
-          },
-          "crown": {
-            "x0": 110,
-            "y0": 39,
-            "x1": 180,
-            "y1": 97,
-            "count": 1995
-          },
-          "body": {
-            "x0": 41,
-            "y0": 29,
-            "x1": 283,
-            "y1": 304
-          },
-          "content": {
-            "x0": 4,
-            "y0": 25,
-            "x1": 308,
-            "y1": 314,
-            "count": 50676
-          },
-          "visible": {
-            "x0": 41,
-            "y0": 29,
-            "x1": 284,
-            "y1": 305,
-            "count": 47875
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            271,
-            304
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 47,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 12,
-          "sourceCell": {
-            "left": 942,
-            "top": 634,
-            "width": 312,
-            "height": 316
-          },
-          "crop": {
-            "left": 983,
-            "top": 660,
-            "width": 250,
-            "height": 283
-          },
-          "sourceAnchor": {
-            "x": 1091.5,
-            "y": 938
-          },
-          "localAnchor": {
-            "x": 149.5,
-            "y": 304
-          },
-          "crown": {
-            "x0": 114,
-            "y0": 39,
-            "x1": 183,
-            "y1": 97,
-            "count": 1990
-          },
-          "body": {
-            "x0": 45,
-            "y0": 29,
-            "x1": 287,
-            "y1": 304
-          },
-          "content": {
-            "x0": 41,
-            "y0": 25,
-            "x1": 291,
-            "y1": 314,
-            "count": 51033
-          },
-          "visible": {
-            "x0": 44,
-            "y0": 29,
-            "x1": 287,
-            "y1": 305,
-            "count": 47909
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            271,
-            304
-          ],
-          "crownToHemHeight": 266,
-          "destination": {
-            "width": 286,
-            "height": 323,
-            "left": 46,
-            "top": 20
-          }
-        },
-        {
-          "sourcePose": 13,
-          "sourceCell": {
-            "left": 0,
-            "top": 950,
-            "width": 313,
-            "height": 304
-          },
-          "crop": {
-            "left": 43,
-            "top": 968,
-            "width": 250,
-            "height": 280
-          },
-          "sourceAnchor": {
-            "x": 150.5,
-            "y": 1243
-          },
-          "localAnchor": {
-            "x": 150.5,
-            "y": 293
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 32,
-            "x1": 185,
-            "y1": 90,
-            "count": 1996
-          },
-          "body": {
-            "x0": 46,
-            "y0": 22,
-            "x1": 288,
-            "y1": 293
-          },
-          "content": {
-            "x0": 43,
-            "y0": 19,
-            "x1": 292,
-            "y1": 303,
-            "count": 49919
-          },
-          "visible": {
-            "x0": 46,
-            "y0": 21,
-            "x1": 289,
-            "y1": 294,
-            "count": 47185
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            260,
-            293
-          ],
-          "crownToHemHeight": 262,
-          "destination": {
-            "width": 286,
-            "height": 320,
-            "left": 47,
-            "top": 23
-          }
-        },
-        {
-          "sourcePose": 14,
-          "sourceCell": {
-            "left": 313,
-            "top": 950,
-            "width": 312,
-            "height": 304
-          },
-          "crop": {
-            "left": 356,
-            "top": 968,
-            "width": 250,
-            "height": 280
-          },
-          "sourceAnchor": {
-            "x": 464,
-            "y": 1243
-          },
-          "localAnchor": {
-            "x": 151,
-            "y": 293
-          },
-          "crown": {
-            "x0": 115,
-            "y0": 32,
-            "x1": 185,
-            "y1": 90,
-            "count": 1993
-          },
-          "body": {
-            "x0": 47,
-            "y0": 22,
-            "x1": 289,
-            "y1": 293
-          },
-          "content": {
-            "x0": 1,
-            "y0": 18,
-            "x1": 297,
-            "y1": 303,
-            "count": 50844
-          },
-          "visible": {
-            "x0": 46,
-            "y0": 21,
-            "x1": 289,
-            "y1": 294,
-            "count": 47166
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            260,
-            293
-          ],
-          "crownToHemHeight": 262,
-          "destination": {
-            "width": 286,
-            "height": 320,
-            "left": 46,
-            "top": 23
-          }
-        },
-        {
-          "sourcePose": 15,
-          "sourceCell": {
-            "left": 625,
-            "top": 950,
-            "width": 316,
-            "height": 304
-          },
-          "crop": {
-            "left": 670,
-            "top": 968,
-            "width": 250,
-            "height": 280
-          },
-          "sourceAnchor": {
-            "x": 777.5,
-            "y": 1243
-          },
-          "localAnchor": {
-            "x": 152.5,
-            "y": 293
-          },
-          "crown": {
-            "x0": 117,
-            "y0": 32,
-            "x1": 186,
-            "y1": 90,
-            "count": 1991
-          },
-          "body": {
-            "x0": 48,
-            "y0": 22,
-            "x1": 290,
-            "y1": 293
-          },
-          "content": {
-            "x0": 1,
-            "y0": 17,
-            "x1": 307,
-            "y1": 303,
-            "count": 50192
-          },
-          "visible": {
-            "x0": 48,
-            "y0": 21,
-            "x1": 291,
-            "y1": 294,
-            "count": 47180
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            260,
-            293
-          ],
-          "crownToHemHeight": 262,
-          "destination": {
-            "width": 286,
-            "height": 320,
-            "left": 47,
-            "top": 23
-          }
-        },
-        {
-          "sourcePose": 16,
-          "sourceCell": {
-            "left": 941,
-            "top": 950,
-            "width": 313,
-            "height": 304
-          },
-          "crop": {
-            "left": 983,
-            "top": 968,
-            "width": 250,
-            "height": 280
-          },
-          "sourceAnchor": {
-            "x": 1091,
-            "y": 1243
-          },
-          "localAnchor": {
-            "x": 150,
-            "y": 293
-          },
-          "crown": {
-            "x0": 114,
-            "y0": 32,
-            "x1": 184,
-            "y1": 90,
-            "count": 1997
-          },
-          "body": {
-            "x0": 46,
-            "y0": 22,
-            "x1": 288,
-            "y1": 293
-          },
-          "content": {
-            "x0": 8,
-            "y0": 16,
-            "x1": 294,
-            "y1": 303,
-            "count": 50467
-          },
-          "visible": {
-            "x0": 45,
-            "y0": 21,
-            "x1": 288,
-            "y1": 294,
-            "count": 47193
-          },
-          "sourceOuterEdgeTouches": [],
-          "hemRows": [
-            260,
-            293
-          ],
-          "crownToHemHeight": 262,
-          "destination": {
-            "width": 286,
-            "height": 320,
-            "left": 46,
-            "top": 23
-          }
-        }
-      ],
+      "intervalMs": 120,
       "playbackFrameSequence": [
         1,
         2,
@@ -6897,26 +5817,28 @@
         12,
         13,
         14,
+        15,
         16
       ],
       "frameDurationsMs": [
-        18000,
-        900,
-        900,
-        80,
-        80,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
       ],
-      "totalDurationMs": 28960,
+      "totalDurationMs": 1920,
       "gifFrameSequence": [
         1,
         2,
@@ -6931,28 +5853,1110 @@
         11,
         12,
         13,
-        14
+        14,
+        15
       ],
       "gifFrameDurationsMs": [
-        18900,
-        900,
-        900,
-        80,
-        80,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900,
-        900
+        240,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
+      ],
+      "source": "Assets/Source/AnimationAtlases/shenqing-v4/working-source.png",
+      "sourceSha256": "a10d4561e6c44193038b6db04490a65d4210c997c4d5ca12e8f198b4686148ca",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceGrid": [
+        4,
+        4
+      ],
+      "cellEdges": {
+        "rowEdges": [
+          0,
+          321,
+          630,
+          950,
+          1254
+        ],
+        "columnEdgesByRow": [
+          [
+            0,
+            314,
+            627,
+            941,
+            1254
+          ],
+          [
+            0,
+            314,
+            628,
+            941,
+            1254
+          ],
+          [
+            0,
+            314,
+            627,
+            941,
+            1254
+          ],
+          [
+            0,
+            314,
+            627,
+            941,
+            1254
+          ]
+        ],
+        "gutterAlphaTolerance": 1,
+        "searchRadius": 24
+      },
+      "frameCount": 16,
+      "sourcePoseSequence": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        6,
+        8,
+        5,
+        3,
+        9,
+        10,
+        11,
+        12,
+        3,
+        2,
+        1
+      ],
+      "registrationMode": "lower-hair-hem",
+      "targetAnchor": {
+        "x": 170,
+        "y": 337
+      },
+      "targetHeight": 304,
+      "medianCrownToHemHeight": 262.5,
+      "normalizedMedianCrownToHemHeight": 304,
+      "cropPolicy": {
+        "visibleAlphaThreshold": 16,
+        "padding": 3,
+        "preserveRgbaInsideCrop": true
+      },
+      "requestedScale": 1.158095238095238,
+      "scale": 1.158095238095238,
+      "margin": 8,
+      "registration": [
+        {
+          "sourcePose": 1,
+          "sourceCell": {
+            "left": 0,
+            "top": 0,
+            "width": 314,
+            "height": 321
+          },
+          "crop": {
+            "left": 43,
+            "top": 33,
+            "width": 252,
+            "height": 281
+          },
+          "sourceAnchor": {
+            "x": 151.5,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 309
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 47,
+            "x1": 186,
+            "y1": 104,
+            "count": 2026
+          },
+          "body": {
+            "x0": 47,
+            "y0": 37,
+            "x1": 290,
+            "y1": 309
+          },
+          "content": {
+            "x0": 43,
+            "y0": 34,
+            "x1": 294,
+            "y1": 319,
+            "count": 50214
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 36,
+            "x1": 291,
+            "y1": 310,
+            "count": 47468
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 292,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 2,
+          "sourceCell": {
+            "left": 314,
+            "top": 0,
+            "width": 313,
+            "height": 321
+          },
+          "crop": {
+            "left": 356,
+            "top": 33,
+            "width": 252,
+            "height": 281
+          },
+          "sourceAnchor": {
+            "x": 464.5,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 309
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 47,
+            "x1": 185,
+            "y1": 104,
+            "count": 2035
+          },
+          "body": {
+            "x0": 46,
+            "y0": 37,
+            "x1": 289,
+            "y1": 309
+          },
+          "content": {
+            "x0": 41,
+            "y0": 34,
+            "x1": 294,
+            "y1": 319,
+            "count": 50005
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 36,
+            "x1": 290,
+            "y1": 310,
+            "count": 47353
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 292,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 3,
+          "sourceCell": {
+            "left": 627,
+            "top": 0,
+            "width": 314,
+            "height": 321
+          },
+          "crop": {
+            "left": 670,
+            "top": 33,
+            "width": 251,
+            "height": 281
+          },
+          "sourceAnchor": {
+            "x": 778.5,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 309
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 47,
+            "x1": 185,
+            "y1": 105,
+            "count": 2049
+          },
+          "body": {
+            "x0": 47,
+            "y0": 37,
+            "x1": 290,
+            "y1": 309
+          },
+          "content": {
+            "x0": 43,
+            "y0": 34,
+            "x1": 311,
+            "y1": 317,
+            "count": 49738
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 36,
+            "x1": 290,
+            "y1": 310,
+            "count": 47270
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 291,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 4,
+          "sourceCell": {
+            "left": 941,
+            "top": 0,
+            "width": 313,
+            "height": 321
+          },
+          "crop": {
+            "left": 983,
+            "top": 33,
+            "width": 252,
+            "height": 281
+          },
+          "sourceAnchor": {
+            "x": 1091.5,
+            "y": 309
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 309
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 47,
+            "x1": 185,
+            "y1": 105,
+            "count": 2032
+          },
+          "body": {
+            "x0": 46,
+            "y0": 37,
+            "x1": 289,
+            "y1": 309
+          },
+          "content": {
+            "x0": 42,
+            "y0": 34,
+            "x1": 297,
+            "y1": 319,
+            "count": 50119
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 36,
+            "x1": 290,
+            "y1": 310,
+            "count": 47304
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            276,
+            309
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 292,
+            "height": 325,
+            "left": 44,
+            "top": 18
+          }
+        },
+        {
+          "sourcePose": 5,
+          "sourceCell": {
+            "left": 0,
+            "top": 321,
+            "width": 314,
+            "height": 309
+          },
+          "crop": {
+            "left": 43,
+            "top": 346,
+            "width": 252,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 151.5,
+            "y": 623
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 302
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 40,
+            "x1": 185,
+            "y1": 97,
+            "count": 2004
+          },
+          "body": {
+            "x0": 47,
+            "y0": 29,
+            "x1": 290,
+            "y1": 302
+          },
+          "content": {
+            "x0": 42,
+            "y0": 26,
+            "x1": 293,
+            "y1": 307,
+            "count": 50078
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 28,
+            "x1": 291,
+            "y1": 303,
+            "count": 47395
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            269,
+            302
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 292,
+            "height": 327,
+            "left": 44,
+            "top": 16
+          }
+        },
+        {
+          "sourcePose": 6,
+          "sourceCell": {
+            "left": 314,
+            "top": 321,
+            "width": 314,
+            "height": 309
+          },
+          "crop": {
+            "left": 356,
+            "top": 346,
+            "width": 252,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 464.5,
+            "y": 623
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 302
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 39,
+            "x1": 185,
+            "y1": 97,
+            "count": 2003
+          },
+          "body": {
+            "x0": 46,
+            "y0": 29,
+            "x1": 289,
+            "y1": 302
+          },
+          "content": {
+            "x0": 29,
+            "y0": 3,
+            "x1": 312,
+            "y1": 305,
+            "count": 49803
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 28,
+            "x1": 290,
+            "y1": 303,
+            "count": 47384
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            269,
+            302
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 292,
+            "height": 327,
+            "left": 44,
+            "top": 16
+          }
+        },
+        {
+          "sourcePose": 7,
+          "sourceCell": {
+            "left": 628,
+            "top": 321,
+            "width": 313,
+            "height": 309
+          },
+          "crop": {
+            "left": 670,
+            "top": 346,
+            "width": 251,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 778.5,
+            "y": 623
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 302
+          },
+          "crown": {
+            "x0": 116,
+            "y0": 40,
+            "x1": 184,
+            "y1": 97,
+            "count": 1993
+          },
+          "body": {
+            "x0": 46,
+            "y0": 29,
+            "x1": 289,
+            "y1": 302
+          },
+          "content": {
+            "x0": 40,
+            "y0": 26,
+            "x1": 292,
+            "y1": 305,
+            "count": 50119
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 28,
+            "x1": 289,
+            "y1": 303,
+            "count": 47341
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            269,
+            302
+          ],
+          "crownToHemHeight": 263,
+          "destination": {
+            "width": 291,
+            "height": 327,
+            "left": 44,
+            "top": 16
+          }
+        },
+        {
+          "sourcePose": 8,
+          "sourceCell": {
+            "left": 941,
+            "top": 321,
+            "width": 313,
+            "height": 309
+          },
+          "crop": {
+            "left": 983,
+            "top": 346,
+            "width": 252,
+            "height": 282
+          },
+          "sourceAnchor": {
+            "x": 1091.5,
+            "y": 623
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 302
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 39,
+            "x1": 185,
+            "y1": 97,
+            "count": 2018
+          },
+          "body": {
+            "x0": 46,
+            "y0": 29,
+            "x1": 289,
+            "y1": 302
+          },
+          "content": {
+            "x0": 43,
+            "y0": 25,
+            "x1": 296,
+            "y1": 305,
+            "count": 49767
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 28,
+            "x1": 290,
+            "y1": 303,
+            "count": 47315
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            269,
+            302
+          ],
+          "crownToHemHeight": 264,
+          "destination": {
+            "width": 292,
+            "height": 327,
+            "left": 44,
+            "top": 16
+          }
+        },
+        {
+          "sourcePose": 9,
+          "sourceCell": {
+            "left": 0,
+            "top": 630,
+            "width": 314,
+            "height": 320
+          },
+          "crop": {
+            "left": 43,
+            "top": 660,
+            "width": 251,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 151.5,
+            "y": 935
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 305
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 44,
+            "x1": 185,
+            "y1": 102,
+            "count": 2045
+          },
+          "body": {
+            "x0": 47,
+            "y0": 34,
+            "x1": 290,
+            "y1": 306
+          },
+          "content": {
+            "x0": 43,
+            "y0": 30,
+            "x1": 295,
+            "y1": 314,
+            "count": 50012
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 33,
+            "x1": 290,
+            "y1": 306,
+            "count": 47210
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            272,
+            305
+          ],
+          "crownToHemHeight": 262,
+          "destination": {
+            "width": 291,
+            "height": 324,
+            "left": 44,
+            "top": 19
+          }
+        },
+        {
+          "sourcePose": 10,
+          "sourceCell": {
+            "left": 314,
+            "top": 630,
+            "width": 313,
+            "height": 320
+          },
+          "crop": {
+            "left": 356,
+            "top": 660,
+            "width": 252,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 464.5,
+            "y": 935
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 305
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 44,
+            "x1": 185,
+            "y1": 102,
+            "count": 2041
+          },
+          "body": {
+            "x0": 46,
+            "y0": 34,
+            "x1": 289,
+            "y1": 306
+          },
+          "content": {
+            "x0": 42,
+            "y0": 29,
+            "x1": 296,
+            "y1": 318,
+            "count": 50192
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 33,
+            "x1": 290,
+            "y1": 306,
+            "count": 47169
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            272,
+            305
+          ],
+          "crownToHemHeight": 262,
+          "destination": {
+            "width": 292,
+            "height": 324,
+            "left": 44,
+            "top": 19
+          }
+        },
+        {
+          "sourcePose": 11,
+          "sourceCell": {
+            "left": 627,
+            "top": 630,
+            "width": 314,
+            "height": 320
+          },
+          "crop": {
+            "left": 670,
+            "top": 660,
+            "width": 251,
+            "height": 281
+          },
+          "sourceAnchor": {
+            "x": 778.5,
+            "y": 935
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 305
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 44,
+            "x1": 185,
+            "y1": 102,
+            "count": 2036
+          },
+          "body": {
+            "x0": 47,
+            "y0": 34,
+            "x1": 290,
+            "y1": 306
+          },
+          "content": {
+            "x0": 5,
+            "y0": 29,
+            "x1": 305,
+            "y1": 314,
+            "count": 49972
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 33,
+            "x1": 290,
+            "y1": 307,
+            "count": 47103
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            272,
+            305
+          ],
+          "crownToHemHeight": 262,
+          "destination": {
+            "width": 291,
+            "height": 325,
+            "left": 44,
+            "top": 19
+          }
+        },
+        {
+          "sourcePose": 12,
+          "sourceCell": {
+            "left": 941,
+            "top": 630,
+            "width": 313,
+            "height": 320
+          },
+          "crop": {
+            "left": 983,
+            "top": 660,
+            "width": 252,
+            "height": 280
+          },
+          "sourceAnchor": {
+            "x": 1091.5,
+            "y": 935
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 305
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 44,
+            "x1": 185,
+            "y1": 102,
+            "count": 2042
+          },
+          "body": {
+            "x0": 46,
+            "y0": 34,
+            "x1": 289,
+            "y1": 306
+          },
+          "content": {
+            "x0": 42,
+            "y0": 31,
+            "x1": 297,
+            "y1": 318,
+            "count": 50012
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 33,
+            "x1": 290,
+            "y1": 306,
+            "count": 47056
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            272,
+            305
+          ],
+          "crownToHemHeight": 262,
+          "destination": {
+            "width": 292,
+            "height": 324,
+            "left": 44,
+            "top": 19
+          }
+        },
+        {
+          "sourcePose": 13,
+          "sourceCell": {
+            "left": 0,
+            "top": 950,
+            "width": 314,
+            "height": 304
+          },
+          "crop": {
+            "left": 43,
+            "top": 973,
+            "width": 251,
+            "height": 277
+          },
+          "sourceAnchor": {
+            "x": 151.5,
+            "y": 1245
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 295
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 37,
+            "x1": 185,
+            "y1": 95,
+            "count": 2013
+          },
+          "body": {
+            "x0": 47,
+            "y0": 27,
+            "x1": 290,
+            "y1": 295
+          },
+          "content": {
+            "x0": 0,
+            "y0": 23,
+            "x1": 293,
+            "y1": 303,
+            "count": 49953
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 26,
+            "x1": 290,
+            "y1": 296,
+            "count": 46578
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            263,
+            295
+          ],
+          "crownToHemHeight": 259,
+          "destination": {
+            "width": 291,
+            "height": 321,
+            "left": 44,
+            "top": 22
+          }
+        },
+        {
+          "sourcePose": 14,
+          "sourceCell": {
+            "left": 314,
+            "top": 950,
+            "width": 313,
+            "height": 304
+          },
+          "crop": {
+            "left": 356,
+            "top": 973,
+            "width": 252,
+            "height": 277
+          },
+          "sourceAnchor": {
+            "x": 464.5,
+            "y": 1245
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 295
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 37,
+            "x1": 185,
+            "y1": 95,
+            "count": 2061
+          },
+          "body": {
+            "x0": 46,
+            "y0": 27,
+            "x1": 289,
+            "y1": 295
+          },
+          "content": {
+            "x0": 43,
+            "y0": 23,
+            "x1": 296,
+            "y1": 303,
+            "count": 49816
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 26,
+            "x1": 290,
+            "y1": 296,
+            "count": 46574
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            263,
+            295
+          ],
+          "crownToHemHeight": 259,
+          "destination": {
+            "width": 292,
+            "height": 321,
+            "left": 44,
+            "top": 22
+          }
+        },
+        {
+          "sourcePose": 15,
+          "sourceCell": {
+            "left": 627,
+            "top": 950,
+            "width": 314,
+            "height": 304
+          },
+          "crop": {
+            "left": 670,
+            "top": 973,
+            "width": 251,
+            "height": 277
+          },
+          "sourceAnchor": {
+            "x": 778.5,
+            "y": 1245
+          },
+          "localAnchor": {
+            "x": 151.5,
+            "y": 295
+          },
+          "crown": {
+            "x0": 118,
+            "y0": 37,
+            "x1": 185,
+            "y1": 95,
+            "count": 2012
+          },
+          "body": {
+            "x0": 47,
+            "y0": 27,
+            "x1": 290,
+            "y1": 295
+          },
+          "content": {
+            "x0": 44,
+            "y0": 5,
+            "x1": 293,
+            "y1": 303,
+            "count": 49971
+          },
+          "visible": {
+            "x0": 46,
+            "y0": 26,
+            "x1": 290,
+            "y1": 296,
+            "count": 46527
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            263,
+            295
+          ],
+          "crownToHemHeight": 259,
+          "destination": {
+            "width": 291,
+            "height": 321,
+            "left": 44,
+            "top": 22
+          }
+        },
+        {
+          "sourcePose": 16,
+          "sourceCell": {
+            "left": 941,
+            "top": 950,
+            "width": 313,
+            "height": 304
+          },
+          "crop": {
+            "left": 983,
+            "top": 973,
+            "width": 252,
+            "height": 277
+          },
+          "sourceAnchor": {
+            "x": 1091.5,
+            "y": 1245
+          },
+          "localAnchor": {
+            "x": 150.5,
+            "y": 295
+          },
+          "crown": {
+            "x0": 117,
+            "y0": 37,
+            "x1": 185,
+            "y1": 95,
+            "count": 2027
+          },
+          "body": {
+            "x0": 46,
+            "y0": 26,
+            "x1": 289,
+            "y1": 295
+          },
+          "content": {
+            "x0": 19,
+            "y0": 23,
+            "x1": 296,
+            "y1": 303,
+            "count": 49835
+          },
+          "visible": {
+            "x0": 45,
+            "y0": 26,
+            "x1": 290,
+            "y1": 296,
+            "count": 46500
+          },
+          "sourceOuterEdgeTouches": [],
+          "hemRows": [
+            263,
+            295
+          ],
+          "crownToHemHeight": 259,
+          "destination": {
+            "width": 292,
+            "height": 321,
+            "left": 44,
+            "top": 22
+          }
+        }
       ]
     },
     {
       "name": "success",
-      "intervalMs": 250,
+      "intervalMs": 120,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/success-source.png",
       "sourceSha256": "1c39837840449dd9324a1266e575ce4c3722dab8cf1264e8d59edb10db4cc7da",
       "sourceSize": [
@@ -8052,24 +8056,24 @@
         16
       ],
       "frameDurationsMs": [
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
       ],
-      "totalDurationMs": 4000,
+      "totalDurationMs": 1920,
       "gifFrameSequence": [
         1,
         2,
@@ -8088,26 +8092,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        500,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250,
-        250
+        240,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120,
+        120
       ]
     },
     {
       "name": "error",
-      "intervalMs": 300,
+      "intervalMs": 140,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/error-source.png",
       "sourceSha256": "f73c5fcbc114ddceb068458013dd82e06b74a8fe34c0f30d467b7b2e9b31e389",
       "sourceSize": [
@@ -9207,24 +9211,24 @@
         16
       ],
       "frameDurationsMs": [
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ],
-      "totalDurationMs": 4800,
+      "totalDurationMs": 2240,
       "gifFrameSequence": [
         1,
         2,
@@ -9243,26 +9247,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        600,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300,
-        300
+        280,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
       ]
     },
     {
       "name": "sleeping",
-      "intervalMs": 700,
+      "intervalMs": 180,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/sleeping-source.png",
       "sourceSha256": "02cdf4b3af0d89138dbc680dfac9cd695034464fd412e546700e0579692022d5",
       "sourceSize": [
@@ -10362,24 +10366,24 @@
         16
       ],
       "frameDurationsMs": [
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180
       ],
-      "totalDurationMs": 11200,
+      "totalDurationMs": 2880,
       "gifFrameSequence": [
         1,
         2,
@@ -10398,26 +10402,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        1400,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700,
-        700
+        360,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180
       ]
     },
     {
       "name": "reminder",
-      "intervalMs": 260,
+      "intervalMs": 160,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/reminder-source.png",
       "sourceSha256": "6d0290d4870fa37f9651752182d74a229c3af3eb3f906a60e7c12e33fe2c0949",
       "sourceSize": [
@@ -11517,24 +11521,24 @@
         16
       ],
       "frameDurationsMs": [
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160
       ],
-      "totalDurationMs": 4160,
+      "totalDurationMs": 2560,
       "gifFrameSequence": [
         1,
         2,
@@ -11553,26 +11557,26 @@
         15
       ],
       "gifFrameDurationsMs": [
-        520,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260,
-        260
+        320,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160
       ]
     },
     {
       "name": "hit",
-      "intervalMs": 180,
+      "intervalMs": 60,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/hit-source.png",
       "sourceSha256": "9aed6ebd9eb356bc21e95a5af94d4d50ce399215b0e31ca1d6fb24519fd6a815",
       "sourceSize": [
@@ -12661,35 +12665,29 @@
         5,
         6,
         7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
+        6,
+        5,
+        4,
+        3,
+        2,
         16
       ],
       "frameDurationsMs": [
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180
+        60,
+        60,
+        60,
+        60,
+        90,
+        150,
+        80,
+        80,
+        80,
+        60,
+        60,
+        60,
+        80
       ],
-      "totalDurationMs": 2880,
+      "totalDurationMs": 980,
       "gifFrameSequence": [
         1,
         2,
@@ -12698,36 +12696,30 @@
         5,
         6,
         7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
+        6,
+        5,
+        4,
+        3,
+        2
       ],
       "gifFrameDurationsMs": [
-        360,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180,
-        180
+        140,
+        60,
+        60,
+        60,
+        90,
+        150,
+        80,
+        80,
+        80,
+        60,
+        60,
+        60
       ]
     },
     {
       "name": "question",
-      "intervalMs": 350,
+      "intervalMs": 160,
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/question-source.png",
       "sourceSha256": "59223c5c0e13f60f76d3bea7bed57d30fc0f140ea6675bec6e5ce29302d6b9af",
       "sourceSize": [
@@ -13827,24 +13819,24 @@
         16
       ],
       "frameDurationsMs": [
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160
       ],
-      "totalDurationMs": 5600,
+      "totalDurationMs": 2560,
       "gifFrameSequence": [
         1,
         2,
@@ -13863,21 +13855,21 @@
         15
       ],
       "gifFrameDurationsMs": [
-        700,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350,
-        350
+        320,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160,
+        160
       ]
     }
   ]

@@ -1155,8 +1155,10 @@ namespace DesktopPet
             {
                 var wasSleeping = _animator.CurrentState == PetState.Sleeping;
                 var shouldPlayIdleHitReaction =
-                    _animator.CurrentState == PetState.Idle &&
-                    GetBasePetState() == PetState.Idle;
+                    GetBasePetState() == PetState.Idle &&
+                    (_animator.CurrentState == PetState.Idle ||
+                     (_animator.CurrentState == PetState.Hit &&
+                      string.Equals(_settings.PetSkin, "shenqing", StringComparison.Ordinal)));
                 if (shouldPlayIdleHitReaction)
                     _animator.SetState(PetState.Hit);
                 PlayHammerStrike();

@@ -19,19 +19,22 @@ const margin = 8;
 const targetHeight = 304;
 const targetAnchor = { x: 170, y: 337 };
 const definitions = [
-  { name: 'idle', label: '待机', interval: 320, holds: { 1: 16000, 7: 80, 8: 80 } },
+  { name: 'idle', label: '待机', interval: 140,
+    sourceSequence: [1, 2, 3, 4, 9, 6, 5, 7, 8, 5, 6, 10, 11, 12, 14, 1] },
   { name: 'blink', label: '眨眼', interval: 80 },
-  { name: 'happy', label: '开心', interval: 300 },
-  { name: 'wave', label: '挥手', interval: 250 },
-  { name: 'heart', label: '举心', interval: 280 },
-  { name: 'working', label: '工作', interval: 900, holds: { 1: 18000, 4: 80, 5: 80 },
-    sequence: [...Array.from({ length: 14 }, (_, index) => index + 1), 16] },
-  { name: 'success', label: '成功', interval: 250 },
-  { name: 'error', label: '出错', interval: 300 },
-  { name: 'sleeping', label: '睡眠', interval: 700 },
-  { name: 'reminder', label: '摇铃提醒', interval: 260 },
-  { name: 'hit', label: '点击反应', interval: 180 },
-  { name: 'question', label: '疑问', interval: 350 },
+  { name: 'happy', label: '开心', interval: 140 },
+  { name: 'wave', label: '挥手', interval: 120 },
+  { name: 'heart', label: '举心', interval: 140 },
+  { name: 'working', label: '工作', interval: 120,
+    sourceSequence: [1, 2, 3, 5, 7, 6, 8, 5, 3, 9, 10, 11, 12, 3, 2, 1] },
+  { name: 'success', label: '成功', interval: 120 },
+  { name: 'error', label: '出错', interval: 140 },
+  { name: 'sleeping', label: '睡眠', interval: 180 },
+  { name: 'reminder', label: '摇铃提醒', interval: 160 },
+  { name: 'hit', label: '点击反应', interval: 60,
+    sequence: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 16],
+    durations: [60, 60, 60, 60, 90, 150, 80, 80, 80, 60, 60, 60, 80] },
+  { name: 'question', label: '疑问', interval: 160 },
 ];
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
@@ -45,7 +48,10 @@ const sharp = require(process.env.SHARP_MODULE || 'sharp');
 
 function timingFor(definition) {
   const playbackFrameSequence = definition.sequence ?? Array.from({ length: 16 }, (_, index) => index + 1);
-  const frameDurationsMs = playbackFrameSequence.map(frame => definition.holds?.[frame] ?? definition.interval);
+  const frameDurationsMs = definition.durations ?? playbackFrameSequence.map(() => definition.interval);
+  if (frameDurationsMs.length !== playbackFrameSequence.length || frameDurationsMs.some(duration => duration <= 0)) {
+    throw new Error(`${definition.name}: each playback frame must have a positive duration`);
+  }
   return { intervalMs: definition.interval, playbackFrameSequence, frameDurationsMs,
     totalDurationMs: frameDurationsMs.reduce((sum, duration) => sum + duration, 0) };
 }
@@ -317,7 +323,11 @@ async function preflight(definition) {
       sourceOuterEdgeTouches: frame.sourceOuterEdgeTouches,
       hemRows: frame.hemRows, crownToHemHeight: frame.crownToHemHeight, destination });
   }
-  const sequence = [...Array.from({ length: 15 }, (_, index) => index), 0];
+  // Choose neighboring micro-poses for these new loops. Imagegen's row changes
+  // otherwise introduce 3–4px head jumps; this only orders existing RGBA poses.
+  const sequence = definition.sourceSequence
+    ? definition.sourceSequence.map(frame => frame - 1)
+    : [...Array.from({ length: 15 }, (_, index) => index), 0];
   const outputFrames = sequence.map(index => rawFrames[index]);
   const framePngs = [];
   const atlas = Buffer.alloc(cellSize * 4 * cellSize * 4 * 4);
@@ -370,8 +380,9 @@ function previewHtml(animations) {
     const sequence = animation.playbackFrameSequence ?? Array.from({ length: 16 }, (_, index) => index + 1);
     const durations = animation.frameDurationsMs ?? sequence.map(() => animation.intervalMs);
     const seconds = durations.reduce((sum, duration) => sum + duration, 0) / 1000;
-    const note = definition.name === 'idle' ? ' · 首帧安静停留 16 秒'
-      : definition.name === 'working' ? ' · 首帧安静停留 18 秒' : '';
+    const note = definition.name === 'idle' ? ' · 轻呼吸，全程睁眼'
+      : definition.name === 'working' ? ' · 小幅打字，全程睁眼'
+      : definition.name === 'hit' ? ' · 及时闭眼举心，一次收回' : '';
     return `<article data-action="${definition.name}" data-sequence="${sequence.join(',')}" data-durations="${durations.join(',')}">
       <h2>${definition.label}</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青${definition.label}" style="background-image:url('${definition.name}.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
@@ -381,7 +392,7 @@ function previewHtml(animations) {
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>沈青 · 动画预览</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
-</style><header><h1>沈青 · 12 套动画</h1><p>这里按桌宠的逐帧节奏循环展示动作，待机与工作会先安静停留。暂停后可手动查看每套全部 16 帧。</p><p>独立「眨眼」卡片仅演示眨眼动作本身的速度；实际桌宠自动小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
+</style><header><h1>沈青 · 12 套动画</h1><p>待机轻轻呼吸，工作小幅打字：持续自然微动，不再长时间定格。暂停后可手动查看每套全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
 <script>
 const cards=Array.from(document.querySelectorAll('[data-action]')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
 const toggle=document.getElementById('toggle');let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;

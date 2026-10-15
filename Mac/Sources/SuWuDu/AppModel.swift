@@ -153,7 +153,9 @@ import Combine
                 say("醒啦！")
                 animate(.happy)
             } else { wakeHit = Date() }
-        } else if state == .idle { animate(.hit, seconds: 1.2) }
+        } else if state == .idle || (displayedSkin == "shenqing" && baseState == .idle && state == .hit) {
+            animate(.hit, seconds: 1.2)
+        }
         if data.focus != nil || breakRemaining > 0 {
             showCountdown()
         }

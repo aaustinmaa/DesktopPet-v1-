@@ -2,54 +2,54 @@
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>沈青 · 动画预览</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
-</style><header><h1>沈青 · 12 套动画</h1><p>这里按桌宠的逐帧节奏循环展示动作，待机与工作会先安静停留。暂停后可手动查看每套全部 16 帧。</p><p>独立「眨眼」卡片仅演示眨眼动作本身的速度；实际桌宠自动小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main><article data-action="idle" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="16000,320,320,320,320,320,80,80,320,320,320,320,320,320,320,320">
+</style><header><h1>沈青 · 12 套动画</h1><p>待机轻轻呼吸，工作小幅打字：持续自然微动，不再长时间定格。暂停后可手动查看每套全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main><article data-action="idle" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="140,140,140,140,140,140,140,140,140,140,140,140,140,140,140,140">
       <h2>待机</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青待机" style="background-image:url('idle.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="idle.png">Sprite sheet</a> · <a href="idle-preview.gif">GIF</a> · 20.32 秒 / 轮 · 首帧安静停留 16 秒</p></article>
+      <p><a href="idle.png">Sprite sheet</a> · <a href="idle-preview.gif">GIF</a> · 2.24 秒 / 轮 · 轻呼吸，全程睁眼</p></article>
 <article data-action="blink" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="80,80,80,80,80,80,80,80,80,80,80,80,80,80,80,80">
       <h2>眨眼</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青眨眼" style="background-image:url('blink.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
       <p><a href="blink.png">Sprite sheet</a> · <a href="blink-preview.gif">GIF</a> · 1.28 秒 / 轮</p></article>
-<article data-action="happy" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300">
+<article data-action="happy" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="140,140,140,140,140,140,140,140,140,140,140,140,140,140,140,140">
       <h2>开心</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青开心" style="background-image:url('happy.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="happy.png">Sprite sheet</a> · <a href="happy-preview.gif">GIF</a> · 4.8 秒 / 轮</p></article>
-<article data-action="wave" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250">
+      <p><a href="happy.png">Sprite sheet</a> · <a href="happy-preview.gif">GIF</a> · 2.24 秒 / 轮</p></article>
+<article data-action="wave" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120">
       <h2>挥手</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青挥手" style="background-image:url('wave.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="wave.png">Sprite sheet</a> · <a href="wave-preview.gif">GIF</a> · 4 秒 / 轮</p></article>
-<article data-action="heart" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="280,280,280,280,280,280,280,280,280,280,280,280,280,280,280,280">
+      <p><a href="wave.png">Sprite sheet</a> · <a href="wave-preview.gif">GIF</a> · 1.92 秒 / 轮</p></article>
+<article data-action="heart" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="140,140,140,140,140,140,140,140,140,140,140,140,140,140,140,140">
       <h2>举心</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青举心" style="background-image:url('heart.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="heart.png">Sprite sheet</a> · <a href="heart-preview.gif">GIF</a> · 4.48 秒 / 轮</p></article>
-<article data-action="working" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" data-durations="18000,900,900,80,80,900,900,900,900,900,900,900,900,900,900">
+      <p><a href="heart.png">Sprite sheet</a> · <a href="heart-preview.gif">GIF</a> · 2.24 秒 / 轮</p></article>
+<article data-action="working" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120">
       <h2>工作</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青工作" style="background-image:url('working.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="working.png">Sprite sheet</a> · <a href="working-preview.gif">GIF</a> · 28.96 秒 / 轮 · 首帧安静停留 18 秒</p></article>
-<article data-action="success" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="250,250,250,250,250,250,250,250,250,250,250,250,250,250,250,250">
+      <p><a href="working.png">Sprite sheet</a> · <a href="working-preview.gif">GIF</a> · 1.92 秒 / 轮 · 小幅打字，全程睁眼</p></article>
+<article data-action="success" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120">
       <h2>成功</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青成功" style="background-image:url('success.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="success.png">Sprite sheet</a> · <a href="success-preview.gif">GIF</a> · 4 秒 / 轮</p></article>
-<article data-action="error" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="300,300,300,300,300,300,300,300,300,300,300,300,300,300,300,300">
+      <p><a href="success.png">Sprite sheet</a> · <a href="success-preview.gif">GIF</a> · 1.92 秒 / 轮</p></article>
+<article data-action="error" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="140,140,140,140,140,140,140,140,140,140,140,140,140,140,140,140">
       <h2>出错</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青出错" style="background-image:url('error.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="error.png">Sprite sheet</a> · <a href="error-preview.gif">GIF</a> · 4.8 秒 / 轮</p></article>
-<article data-action="sleeping" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="700,700,700,700,700,700,700,700,700,700,700,700,700,700,700,700">
+      <p><a href="error.png">Sprite sheet</a> · <a href="error-preview.gif">GIF</a> · 2.24 秒 / 轮</p></article>
+<article data-action="sleeping" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180">
       <h2>睡眠</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青睡眠" style="background-image:url('sleeping.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="sleeping.png">Sprite sheet</a> · <a href="sleeping-preview.gif">GIF</a> · 11.2 秒 / 轮</p></article>
-<article data-action="reminder" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="260,260,260,260,260,260,260,260,260,260,260,260,260,260,260,260">
+      <p><a href="sleeping.png">Sprite sheet</a> · <a href="sleeping-preview.gif">GIF</a> · 2.88 秒 / 轮</p></article>
+<article data-action="reminder" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="160,160,160,160,160,160,160,160,160,160,160,160,160,160,160,160">
       <h2>摇铃提醒</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青摇铃提醒" style="background-image:url('reminder.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="reminder.png">Sprite sheet</a> · <a href="reminder-preview.gif">GIF</a> · 4.16 秒 / 轮</p></article>
-<article data-action="hit" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180">
+      <p><a href="reminder.png">Sprite sheet</a> · <a href="reminder-preview.gif">GIF</a> · 2.56 秒 / 轮</p></article>
+<article data-action="hit" data-sequence="1,2,3,4,5,6,7,6,5,4,3,2,16" data-durations="60,60,60,60,90,150,80,80,80,60,60,60,80">
       <h2>点击反应</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青点击反应" style="background-image:url('hit.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="hit.png">Sprite sheet</a> · <a href="hit-preview.gif">GIF</a> · 2.88 秒 / 轮</p></article>
-<article data-action="question" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350">
+      <p><a href="hit.png">Sprite sheet</a> · <a href="hit-preview.gif">GIF</a> · 0.98 秒 / 轮 · 及时闭眼举心，一次收回</p></article>
+<article data-action="question" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="160,160,160,160,160,160,160,160,160,160,160,160,160,160,160,160">
       <h2>疑问</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青疑问" style="background-image:url('question.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="question.png">Sprite sheet</a> · <a href="question-preview.gif">GIF</a> · 5.6 秒 / 轮</p></article></main>
+      <p><a href="question.png">Sprite sheet</a> · <a href="question-preview.gif">GIF</a> · 2.56 秒 / 轮</p></article></main>
 <script>
 const cards=Array.from(document.querySelectorAll('[data-action]')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
 const toggle=document.getElementById('toggle');let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
