@@ -79,36 +79,82 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   extracted; ambiguous information stays empty. AI understands the memo shorthand
   described below; the manual paste importer retains its conservative behavior.
   Google Docs sync is not included.
-- Select the current task once; subsequent runs capture it automatically. Changing
-  the selection during a run only changes the next run. Pause/recovery keeps its task.
-- Select records, use Shift for a range, then click a task's **关联** button. Clear
-  associations or undo the most recent whole batch. Compact table rows show time,
-  minutes, task and a single-line note; hover to read the full note or expand one
-  row to edit. Time/task views preserve the same selection and association actions.
+- Select one or more tasks for upcoming runs. The editor uses task minutes: a
+  25-minute pomodoro with two tasks defaults to 12.5 minutes each and can be
+  changed to 10 and 15 minutes. Starting a run captures the complete allocation;
+  changing the selection during a run affects the next run. Pause/recovery keeps
+  the captured allocation.
+- Edit a record's task minutes directly, or use Shift/multiple selection to
+  allocate a batch. When all selected records have the same actual duration, the
+  editor uses minutes per record and shows **每条 25 分钟**, for example; entering
+  10/15 applies that split to every 25-minute record. When durations differ, the
+  editor uses their combined actual minutes, shows **合计 … 分钟**, and applies
+  the resulting proportions to each record. Clear associations or undo the most
+  recent whole batch.
+  Compact table rows show time, minutes, tasks and a single-line note; hover to
+  read the full note or expand one row to edit. Task grouping and history show
+  each task's allocated minutes without counting the whole record for every task.
 - The task list's **完成历史** view retains completed tasks, their completion time,
   estimated/actual effort, notes and source excerpt. Expand a task to inspect its
   associated sessions and jump to a record day. Older completed tasks with no
   stored completion time show it as unknown. Reopen a task to continue working.
 - **AI 匹配** and **AI 建议** use the configured ChatGPT/Codex or
   OpenAI API provider. **Notes 匹配** runs locally and requires a unique, explicit
-  full task name in the note. Review old/new tasks and reasons before applying.
-  The application rejects unknown IDs and stale snapshots; automatic suggestions
-  preserve existing associations. Offline mode does not pretend to run an AI parser.
-- Actual task minutes include interrupted-run details. Minute-conversion records
-  still serve daily goals, but do not duplicate task minutes or real complete pomodoros.
+  full task name in the note. Review old/new task minutes and reasons before
+  applying. AI returns a fixed allocation contract described below; the application
+  rejects unknown IDs, invalid shares and stale snapshots. Automatic suggestions
+  preserve existing associations. Offline mode does not run a natural-language parser.
+- Task effort uses the stored proportion: a 10/15 split of one 25-minute completed
+  pomodoro contributes 0.4/0.6 completed pomodoros and 10/15 minutes. Interrupted
+  runs contribute only their allocated actual minutes. Minute-conversion records
+  still serve daily goals, with no duplicate task minutes or completed pomodoros.
   Manual sessions can still be added and assigned directly.
 
 Daily goals, bulk target schedules, signed minute adjustments, manual sessions,
 ignore/delete, daily/session Notes, save-on-navigation, clipboard copy and Markdown
-range export are retained. Exports include time and task names.
+range export are retained. Exports include time, task names and allocated minutes.
 
-Matching sends only task titles/descriptions and the selected journal range's
-timestamps/session Notes to the selected provider. Memo extraction sends the memo
+Matching sends task IDs/titles/descriptions and the selected journal range's
+timestamps, chronological ordinals, actual minutes, current allocations, session
+Notes and timezone to the selected provider. Memo extraction sends the memo
 being extracted plus local date/timezone context. Neither operation sends chat
 history or screen images, and neither modifies Google Docs. Both use the configured
 ChatGPT/Codex or OpenAI API provider; memo extraction requires AI connectivity.
-Tasks, memos and associations are persisted in `app-state.json`; old files remain readable.
+Tasks, memos and associations are persisted in `app-state.json`; old files remain
+readable, and a legacy single-task association means 100% of that record.
 The Windows implementation is still pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
+
+### Matching AI contract
+
+Both ChatGPT/Codex and OpenAI API receive dedicated matching instructions and a
+strict JSON Schema. Every response uses this structure, regardless of how the
+user describes the work:
+
+```json
+{"matches":[{"sessionID":"session-1","allocations":[{"taskID":"task-a","share":0.4},{"taskID":"task-b","share":0.6}],"reason":"A 10 分钟，B 15 分钟"}]}
+```
+
+The IDs must come from the supplied snapshot. Every object has exactly the keys
+shown; all are required, with no extra keys, Markdown or prose. `share` is a
+positive JSON number at most 1; nonempty allocations contain unique task IDs and
+sum to 1. These fractions are the storage/AI protocol; the user edits and reviews
+minutes. A record appears at most once, and `reason` is a nonempty string.
+
+Each allocation array describes the complete final state. AI resolves requests
+to add, remove or replace tasks using the current allocation; unspecified shares
+default to equal allocation. Explicit clearing returns `allocations: []`;
+omitting a record keeps it unchanged. Unknown tasks, ambiguous record references
+and contradictory durations are omitted rather than guessed. AI converts stated
+minutes or ratios into shares using the snapshot's actual minutes, which exclude
+pauses; wall-clock elapsed time is not used as task time. Multiple-record totals
+are not repeated on every record or divided without a clear instruction.
+
+Local code validates the normalized result and does not reinterpret the user's
+sentence. Preview, application and undo compare the complete allocation vectors
+and revisions; a later edit cannot be overwritten by an older preview. Invalid
+responses reject the entire batch before any records are modified. Stored
+allocation vectors are also validated on load/save; corrupt state follows the
+existing backup recovery path.
 
 ### Memo AI contract
 
@@ -235,7 +281,14 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Current extraction-contract validation (2026-10-14):** All 21 targeted tests
+**Current multi-task/matching validation (2026-10-14):** The Mac development build
+passed all 133 tests in 22 suites, production compilation and strict signature
+verification, producing `output/arm64/SuWuDu.app`. Native renders checked the
+compact table at 1120/760 pixels and the minute-allocation editor. No live AI
+matching request has been submitted.
+See [`VALIDATION.md`](VALIDATION.md) for the current record.
+
+**Previous extraction-contract validation (2026-10-14):** All 21 targeted tests
 passed. The updated development build passed its required 104 tests in 19 suites,
 production compilation and strict signature verification, producing
 `output/arm64/SuWuDu.app`. No real AI request was submitted; the checks verify the

@@ -63,15 +63,27 @@ struct DataStore {
         }
         var result = try Self.decoder.decode(AppData.self, from: bytes)
         guard result.version == 1 else { throw AppError.unsupportedVersion(result.version) }
+        try Self.validateStoredAllocations(result)
         result.settings.normalize()
         return result
     }
     func save(_ data: AppData) throws {
+        try Self.validateStoredAllocations(data)
         let encoded = try Self.encoder.encode(data)
         if FileManager.default.fileExists(atPath: file.path) {
             try Data(contentsOf: file).write(to: file.appendingPathExtension("backup"), options: .atomic)
         }
         try encoded.write(to: file, options: .atomic)
+    }
+
+    private static func validateStoredAllocations(_ data: AppData) throws {
+        // Legacy single-task references remain readable even when their task was removed.
+        // New vectors must satisfy the contract before they can enter or replace persisted state.
+        if let current = data.currentTaskAllocations { _ = try FocusTaskAllocationRules.normalized(current) }
+        if let active = data.focus?.taskAllocations { _ = try FocusTaskAllocationRules.normalized(active) }
+        for session in data.journal.flatMap(\.sessions) {
+            if let allocations = session.taskAllocations { _ = try FocusTaskAllocationRules.normalized(allocations) }
+        }
     }
 }
 
@@ -131,7 +143,7 @@ enum WindowsImport {
                         completedAt: ended, minutes: max(0, (s["PlannedMinutes"] as? Int) ?? 0),
                         countsTowardGoal: (s["CountsTowardGoal"] as? Bool) ?? true, notes: (s["Notes"] as? String) ?? "")
                     if let existing = original.journal.flatMap(\.sessions).first(where: { $0.id == id }) {
-                        imported.taskID = existing.taskID
+                        imported.allocations = existing.allocations
                         imported.assignmentSource = existing.assignmentSource
                         imported.assignmentRevision = existing.assignmentRevision
                         imported.actualMinutes = existing.actualMinutes == 0 ? 0 : existing.actualMinutes.map { _ in imported.minutes }

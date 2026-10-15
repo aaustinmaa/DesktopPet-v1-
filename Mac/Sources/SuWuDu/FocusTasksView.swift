@@ -2,33 +2,42 @@ import SwiftUI
 
 @MainActor struct FocusTaskTimerBar: View {
     @ObservedObject var model: AppModel
+    @State private var showingTaskSelection = false
     private var tasks: [FocusTask] { model.data.tasks ?? [] }
-    private var taskSelection: Binding<String> {
-        Binding(get: { model.data.currentTaskID ?? "" }, set: { _ = model.selectFocusTask($0.isEmpty ? nil : $0) })
-    }
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 16) { taskPicker; Spacer(minLength: 12); controls }
                 VStack(alignment: .leading, spacing: 12) { taskPicker; controls }
             }
-            if let run = model.data.focus, run.taskID != model.data.currentTaskID {
-                Text("本轮：\(taskTitle(run.taskID))")
+            if let run = model.data.focus, !FocusTaskAllocationRules.same(run.allocations, model.data.currentAllocations) {
+                Text("本轮：\(FocusAllocationPresentation.label(run.allocations, tasks: tasks, totalMinutes: Double(run.planned)))")
                     .font(.caption).foregroundStyle(PetTheme.muted)
+                    .lineLimit(1).help(FocusAllocationPresentation.label(run.allocations, tasks: tasks, totalMinutes: Double(run.planned)))
             }
         }.padding(.horizontal, 22).padding(.vertical, 14).background(PetTheme.card)
+            .sheet(isPresented: $showingTaskSelection) {
+                FocusAllocationEditor(title: model.data.focus == nil ? "当前任务" : "下一轮任务",
+                                      tasks: tasks.filter { task in
+                                          !task.isCompleted || model.data.currentAllocations.contains(where: { $0.taskID == task.id })
+                                      },
+                                      allocations: model.data.currentAllocations,
+                                      totalMinutes: Double(model.data.settings.focusMinutes),
+                                      failureMessage: { model.matchingError ?? model.error }) { model.selectFocusTasks($0) }
+            }
     }
     private var taskPicker: some View {
         HStack(spacing: 10) {
             Image(systemName: "scope").foregroundStyle(PetTheme.accent)
             Text(model.data.focus == nil ? "当前任务" : "下一轮任务").font(.callout.weight(.semibold))
-            Picker("当前任务", selection: taskSelection) {
-                Text("未选择任务").tag("")
-                ForEach(tasks.filter { !$0.isCompleted || $0.id == model.data.currentTaskID }) { task in
-                    Text(task.title).tag(task.id)
-                }
-            }.labelsHidden().frame(minWidth: 170, maxWidth: 330)
-                .help("任务会沿用到之后的番茄；专注中更换任务从下一轮生效。")
+            Button { showingTaskSelection = true } label: {
+                HStack(spacing: 8) {
+                    Text(selectionLabel).lineLimit(1)
+                    Image(systemName: "chevron.down").font(.caption2)
+                }.frame(minWidth: 150, maxWidth: 300)
+            }.help(FocusAllocationPresentation.label(model.data.currentAllocations, tasks: tasks,
+                                                      totalMinutes: Double(model.data.settings.focusMinutes))
+                   + "\n任务会沿用到之后的番茄；专注中更换任务从下一轮生效。")
         }
     }
     private var controls: some View {
@@ -48,9 +57,10 @@ import SwiftUI
             }
         }
     }
-    private func taskTitle(_ id: String?) -> String {
-        guard let id else { return "未关联任务" }
-        return tasks.first { $0.id == id }?.title ?? "已删除任务"
+    private var selectionLabel: String {
+        let allocations = model.data.currentAllocations
+        if allocations.isEmpty { return "未选择任务" }
+        return allocations.count == 1 ? FocusAllocationPresentation.label(allocations, tasks: tasks, includePercent: false) : "\(allocations.count) 个任务"
     }
 }
 
@@ -161,7 +171,7 @@ import SwiftUI
                             Label("\(task.isOverdue() ? "已过期 · " : "截止 ")\(due.formatted(date: .abbreviated, time: task.dueHasTime ? .shortened : .omitted))", systemImage: "calendar")
                                 .font(.caption).foregroundStyle(task.isOverdue() ? Color.red : PetTheme.muted)
                         }
-                        Text("已投入 \(summary?.completedPomodoros ?? 0)\(task.estimatedPomodoros.map { " / 预计 \($0) 颗" } ?? " 颗") · \(summary?.minutes ?? 0) 分钟")
+                        Text("已投入 \(FocusAllocationPresentation.number(summary?.completedPomodoros ?? 0))\(task.estimatedPomodoros.map { " / 预计 \($0) 颗" } ?? " 颗") · \(FocusAllocationPresentation.number(summary?.minutes ?? 0)) 分钟")
                             .font(.caption).foregroundStyle(PetTheme.muted)
                         if !task.notes.isEmpty { Text(task.notes).font(.caption).foregroundStyle(PetTheme.muted).lineLimit(2) }
                     }.contentShape(Rectangle())
@@ -173,10 +183,10 @@ import SwiftUI
                         .buttonStyle(PetButtonStyle(primary: true))
                         .help("将已选的专注记录关联到这个任务。")
                 } else if !task.isCompleted {
-                    Button(model.data.currentTaskID == task.id ? "已设为当前" : "设为当前") {
+                    Button(isOnlyCurrentTask(task.id) ? "已设为当前" : "设为当前") {
                         taskError = model.selectFocusTask(task.id) ? nil : (model.matchingError ?? model.error ?? "任务选择未保存，请重试。")
                     }
-                        .disabled(model.data.currentTaskID == task.id || task.isCompleted)
+                        .disabled(isOnlyCurrentTask(task.id) || task.isCompleted)
                 }
                 Spacer()
                 if task.isCompleted {
@@ -194,6 +204,9 @@ import SwiftUI
     }
     private func saveMemos() {
         if model.saveTaskMemos(memos) { savedMemos = memos }
+    }
+    private func isOnlyCurrentTask(_ id: String) -> Bool {
+        model.data.currentAllocations.count == 1 && model.data.currentAllocations.first?.taskID == id
     }
     @ViewBuilder private var memoButtons: some View {
         if memos != savedMemos { Button("保存") { saveMemos() } }
@@ -225,7 +238,7 @@ import SwiftUI
     private var records: [HistoryRecord] {
         var result: [HistoryRecord] = []
         for day in model.data.journal {
-            for session in day.sessions where session.taskID == task.id {
+            for session in day.sessions where session.allocations.contains(where: { $0.taskID == task.id }) {
                 let isConversion = session.actualMinutes == 0 && session.completedPomodoro == false && !session.isPartial
                 if !isConversion { result.append(HistoryRecord(day: day.date, session: session)) }
             }
@@ -270,7 +283,7 @@ import SwiftUI
                                     if let onSelectJournalDay {
                                         Button(record.day) { onSelectJournalDay(record.day) }.font(.caption)
                                     } else { Text(record.day).font(.caption) }
-                                    Text("\(record.session.startedAt.formatted(date: .omitted, time: .shortened))–\(record.session.completedAt.formatted(date: .omitted, time: .shortened)) · \(record.session.taskMinutes) 分钟")
+                                    Text(historyLabel(record.session))
                                         .font(.caption).monospacedDigit()
                                         .help(historySource(record.session))
                                     Spacer(minLength: 0)
@@ -284,6 +297,11 @@ import SwiftUI
                 }.frame(maxHeight: 240)
             }
         }
+    }
+    private func historyLabel(_ session: FocusSession) -> String {
+        let share = session.allocations.first { $0.taskID == task.id }?.share ?? 0
+        let count = session.isCompletedPomodoro ? share : 0
+        return "\(session.startedAt.formatted(date: .omitted, time: .shortened))–\(session.completedAt.formatted(date: .omitted, time: .shortened)) · \(FocusAllocationPresentation.number(count)) 颗 · \(FocusAllocationPresentation.number(Double(session.taskMinutes) * share)) 分钟"
     }
     private func historySource(_ session: FocusSession) -> String {
         let kind = session.isPartial ? "中途结束" : (session.isCompletedPomodoro ? "完整番茄" : "专注明细")
@@ -580,7 +598,7 @@ import SwiftUI
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(PetTheme.border))
                 .accessibilityLabel("匹配指令")
-                .help("例如：上午前三个做 CS370，其余做网站。按当前范围生成匹配预览。")
+                .help("例如：前三个番茄各分 10 分钟给 CS370，剩余时间给网站。")
             ViewThatFits(in: .horizontal) {
                 HStack { matchingButtons }
                 VStack(alignment: .leading) { matchingButtons }
@@ -605,7 +623,7 @@ import SwiftUI
                         LazyVStack(alignment: .leading, spacing: 10) {
                             ForEach(Array(plan.changes.enumerated()), id: \.offset) { _, change in
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("\(timeLabel(change.sessionID)) · \(title(change.expectedTaskID)) → \(title(change.targetTaskID))")
+                                    Text("\(timeLabel(change.sessionID)) · \(assignmentLabel(change.expectedAllocations, sessionID: change.sessionID)) → \(assignmentLabel(change.targetAllocations, sessionID: change.sessionID))")
                                         .font(.callout.weight(.semibold))
                                     if !change.reason.isEmpty { Text(change.reason).font(.caption).foregroundStyle(PetTheme.muted).lineLimit(2).help(change.reason) }
                                 }.frame(maxWidth: .infinity, alignment: .leading)
@@ -628,8 +646,8 @@ import SwiftUI
         }.disabled(unavailable || model.matchingBusy)
             .help("离线匹配 Notes 中明确出现的任务名，仅处理未关联记录。")
         Button("AI 建议") {
-            if prepare() { model.requestFocusSuggestions(sessions: liveSessions().filter { $0.taskID == nil }, useAI: true) }
-        }.disabled(unavailable || model.matchingBusy || model.busy || model.data.settings.provider == "offline" || sessions.allSatisfy { $0.taskID != nil })
+            if prepare() { model.requestFocusSuggestions(sessions: liveSessions().filter { $0.allocations.isEmpty }, useAI: true) }
+        }.disabled(unavailable || model.matchingBusy || model.busy || model.data.settings.provider == "offline" || sessions.allSatisfy { !$0.allocations.isEmpty })
             .help("使用设置中的 AI 服务，为当前范围的未关联记录生成建议。")
         if model.matchingBusy { Button("取消") { model.cancelFocusMatch() } }
     }
@@ -637,13 +655,13 @@ import SwiftUI
         let ids = Set(sessions.map(\.id))
         return model.data.journal.flatMap(\.sessions).filter { ids.contains($0.id) }
     }
-    private func title(_ id: String?) -> String {
-        guard let id else { return "未关联" }
-        return tasks.first { $0.id == id }?.title ?? "已删除任务"
-    }
     private func timeLabel(_ id: String) -> String {
         guard let session = sessions.first(where: { $0.id == id }) else { return "记录已变化" }
         return session.completedAt.formatted(date: .omitted, time: .shortened)
+    }
+    private func assignmentLabel(_ allocations: [FocusTaskAllocation], sessionID: String) -> String {
+        FocusAllocationPresentation.label(allocations, tasks: tasks,
+                                          totalMinutes: Double(sessions.first { $0.id == sessionID }?.taskMinutes ?? 0))
     }
 }
 

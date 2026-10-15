@@ -166,7 +166,8 @@ import Combine
         if data.focus != nil { stopFocus() }
         breakRemaining = 0
         data.focus = FocusRun(startedAt: Date(), planned: data.settings.focusMinutes,
-                              remaining: Double(data.settings.focusMinutes * 60), taskID: data.currentTaskID)
+                              remaining: Double(data.settings.focusMinutes * 60), taskID: data.currentTaskID,
+                              taskAllocations: data.currentAllocations)
         paused = false
         lastUptime = ProcessInfo.processInfo.systemUptime
         lastDate = Date()
@@ -198,7 +199,8 @@ import Combine
         advanceFocus()
         guard let run = data.focus else { breakRemaining = 0; restoreAnimation(); return }
         FocusAccounting.record(segments: run.segments, planned: run.planned, completed: false,
-                               startedAt: run.startedAt, endedAt: Date(), taskID: run.taskID, targets: data.targetRules ?? [], journal: &data.journal)
+                               startedAt: run.startedAt, endedAt: Date(), taskID: run.taskID,
+                               taskAllocations: run.allocations, targets: data.targetRules ?? [], journal: &data.journal)
         data.focus = nil
         paused = true
         persist() // Journal and recovery state commit together: no double settlement after a crash.
@@ -254,7 +256,8 @@ import Combine
         data.focus = run
         if run.remaining <= 0 {
             FocusAccounting.record(segments: run.segments, planned: run.planned, completed: true,
-                                   startedAt: run.startedAt, endedAt: end, taskID: run.taskID, targets: data.targetRules ?? [], journal: &data.journal)
+                                   startedAt: run.startedAt, endedAt: end, taskID: run.taskID,
+                                   taskAllocations: run.allocations, targets: data.targetRules ?? [], journal: &data.journal)
             data.focus = nil
             paused = true
             breakRemaining = Double(data.settings.breakMinutes * 60)

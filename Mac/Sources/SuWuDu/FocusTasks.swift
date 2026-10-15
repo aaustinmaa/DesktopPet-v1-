@@ -59,8 +59,44 @@ struct FocusTask: Codable, Identifiable, Equatable {
 
 struct FocusTaskSummary: Equatable {
     var taskID: String
-    var completedPomodoros = 0
-    var minutes = 0
+    var completedPomodoros = 0.0
+    var minutes = 0.0
+}
+
+struct FocusTaskAllocation: Codable, Equatable, Identifiable {
+    var taskID: String
+    var share: Double
+    var id: String { taskID }
+}
+
+enum FocusTaskAllocationRules {
+    static let tolerance = 0.000001
+
+    static func equal(_ ids: [String]) -> [FocusTaskAllocation] {
+        let unique = Set(ids.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }).sorted()
+        guard !unique.isEmpty else { return [] }
+        return unique.map { FocusTaskAllocation(taskID: $0, share: 1 / Double(unique.count)) }
+    }
+
+    static func normalized(_ allocations: [FocusTaskAllocation]) throws -> [FocusTaskAllocation] {
+        guard !allocations.isEmpty else { return [] }
+        guard Set(allocations.map(\.taskID)).count == allocations.count,
+              allocations.allSatisfy({ !$0.taskID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+                  $0.share.isFinite && $0.share > 0 && $0.share <= 1 }) else {
+            throw FocusAssignmentError.invalidAllocations
+        }
+        let total = allocations.reduce(0) { $0 + $1.share }
+        guard abs(total - 1) <= tolerance else { throw FocusAssignmentError.invalidAllocations }
+        return allocations.sorted { $0.taskID < $1.taskID }
+            .map { FocusTaskAllocation(taskID: $0.taskID, share: $0.share / total) }
+    }
+
+    static func same(_ lhs: [FocusTaskAllocation], _ rhs: [FocusTaskAllocation]) -> Bool {
+        guard let left = try? normalized(lhs), let right = try? normalized(rhs), left.count == right.count else { return false }
+        return zip(left, right).allSatisfy { pair in
+            pair.0.taskID == pair.1.taskID && abs(pair.0.share - pair.1.share) <= tolerance
+        }
+    }
 }
 
 enum FocusTaskImport {
@@ -107,7 +143,7 @@ extension FocusSession {
         if isPartial { return max(0, minutes) }
         return max(0, actualMinutes ?? minutes)
     }
-    var isCompletedPomodoro: Bool { !isPartial && (completedPomodoro ?? countsTowardGoal) }
+    var isCompletedPomodoro: Bool { !isPartial && actualMinutes != 0 && (completedPomodoro ?? countsTowardGoal) }
 }
 
 extension JournalDay {
@@ -131,20 +167,39 @@ extension JournalDay {
 
 struct FocusAssignmentChange: Equatable {
     var sessionID: String
-    var targetTaskID: String?
-    var expectedTaskID: String?
+    var targetAllocations: [FocusTaskAllocation]
+    var expectedAllocations: [FocusTaskAllocation]
     var expectedRevision: Int
     var expectedNotes: String
     var reason: String
     var expectedSession: FocusSession?
 
-    init(sessionID: String, targetTaskID: String?, expectedTaskID: String?, expectedRevision: Int = 0,
-         expectedNotes: String, reason: String = "") {
-        self.sessionID = sessionID; self.targetTaskID = targetTaskID; self.expectedTaskID = expectedTaskID
+    var targetTaskID: String? {
+        get { targetAllocations.count == 1 ? targetAllocations[0].taskID : nil }
+        set { targetAllocations = FocusTaskAllocationRules.equal(newValue.map { [$0] } ?? []) }
+    }
+    var expectedTaskID: String? {
+        get { expectedAllocations.count == 1 ? expectedAllocations[0].taskID : nil }
+        set { expectedAllocations = FocusTaskAllocationRules.equal(newValue.map { [$0] } ?? []) }
+    }
+
+    init(sessionID: String, targetAllocations: [FocusTaskAllocation], expectedAllocations: [FocusTaskAllocation],
+         expectedRevision: Int = 0, expectedNotes: String, reason: String = "") {
+        self.sessionID = sessionID; self.targetAllocations = targetAllocations; self.expectedAllocations = expectedAllocations
         self.expectedRevision = expectedRevision; self.expectedNotes = expectedNotes; self.reason = reason
     }
+
+    init(sessionID: String, targetTaskID: String?, expectedTaskID: String?, expectedRevision: Int = 0,
+         expectedNotes: String, reason: String = "") {
+        self.init(sessionID: sessionID, targetAllocations: FocusTaskAllocationRules.equal(targetTaskID.map { [$0] } ?? []),
+                  expectedAllocations: FocusTaskAllocationRules.equal(expectedTaskID.map { [$0] } ?? []),
+                  expectedRevision: expectedRevision, expectedNotes: expectedNotes, reason: reason)
+    }
     init(session: FocusSession, targetTaskID: String?, reason: String = "") {
-        self.init(sessionID: session.id, targetTaskID: targetTaskID, expectedTaskID: session.taskID,
+        self.init(session: session, targetAllocations: FocusTaskAllocationRules.equal(targetTaskID.map { [$0] } ?? []), reason: reason)
+    }
+    init(session: FocusSession, targetAllocations: [FocusTaskAllocation], reason: String = "") {
+        self.init(sessionID: session.id, targetAllocations: targetAllocations, expectedAllocations: session.allocations,
                   expectedRevision: session.assignmentRevision ?? 0, expectedNotes: session.notes, reason: reason)
         expectedSession = session
     }
@@ -158,9 +213,9 @@ struct FocusMatchingPlan: Equatable {
 struct FocusAssignmentTransaction {
     struct Entry {
         var sessionID: String
-        var previousTaskID: String?
+        var previousAllocations: [FocusTaskAllocation]
         var previousSource: String?
-        var appliedTaskID: String?
+        var appliedAllocations: [FocusTaskAllocation]
         var appliedSource: String
         var appliedRevision: Int
     }
@@ -168,7 +223,7 @@ struct FocusAssignmentTransaction {
 }
 
 enum FocusAssignmentError: LocalizedError, Equatable {
-    case duplicateSession, missingSession, missingTask, staleSession, emptyPlan
+    case duplicateSession, missingSession, missingTask, staleSession, emptyPlan, invalidAllocations
     var errorDescription: String? {
         switch self {
         case .duplicateSession: return "匹配结果包含重复记录，未应用修改。"
@@ -176,6 +231,7 @@ enum FocusAssignmentError: LocalizedError, Equatable {
         case .missingTask: return "部分任务已经删除，请刷新后重新匹配。"
         case .staleSession: return "记录在预览之后已有修改，未覆盖这些修改。请重新生成预览。"
         case .emptyPlan: return "没有需要修改的匹配结果。"
+        case .invalidAllocations: return "任务分配无效，请检查各任务用时后重试。"
         }
     }
 }
@@ -185,10 +241,13 @@ extension AppData {
         var result: [String: FocusTaskSummary] = [:]
         for task in tasks ?? [] { result[task.id] = FocusTaskSummary(taskID: task.id) }
         for session in (selectedJournal ?? journal).flatMap(\.sessions) {
-            guard let taskID = session.taskID else { continue }
-            if result[taskID] == nil { result[taskID] = FocusTaskSummary(taskID: taskID) }
-            result[taskID]!.minutes += session.taskMinutes
-            if session.isCompletedPomodoro { result[taskID]!.completedPomodoros += 1 }
+            guard let allocations = try? FocusTaskAllocationRules.normalized(session.allocations) else { continue }
+            for allocation in allocations {
+                let taskID = allocation.taskID
+                if result[taskID] == nil { result[taskID] = FocusTaskSummary(taskID: taskID) }
+                result[taskID]!.minutes += Double(session.taskMinutes) * allocation.share
+                if session.isCompletedPomodoro { result[taskID]!.completedPomodoros += allocation.share }
+            }
         }
         return result.values.sorted { $0.taskID < $1.taskID }
     }
@@ -203,8 +262,10 @@ extension AppData {
             guard matches.count == 1, let session = matches.first else {
                 throw matches.isEmpty ? FocusAssignmentError.missingSession : FocusAssignmentError.duplicateSession
             }
-            if let id = change.targetTaskID, !taskIDs.contains(id) { throw FocusAssignmentError.missingTask }
-            guard session.taskID == change.expectedTaskID,
+            let target = try FocusTaskAllocationRules.normalized(change.targetAllocations)
+            _ = try FocusTaskAllocationRules.normalized(change.expectedAllocations)
+            guard target.allSatisfy({ taskIDs.contains($0.taskID) }) else { throw FocusAssignmentError.missingTask }
+            guard FocusTaskAllocationRules.same(session.allocations, change.expectedAllocations),
                   (session.assignmentRevision ?? 0) == change.expectedRevision,
                   change.expectedRevision < Int.max,
                   session.notes == change.expectedNotes,
@@ -220,10 +281,11 @@ extension AppData {
             let sessionIndex = journal[dayIndex].sessions.firstIndex { $0.id == change.sessionID }!
             var session = journal[dayIndex].sessions[sessionIndex]
             let revision = (session.assignmentRevision ?? 0) + 1
-            transaction.entries.append(.init(sessionID: session.id, previousTaskID: session.taskID,
-                previousSource: session.assignmentSource, appliedTaskID: change.targetTaskID,
+            let target = try FocusTaskAllocationRules.normalized(change.targetAllocations)
+            transaction.entries.append(.init(sessionID: session.id, previousAllocations: session.allocations,
+                previousSource: session.assignmentSource, appliedAllocations: target,
                 appliedSource: plan.source, appliedRevision: revision))
-            session.taskID = change.targetTaskID; session.assignmentSource = plan.source; session.assignmentRevision = revision
+            session.allocations = target; session.assignmentSource = plan.source; session.assignmentRevision = revision
             journal[dayIndex].sessions[sessionIndex] = session
         }
         return transaction
@@ -236,15 +298,18 @@ extension AppData {
         for entry in transaction.entries {
             let matches = sessions.filter { $0.id == entry.sessionID }
             guard matches.count == 1, let session = matches.first else { throw FocusAssignmentError.missingSession }
-            guard session.taskID == entry.appliedTaskID, session.assignmentSource == entry.appliedSource,
+            guard FocusTaskAllocationRules.same(session.allocations, entry.appliedAllocations), session.assignmentSource == entry.appliedSource,
                   session.assignmentRevision == entry.appliedRevision,
                   entry.appliedRevision < Int.max else { throw FocusAssignmentError.staleSession }
-            if let id = entry.previousTaskID, !(tasks ?? []).contains(where: { $0.id == id }) { throw FocusAssignmentError.missingTask }
+            let previous = try FocusTaskAllocationRules.normalized(entry.previousAllocations)
+            guard previous.allSatisfy({ allocation in (tasks ?? []).contains(where: { $0.id == allocation.taskID }) }) else {
+                throw FocusAssignmentError.missingTask
+            }
         }
         for entry in transaction.entries {
             let dayIndex = journal.firstIndex { $0.sessions.contains { $0.id == entry.sessionID } }!
             let sessionIndex = journal[dayIndex].sessions.firstIndex { $0.id == entry.sessionID }!
-            journal[dayIndex].sessions[sessionIndex].taskID = entry.previousTaskID
+            journal[dayIndex].sessions[sessionIndex].allocations = entry.previousAllocations
             journal[dayIndex].sessions[sessionIndex].assignmentSource = entry.previousSource
             // Revisions remain monotonic: an older preview must stay stale after an undo.
             journal[dayIndex].sessions[sessionIndex].assignmentRevision = entry.appliedRevision + 1

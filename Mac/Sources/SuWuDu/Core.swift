@@ -75,10 +75,19 @@ struct FocusSession: Codable, Identifiable, Equatable {
     var countsTowardGoal = true
     var notes = ""
     var taskID: String?
+    var taskAllocations: [FocusTaskAllocation]?
     var assignmentSource: String?
     var assignmentRevision: Int?
     var actualMinutes: Int?
     var completedPomodoro: Bool?
+
+    var allocations: [FocusTaskAllocation] {
+        get { taskAllocations ?? FocusTaskAllocationRules.equal(taskID.map { [$0] } ?? []) }
+        set {
+            taskAllocations = newValue
+            taskID = newValue.count == 1 ? newValue[0].taskID : nil
+        }
+    }
 }
 
 struct JournalDay: Codable, Identifiable {
@@ -158,8 +167,11 @@ enum FocusAccounting {
     }
 
     static func record(segments: [FocusSegment], planned: Int, completed: Bool, startedAt: Date,
-                       endedAt: Date, taskID: String? = nil, targets: [JournalTargetRule] = [], journal: inout [JournalDay]) {
+                       endedAt: Date, taskID: String? = nil, taskAllocations: [FocusTaskAllocation]? = nil,
+                       targets: [JournalTargetRule] = [], journal: inout [JournalDay]) {
         let minutes = completed ? planned : min(planned, Int(segments.reduce(0) { $0 + $1.seconds } / 60))
+        let taskShares = taskAllocations ?? FocusTaskAllocationRules.equal(taskID.map { [$0] } ?? [])
+        let legacyTaskID = taskShares.count == 1 ? taskShares[0].taskID : nil
         let allocations = allocate(segments, minutes: minutes)
         var affected = Set(allocations.keys)
         let completionKey = key(endedAt)
@@ -170,13 +182,14 @@ enum FocusAccounting {
             journal[i].adjustment += allocations[date, default: 0]
             if completed && date == completionKey {
                 journal[i].sessions.append(FocusSession(startedAt: startedAt, completedAt: endedAt, minutes: planned,
-                    taskID: taskID, assignmentSource: taskID == nil ? nil : "current", actualMinutes: minutes, completedPomodoro: true))
+                    taskID: legacyTaskID, taskAllocations: taskShares,
+                    assignmentSource: taskShares.isEmpty ? nil : "current", actualMinutes: minutes, completedPomodoro: true))
                 journal[i].adjustment -= planned
             } else if !completed, let allocated = allocations[date], allocated > 0,
                       let range = partialWorkingRange(segments, date: date) {
                 journal[i].sessions.append(FocusSession(source: "partial", startedAt: range.start, completedAt: range.end,
-                    minutes: allocated, countsTowardGoal: false, taskID: taskID,
-                    assignmentSource: taskID == nil ? nil : "current", actualMinutes: allocated, completedPomodoro: false))
+                    minutes: allocated, countsTowardGoal: false, taskID: legacyTaskID, taskAllocations: taskShares,
+                    assignmentSource: taskShares.isEmpty ? nil : "current", actualMinutes: allocated, completedPomodoro: false))
             }
             journal[i].settle(minutes: planned)
         }
@@ -205,6 +218,15 @@ struct FocusRun: Codable {
     var microRemaining: Double?
     var nextMicro: Double?
     var taskID: String?
+    var taskAllocations: [FocusTaskAllocation]?
+
+    var allocations: [FocusTaskAllocation] {
+        get { taskAllocations ?? FocusTaskAllocationRules.equal(taskID.map { [$0] } ?? []) }
+        set {
+            taskAllocations = newValue
+            taskID = newValue.count == 1 ? newValue[0].taskID : nil
+        }
+    }
 }
 
 struct ChatMessage: Codable, Identifiable {
@@ -238,7 +260,16 @@ struct AppData: Codable {
     var facts: [String] = []
     var tasks: [FocusTask]?
     var currentTaskID: String?
+    var currentTaskAllocations: [FocusTaskAllocation]?
     var taskMemos: String?
+
+    var currentAllocations: [FocusTaskAllocation] {
+        get { currentTaskAllocations ?? FocusTaskAllocationRules.equal(currentTaskID.map { [$0] } ?? []) }
+        set {
+            currentTaskAllocations = newValue
+            currentTaskID = newValue.count == 1 ? newValue[0].taskID : nil
+        }
+    }
 }
 
 extension AppData {

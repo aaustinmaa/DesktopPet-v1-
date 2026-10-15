@@ -26,26 +26,37 @@ import Foundation
         guard !(data.tasks ?? []).contains(where: { $0.id == id && $0.isCompleted }) else {
             matchingError = "已完成任务保留在历史记录中；如需删除，请先重新打开任务。"; return false
         }
-        guard data.focus?.taskID != id,
-              !data.journal.flatMap(\.sessions).contains(where: { $0.taskID == id }) else {
+        guard !(data.focus?.allocations.contains(where: { $0.taskID == id }) ?? false),
+              !data.journal.flatMap(\.sessions).contains(where: { $0.allocations.contains { $0.taskID == id } }) else {
             matchingError = "这个任务仍有关联的专注记录，请标记完成以保留历史。"; return false
         }
         let previous = data
         data.tasks?.removeAll { $0.id == id }
-        if data.currentTaskID == id { data.currentTaskID = nil }
+        let remaining = data.currentAllocations.filter { $0.taskID != id }
+        let total = remaining.reduce(0) { $0 + $1.share }
+        data.currentAllocations = remaining.map { FocusTaskAllocation(taskID: $0.taskID, share: $0.share / total) }
         guard persist() else { data = previous; return false }
         clearFocusMatch()
         return true
     }
 
     @discardableResult func selectFocusTask(_ id: String?) -> Bool {
-        guard id == nil || (data.tasks ?? []).contains(where: { $0.id == id }) else {
+        selectFocusTasks(FocusTaskAllocationRules.equal(id.map { [$0] } ?? []))
+    }
+
+    @discardableResult func selectFocusTasks(_ allocations: [FocusTaskAllocation]) -> Bool {
+        let normalized: [FocusTaskAllocation]
+        do { normalized = try FocusTaskAllocationRules.normalized(allocations) }
+        catch { matchingError = error.localizedDescription; return false }
+        let taskIDs = Set((data.tasks ?? []).map(\.id))
+        guard normalized.allSatisfy({ taskIDs.contains($0.taskID) }) else {
             matchingError = "任务已不存在，请刷新任务清单。"; return false
         }
-        let previous = data.currentTaskID
-        // An active run keeps its captured task. The selection applies to the next run.
-        data.currentTaskID = id
-        guard persist() else { data.currentTaskID = previous; return false }
+        let previous = data
+        // An active run keeps its captured distribution. The selection applies to the next run.
+        data.currentAllocations = normalized
+        guard persist() else { data = previous; return false }
+        matchingError = nil
         return true
     }
 
@@ -58,8 +69,15 @@ import Foundation
     }
 
     @discardableResult func assignFocusSessions(_ sessions: [FocusSession], to taskID: String?) -> Bool {
-        let changes = sessions.filter { $0.taskID != taskID && !isConversionRecord($0) }
-            .map { FocusAssignmentChange(session: $0, targetTaskID: taskID) }
+        assignFocusSessions(sessions, allocations: FocusTaskAllocationRules.equal(taskID.map { [$0] } ?? []))
+    }
+
+    @discardableResult func assignFocusSessions(_ sessions: [FocusSession], allocations: [FocusTaskAllocation]) -> Bool {
+        let normalized: [FocusTaskAllocation]
+        do { normalized = try FocusTaskAllocationRules.normalized(allocations) }
+        catch { matchingError = error.localizedDescription; return false }
+        let changes = sessions.filter { !FocusTaskAllocationRules.same($0.allocations, normalized) && !isConversionRecord($0) }
+            .map { FocusAssignmentChange(session: $0, targetAllocations: normalized) }
         guard !changes.isEmpty else {
             matchingError = "没有需要修改的专注明细；分钟换算记录只用于每日目标统计。"; return false
         }
@@ -103,7 +121,7 @@ import Foundation
     }
 
     func requestFocusSuggestions(sessions: [FocusSession], useAI: Bool) {
-        let candidates = sessions.filter { $0.taskID == nil && !isConversionRecord($0) }
+        let candidates = sessions.filter { $0.allocations.isEmpty && !isConversionRecord($0) }
         if useAI {
             startFocusMatching(instruction: "仅根据单次 Notes 中明确的任务线索，建议这些未关联记录的任务。线索不足或存在歧义就省略；不要按截止日期、预计番茄数或时间猜测。", sessions: candidates, onlyUnassigned: true)
             return
@@ -151,7 +169,7 @@ import Foundation
         FocusMatchRequest(instruction: instruction,
             tasks: (data.tasks ?? []).map { FocusMatchTask(id: $0.id, title: $0.title, notes: $0.notes) },
             sessions: sessions.map { FocusMatchSession(id: $0.id, startedAt: $0.startedAt,
-                completedAt: $0.completedAt, notes: $0.notes, taskID: $0.taskID,
+                completedAt: $0.completedAt, minutes: Double($0.taskMinutes), notes: $0.notes, allocations: $0.allocations,
                 assignmentRevision: $0.assignmentRevision ?? 0) })
     }
 
@@ -159,9 +177,9 @@ import Foundation
                                       source: String, onlyUnassigned: Bool) {
         let changes = proposals.compactMap { proposal -> FocusAssignmentChange? in
             guard let session = sessions.first(where: { $0.id == proposal.sessionID }),
-                  !onlyUnassigned || session.taskID == nil,
-                  session.taskID != proposal.taskID else { return nil }
-            return FocusAssignmentChange(session: session, targetTaskID: proposal.taskID, reason: proposal.reason)
+                  !onlyUnassigned || session.allocations.isEmpty,
+                  !FocusTaskAllocationRules.same(session.allocations, proposal.allocations) else { return nil }
+            return FocusAssignmentChange(session: session, targetAllocations: proposal.allocations, reason: proposal.reason)
         }
         guard !changes.isEmpty else {
             matchingError = "没有找到明确的匹配线索，现有归属保持不变。可补充时间段和任务名称后再试。"; return

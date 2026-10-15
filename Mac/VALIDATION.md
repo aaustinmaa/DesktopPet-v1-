@@ -1,5 +1,46 @@
 # Mac validation record
 
+## Multiple task allocations and fixed matching contract (2026-10-14)
+
+- Current change: one pomodoro can allocate actual minutes to multiple tasks,
+  defaulting to equal shares. A 25-minute 10/15 allocation contributes 0.4/0.6
+  completed pomodoros. Partial rows contribute only real allocated minutes;
+  minute-conversion rows do not duplicate task effort.
+- Current/next-run selection captures a full allocation for each run. Individual
+  and batch editors use minutes. Equal-duration batches edit minutes per record;
+  mixed-duration batches edit combined actual minutes and apply the resulting
+  proportions to each record. The footer identifies per-record or combined time.
+  Grouping, history and exports show task minutes. Legacy single IDs remain
+  readable as full shares.
+- Matching has a fixed strict response contract: `matches` contains objects with
+  `sessionID`, `allocations` and `reason`; each allocation contains `taskID` and
+  numeric `share`. All keys are required, extra keys/unknown IDs/duplicate IDs and
+  invalid shares are rejected. Nonempty shares must be positive and total 1.
+- The prompt specifies full final-state add/remove/replace/clear operations,
+  input minute/ratio conversion, explicit clearing versus omitted unchanged
+  records, and omission for ambiguity. The snapshot supplies actual minutes,
+  current allocations, stable chronological ordinals and local timestamps/timezone.
+  Contract parsing does not run local natural-language rules.
+- Focused checks cover legacy migration, equal allocation, weighted totals,
+  partial/conversion accounting, full-vector atomic apply/undo, stale ratios,
+  persistence failure/backup recovery, import preservation and matching contracts.
+  Editor checks cover 12.5/12.5 defaults, 10/15 edits, exact thirds, remaining-time
+  redistribution, invalid drafts and saving the still-focused minute field.
+- The required Mac development build passed all **133 tests in 22 suites**,
+  production compilation and strict signature verification, producing
+  `output/arm64/SuWuDu.app`. Two new integration fixtures were corrected to compare
+  live versus persisted snapshots consistently across timestamp serialization;
+  the stale-record protections remain unchanged.
+- Native view rendering at 1120 and 760 pixels verified the compact 30-pixel
+  record rows, multiple visible task-minute values, narrow stacked layout and
+  the 10/15-minute allocation editor. Long task names truncate individually while
+  minute values remain visible; full labels are available on hover. Rendering
+  used isolated test data, and the temporary render harness was removed.
+- No live ChatGPT/OpenAI matching request has been submitted. The older results
+  below describe their original versions. This request updates the Mac development
+  app only; Windows development output and both platforms' installers are outside
+  scope.
+
 ## Fixed memo-extraction contract (2026-10-14)
 
 - The AI request uses dedicated fixed instructions, memo text, local reference

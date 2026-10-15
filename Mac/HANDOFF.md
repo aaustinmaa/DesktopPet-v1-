@@ -4,6 +4,45 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Multiple tasks per pomodoro and fixed matching contract — 2026-10-14
+
+Records and active runs now retain task allocation vectors. The user-facing editor
+uses minutes, with equal allocation by default: a 25-minute record can be split
+12.5/12.5 or edited to 10/15. Fractions remain internal; the latter allocation
+contributes 0.4/0.6 completed pomodoros and 10/15 task minutes. Interrupted rows
+contribute actual task minutes only; minute-conversion rows do not duplicate
+task effort. Current/next-run task selection accepts multiple tasks and captures
+their complete allocation when the run begins.
+
+Single-record editing, batch editing, grouping, completed history and exports
+show allocated task minutes. Equal-duration batches use minutes per record with
+a **每条 … 分钟** footer: 10/15 means 10/15 in every selected 25-minute record.
+Mixed-duration batches use combined actual minutes with a **合计 … 分钟** footer,
+then apply the resulting proportions to each record. Existing single-task IDs
+decode as a full share. `FocusTaskAllocationRules`
+checks positive, finite, unique shares totaling 1; `DataStore` validates new vectors
+on load/save and retains its corrupt-file preservation and backup recovery path.
+Assignments and undo store full old/new vectors and use monotonic revisions.
+
+`FocusTaskMatching` now supplies a fixed contract to both configured AI providers:
+`{"matches":[{"sessionID":"…","allocations":[{"taskID":"…","share":1}],"reason":"…"}]}`.
+All keys are required, extras are rejected, IDs must exist in the bounded snapshot,
+and every allocation is a complete final state. Dedicated instructions explain
+add/remove/replace/clear, default equal shares, minutes-to-share conversion and
+ambiguous cases. An explicit empty allocation clears the record; an omitted record
+is unchanged. Unknown or ambiguous work is omitted. The snapshot includes actual
+minutes, current allocations, chronological ordinals and local timestamps/timezone.
+Local code checks the contract instead of parsing the user's sentence. Preview,
+apply and undo protect complete allocations against later changes.
+
+The development build passed all 133 tests in 22 suites, production compilation
+and strict signature verification, producing `output/arm64/SuWuDu.app`. Native
+render checks at 1120 and 760 pixels confirmed compact rows and visible per-task
+minutes; the allocation editor was also checked. No live AI request was submitted.
+See `VALIDATION.md` for details.
+This update targets the Mac development `.app`; Windows parity
+and installer work remain pending/out of scope.
+
 ## Fixed memo-extraction contract — 2026-10-14
 
 `AIService.extractMemoTasks` sends dedicated fixed instructions plus the memo,
