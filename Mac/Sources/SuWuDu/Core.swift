@@ -368,11 +368,15 @@ struct AnimationSpec {
             if !shen { list += sequence("heart-lift-v3", 7).reversed() }
             return .init(frames: list, interval: shen ? 0.140 : 0.115, once: true)
         case .hit:
-            let holds: [Double]? = shen
-                ? [0.040, 0.040, 0.040, 0.040, 0.060, 0.060, 0.060, 0.090,
-                   0.090, 0.070, 0.070, 0.080, 0.080, 0.080, 0.080, 0.080]
-                : nil
-            return .init(frames: frames("idle-hit-v1", 16, "hit", 16), interval: 0.075, once: true, frameDurations: holds)
+            if shen {
+                let list = [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 16].map {
+                    String(format: "shenqing-hit-%02d.png", $0)
+                }
+                let holds = [0.060, 0.060, 0.060, 0.060, 0.090, 0.150, 0.080,
+                             0.080, 0.080, 0.060, 0.060, 0.060, 0.080]
+                return .init(frames: list, interval: 0.060, once: true, frameDurations: holds)
+            }
+            return .init(frames: sequence("idle-hit-v1", 16), interval: 0.075, once: true)
         }
     }
 }

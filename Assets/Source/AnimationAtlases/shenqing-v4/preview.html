@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>沈青 · 动画预览</title><style>
+<title>沈青 · 12 套动画</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
 .stage{position:relative}.sleep-base{background-size:100% 100%;background-position:0 0}.sleep-z{position:absolute;transform-origin:50% 50%;opacity:0;image-rendering:pixelated;pointer-events:none}
-</style><header><h1>沈青 · 12 套动画</h1><p>待机双手轻开合、红心固定，工作小幅打字；敲打时闭眼下压再回弹，睡眠时 ZZZ 轻轻飘动。暂停可同时停住所有动作，并手动查看逐帧动画的全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main><article data-action="idle" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170">
+</style><header><h1>沈青 · 12 套动画</h1><p>待机双手轻开合、红心固定，工作小幅打字；点击反应恢复上一版闭眼举心，睡眠时 ZZZ 轻轻飘动。暂停可同时停住所有动作，并手动查看逐帧动画的全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><p><a href="hit-guard-candidate-preview.html">查看受击护心新稿（尚未启用）</a></p><button id="toggle" type="button">暂停全部</button></header><main><article data-action="idle" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170">
       <h2>待机</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青待机" style="background-image:url('idle.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
       <p><a href="idle.png">Sprite sheet</a> · <a href="idle-preview.gif">GIF</a> · 2.72 秒 / 轮 · 双手轻开合，红心固定</p></article>
@@ -42,10 +42,10 @@
       <h2>摇铃提醒</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青摇铃提醒" style="background-image:url('reminder.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
       <p><a href="reminder.png">Sprite sheet</a> · <a href="reminder-preview.gif">GIF</a> · 2.56 秒 / 轮</p></article>
-<article data-action="hit" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="40,40,40,40,60,60,60,90,90,70,70,80,80,80,80,80">
+<article data-action="hit" data-sequence="1,2,3,4,5,6,7,6,5,4,3,2,16" data-durations="60,60,60,60,90,150,80,80,80,60,60,60,80">
       <h2>点击反应</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青点击反应" style="background-image:url('hit.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="hit.png">Sprite sheet</a> · <a href="hit-preview.gif">GIF</a> · 1.06 秒 / 轮 · 闭眼下压，轻轻回弹</p></article>
+      <p><a href="hit.png">Sprite sheet</a> · <a href="hit-preview.gif">GIF</a> · 0.98 秒 / 轮 · 已恢复上一版闭眼举心</p></article>
 <article data-action="question" data-sequence="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" data-durations="160,160,160,160,160,160,160,160,160,160,160,160,160,160,160,160">
       <h2>疑问</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青疑问" style="background-image:url('question.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>

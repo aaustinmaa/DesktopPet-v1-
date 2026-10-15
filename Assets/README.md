@@ -70,6 +70,8 @@ Sleeping instead uses the single 362-by-362 `sleeping.png`, copied to
 `sleeping-z-{small,medium,large}.png` layers and their ten-second choreography.
 The layers' positions and horizontal movement are mirrored for Shen Qing's
 left-facing pose; the Z glyph images themselves remain unflipped.
+The replacement sleeping base has shorter, rounded hair with blunt ends,
+preserving the still sleeping pose and the separate Z layers.
 
 Run `node Scripts/BuildShenQingV4Atlases.mjs` with Node and `sharp` available.
 `SHARP_MODULE` may point to an existing sharp installation. The script preserves
@@ -83,21 +85,31 @@ The superseded sixteen-frame sleeping sprites and source sheet are retained in
 `Archive/Sprites/shenqing-sleeping-before-layers` and
 `Archive/AnimationAtlases/shenqing-sleeping-before-layers`; the latter also keeps
 the previous normalized sleeping sheet and its exact prompt.
+The latest replaced idle and sleeping artwork is kept in
+`Archive/AnimationAtlases/shenqing-idle-before-slim` and
+`Archive/AnimationAtlases/shenqing-sleeping-before-rounded-hair`.
+The discarded hit artwork and runtime frames are preserved in
+`Archive/AnimationAtlases/shenqing-hit-before-guard` and
+`Archive/Sprites/shenqing-hit-before-guard`.
 
 Open `Source/AnimationAtlases/shenqing-v4/preview.html` to play or step through
 all twelve animations. Sheet animations also have a looping `{action}-preview.gif`.
 Shen Qing's idle gently opens and closes both hands at 170 ms per frame, keeping
-the red heart fixed at the chest. Working uses subtle typing at 120 ms per frame.
+the red heart fixed at the chest. Its replacement source keeps a slimmer body
+and a steady opening pose with a gradual start to the hand movement.
+Working uses subtle typing at 120 ms per frame.
 Both keep the eyes open throughout and use continuous small movements without
 long frozen holds. Waving also keeps the eyes open and uses 120 ms per frame.
 Blinking is a separate action at
 80 ms per frame; automatic idle gestures remain 60–120 seconds apart.
 The exported loops arrange neighboring generated poses into gradual movement;
 `sourcePoseSequence` records this order without repainting the source artwork.
-Reminder playback uses 160 ms per frame. The hit reaction follows SuWuDu's
-closed-eye dip and rebound over all sixteen frames in 1.06 seconds; the lowest
-poses, frames 8 and 9, span the hammer's 430 ms impact. Repeated idle strikes
-restart both the hammer and Shen Qing's reaction together.
+Reminder playback uses 160 ms per frame. The hit reaction raises the heart within
+240 ms and holds the closed-eye pose across the hammer's 430 ms impact, then
+retraces the movement once without the later wink/blink poses. Repeated idle
+strikes restart both the hammer and Shen Qing's reaction together.
+This active reaction is restored from `1088a23`: thirteen playback steps totaling
+980 ms, with all sixteen source frames retained.
 Run `node Scripts/BuildShenQingV4Atlases.mjs --timing-only` to refresh GIFs,
 the preview and timing metadata from existing sprites without rewriting any PNGs.
 The built-in imagegen sheet sources and exact prompts are saved as
@@ -106,6 +118,15 @@ The built-in imagegen sheet sources and exact prompts are saved as
 `prompt-base.txt` records the shared identity and flat-base constraints.
 `registration.json` records the crop, scale, frame sequence and timing used for
 export.
+
+The separate hit guard proposal is not enabled. Its source and exact prompt are
+`hit-guard-candidate-source.png` and `hit-guard-candidate-prompt.txt`; its review
+outputs are `hit-guard-candidate.png`, `hit-guard-candidate-preview.gif` and
+`hit-guard-candidate-preview.html`, all in `Source/AnimationAtlases/shenqing-v4`.
+Run `node Scripts/BuildShenQingV4Atlases.mjs --draft-hit` to export only this
+proposal under `Source`, without replacing active sprites or registration.
+The main preview links to its candidate page; the desktop pet continues to use
+the restored 980 ms reaction until the proposal is approved and implemented.
 
 The older v3 artwork, prompts and outline masks remain historical references.
 The legacy `BuildShenQingAtlases.py` pipeline is for those eight-frame sheets;

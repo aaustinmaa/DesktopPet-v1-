@@ -2,6 +2,7 @@
 // Usage: SHARP_MODULE=/path/to/sharp node Scripts/BuildShenQingV4Atlases.mjs [--check] [--timing-only] [idle ...]
 // With no action names all eleven sheets and the layered sleep pose are preflighted.
 // --timing-only reads existing runtime PNGs and writes only GIFs, preview and timing metadata.
+// --draft-hit exports the guard proposal only in Source; it never updates runtime sprites.
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +21,7 @@ const targetHeight = 304;
 const targetAnchor = { x: 170, y: 337 };
 const definitions = [
   { name: 'idle', label: '待机', interval: 170,
-    sourceSequence: [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 1] },
+    sourceSequence: [1, 2, 12, 11, 10, 9, 7, 7, 7, 9, 10, 11, 12, 2, 1, 1] },
   { name: 'blink', label: '眨眼', interval: 80 },
   { name: 'happy', label: '开心', interval: 140 },
   { name: 'wave', label: '挥手', interval: 120 },
@@ -31,18 +32,23 @@ const definitions = [
   { name: 'error', label: '出错', interval: 140 },
   { name: 'sleeping', label: '睡眠', interval: 10000, sequence: [1] },
   { name: 'reminder', label: '摇铃提醒', interval: 160 },
-  { name: 'hit', label: '点击反应', interval: 75,
-    durations: [40, 40, 40, 40, 60, 60, 60, 90, 90, 70, 70, 80, 80, 80, 80, 80] },
+  { name: 'hit', label: '点击反应', interval: 60,
+    sequence: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 16],
+    durations: [60, 60, 60, 60, 90, 150, 80, 80, 80, 60, 60, 60, 80] },
   { name: 'question', label: '疑问', interval: 160 },
 ];
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
 const timingOnly = args.includes('--timing-only');
-const names = args.filter(arg => arg !== '--check' && arg !== '--timing-only');
+const draftHit = args.includes('--draft-hit');
+const names = args.filter(arg => !['--check', '--timing-only', '--draft-hit'].includes(arg));
+if (draftHit && (timingOnly || names.length)) throw new Error('--draft-hit cannot be combined with action names or --timing-only');
 if (names.some(name => !definitions.some(definition => definition.name === name))) {
   throw new Error(`Usage: node Scripts/BuildShenQingV4Atlases.mjs [--check] [--timing-only] [${definitions.map(d => d.name).join(' ')}]`);
 }
-const selected = names.length ? definitions.filter(d => names.includes(d.name)) : definitions;
+const draftDefinition = { name: 'hit-guard-candidate', label: '受击新稿（未启用）', interval: 70,
+  durations: [50, 60, 60, 80, 80, 80, 80, 80, 60, 70, 70, 60, 60, 60, 60, 60] };
+const selected = draftHit ? [draftDefinition] : names.length ? definitions.filter(d => names.includes(d.name)) : definitions;
 const sharp = require(process.env.SHARP_MODULE || 'sharp');
 
 function timingFor(definition) {
@@ -314,9 +320,14 @@ async function preflightSleeping(definition) {
   const crop = { left: Math.max(0, visible.x0 - 3), top: Math.max(0, visible.y0 - 3) };
   crop.width = Math.min(info.width, visible.x1 + 4) - crop.left;
   crop.height = Math.min(info.height, visible.y1 + 4) - crop.top;
-  const scale = Math.min(target.width / crop.width, target.height / crop.height);
+  // Removing the long tail must not enlarge the head to refill its former width.
+  const crown = pixelBounds(data, info.width, info.height, (r, g, b, a, x, y) =>
+    a >= 128 && y < info.height * .65 && b > 150 && g > 60 && b >= g * .98 && b - r > 50);
+  if (!crown) throw new Error('sleeping: missing blue crown for consistent character scale');
+  const targetCrownHeight = 53;
+  const scale = Math.min(target.width / crop.width, target.height / crop.height, targetCrownHeight / (crown.y1 - crown.y0 + 1));
   const width = Math.round(crop.width * scale), height = Math.round(crop.height * scale);
-  const destination = { width, height, left: Math.round(target.left + (target.width - width) / 2), top: target.top + target.height - height };
+  const destination = { width, height, left: target.left, top: target.top + target.height - height };
   if (!fits(destination)) throw new Error('sleeping: base would clip');
   const pixels = await sharp(source).extract(crop).resize(width, height, { kernel: 'nearest', fit: 'fill' }).ensureAlpha().raw().toBuffer();
   const base = Buffer.alloc(cellSize * cellSize * 4);
@@ -327,7 +338,7 @@ async function preflightSleeping(definition) {
     name: definition.name, ...timing, source: path.relative(root, sourcePath),
     sourceSha256: createHash('sha256').update(source).digest('hex'), sourceSize: [info.width, info.height],
     sourceGrid: [1, 1], frameCount: 1, sourcePoseSequence: [1], registrationMode: 'mirrored-suwudu-sleeping-base',
-    runtimeFile: 'shenqing-sleeping-base.png', referenceBody: body, target, crop, scale, destination,
+    runtimeFile: 'shenqing-sleeping-base.png', referenceBody: body, target, crop, crown, targetCrownHeight, scale, destination,
   } };
 }
 
@@ -455,7 +466,18 @@ async function archivePrevious() {
   }
 }
 
-async function previewHtml(animations) {
+async function previewHtml(animations, cardDefinitions = definitions) {
+  const candidatePreview = cardDefinitions === selected && draftHit;
+  const title = candidatePreview ? '沈青 · 受击护心新稿' : '沈青 · 12 套动画';
+  const introduction = candidatePreview
+    ? '候选稿：向中间收拢，眯眼并把爱心向前、向上举起，挡一下击打。此稿仅供预览，桌宠仍使用已恢复的上一版点击反应。'
+    : '待机双手轻开合、红心固定，工作小幅打字；点击反应恢复上一版闭眼举心，睡眠时 ZZZ 轻轻飘动。暂停可同时停住所有动作，并手动查看逐帧动画的全部 16 帧。';
+  let candidateLink = '';
+  if (!candidatePreview) {
+    try { await fs.access(path.join(atlasDir, 'hit-guard-candidate-preview.html'));
+      candidateLink = '<p><a href="hit-guard-candidate-preview.html">查看受击护心新稿（尚未启用）</a></p>';
+    } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
   const available = new Map(animations.map(animation => [animation.name, animation]));
   const sleepingSpecs = available.get('sleeping')?.layeredZzz ?? sleepZSpecs;
   const sleepingGlyphs = available.has('sleeping')
@@ -463,7 +485,7 @@ async function previewHtml(animations) {
       const png = await fs.readFile(path.join(spriteDir, `sleeping-z-${z.name}.png`));
       return `<img class="sleep-z" alt="" aria-hidden="true" draggable="false" src="data:image/png;base64,${png.toString('base64')}" style="left:${z.x / 362 * 100}%;top:${z.y / 362 * 100}%;width:${z.w / 362 * 100}%;height:${z.h / 362 * 100}%">`;
     })) : [];
-  const cards = definitions.map(definition => {
+  const cards = cardDefinitions.map(definition => {
     const animation = available.get(definition.name);
     if (!animation) return `<article><h2>${definition.label}</h2><p>尚未导出</p></article>`;
     if (definition.name === 'sleeping') {
@@ -476,7 +498,8 @@ async function previewHtml(animations) {
     const seconds = durations.reduce((sum, duration) => sum + duration, 0) / 1000;
     const note = definition.name === 'idle' ? ' · 双手轻开合，红心固定'
       : definition.name === 'working' ? ' · 小幅打字，全程睁眼'
-      : definition.name === 'hit' ? ' · 闭眼下压，轻轻回弹' : '';
+      : definition.name === 'hit' ? ' · 已恢复上一版闭眼举心'
+      : definition.name === 'hit-guard-candidate' ? ' · 候选稿，尚未启用' : '';
     return `<article data-action="${definition.name}" data-sequence="${sequence.join(',')}" data-durations="${durations.join(',')}">
       <h2>${definition.label}</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青${definition.label}" style="background-image:url('${definition.name}.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
@@ -484,10 +507,10 @@ async function previewHtml(animations) {
   }).join('\n');
   return `<!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>沈青 · 动画预览</title><style>
+<title>${title}</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
 .stage{position:relative}.sleep-base{background-size:100% 100%;background-position:0 0}.sleep-z{position:absolute;transform-origin:50% 50%;opacity:0;image-rendering:pixelated;pointer-events:none}
-</style><header><h1>沈青 · 12 套动画</h1><p>待机双手轻开合、红心固定，工作小幅打字；敲打时闭眼下压再回弹，睡眠时 ZZZ 轻轻飘动。暂停可同时停住所有动作，并手动查看逐帧动画的全部 16 帧。</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
+</style><header><h1>${title}</h1><p>${introduction}</p><p>这里循环展示各个动作；实际桌宠的敲打反应只播放一次，自动眨眼等小动作间隔为 60–120 秒。</p>${candidateLink}<button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
 <script>
 const cards=Array.from(document.querySelectorAll('[data-action]:not([data-sleeping])')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
 const sleepSpecs=${JSON.stringify(sleepingSpecs)},sleepImages=Array.from(document.querySelectorAll('[data-sleeping] .sleep-z'));let sleepElapsed=0;
@@ -521,6 +544,14 @@ for (const definition of selected) {
 }
 if (checkOnly) {
   console.log(`Validated ${prepared.length} sheets; no files changed.`);
+} else if (draftHit) {
+  const result = prepared[0];
+  const name = result.definition.name;
+  await fs.writeFile(path.join(atlasDir, `${name}.png`), result.atlasPng);
+  await fs.writeFile(path.join(atlasDir, `${name}-preview.gif`), result.gif);
+  await fs.writeFile(path.join(atlasDir, `${name}-registration.json`), JSON.stringify(result.manifest, null, 2) + '\n');
+  await fs.writeFile(path.join(atlasDir, `${name}-preview.html`), await previewHtml([result.manifest], selected));
+  console.log(`${name}: exported proposal only; runtime sprites and active registration unchanged`);
 } else {
   const byName = new Map(previousManifest.animations.map(animation => [animation.name, animation]));
   for (const result of prepared) byName.set(result.definition.name, result.manifest);

@@ -1,0 +1,27 @@
+Use case: identity-preserve
+Asset type: replacement production pixel-art IDLE animation sprite sheet for the desktop companion Shen Qing.
+
+INPUT ROLES:
+Reference image 1 is the approved Shen Qing identity master. Preserve its exact character design, colors, silhouette and left-facing orientation.
+Reference image 2 is SuWuDu's current idle animation sheet. Use ONLY its motion choreography: the two hands gently open outward beside the torso and return inward, while the red heart stays fixed at the chest. Mirror the gesture to suit Shen Qing's left-facing orientation. Do not copy SuWuDu's face, green eyes, crown, hair or colors.
+
+PRIMARY REQUEST: draw Shen Qing doing the same modest open-hands/close-hands idle gesture as SuWuDu. The previous Shen Qing idle incorrectly lifted and lowered the red heart. This replacement MUST NOT lift, lower, offer, bounce or carry the heart. The red heart stays in exactly the same natural position, size and shape at the center-front of the lower chest throughout ALL 16 frames. Only the small hands and cuffs move outward horizontally and return. Treat the red heart as a fixed chest emblem, with hands resting gently beside it rather than moving it.
+
+LAYOUT: exactly sixteen sequential animation frames in one uniform 4-column by 4-row square sprite sheet, read left-to-right and top-to-bottom. This is ONE continuous idle gesture, not sixteen different actions. True transparent RGBA background. Each full sprite stays in its own equal square cell with wide transparent separation and at least 10% transparent padding all around, even at the widest hand pose. Fixed camera, identical scale, exact same flat baseline and center anchor. No cropping, no neighboring sprites touching, no visible grid or separators.
+
+EXACT SHEN QING IDENTITY: male chibi, big head and narrow small body hidden by long charcoal-gray hair, small cyan/blue/white cross-diamond crown jewel, green-and-white side ornament on viewer's RIGHT, tiny pale face exposed on viewer's LEFT, simple amber-orange eyes. Preserve the approved gray hair shape and sparse blocky pale-gray highlights. Gray/black robe with enclosed green and white accents, fixed red pixel heart. Coarse square pixel art, limited flat colors, black outline, no outer white sticker border. Use the same pixel density and proportions as reference image 1.
+
+ACTION:
+Frame 1: relaxed neutral, small hands resting beside the lower sides of the fixed heart.
+Frames 2–4: both hands and cuffs ease slightly outward at the same height, palms gently showing, like the subtle opening gesture in reference image 2.
+Frames 5–8: reach the small comfortable open-hand pose; hands are only about one hand-width farther from the torso than at rest. No arm raising, no waving, no dramatic spread. The heart never moves.
+Frames 9–12: hands smoothly drift inward along the same short horizontal path.
+Frames 13–15: hands settle gently beside the heart in the original relaxed pose.
+Frame 16: exactly matches frame 1 for a seamless loop.
+Every successive pose should be a small smooth change. Keep head, crown, face and hair silhouette registered and still; only minute cuff/nearby-hair settling can accompany the hands. This should look quietly alive, not frozen, and must not look like pumping or presenting the heart.
+
+ALL FRAMES: both amber eyes stay naturally open; no blink, wink, closed eyes, changing expression, or eye direction. No body bobbing, head tilting, head turning, head swaying, whole-body rotation, scaling, squash or stretch. No hands lifting the heart and no vertical movement of the heart.
+
+CRITICAL FLAT BASE: the lower edge is one solid continuous straight horizontal charcoal-gray hair-and-robe hem. Side hair joins the center into an unbroken flat base covering all legs and feet. Green/white accents are enclosed above that dark hem. Never draw visible feet, shoes, toes, legs, separate lower lobes, or a leg gap. The baseline remains fixed in every frame.
+
+Avoid all extra props, extra hearts, particles, text, numbers, labels, captions, decorative marks, shadows, floors or backgrounds. No gradients, blur, smoothing, glossy illustration or fine lines. Prioritize the fixed red-heart anchor, small horizontal hand-opening gesture, exact approved Shen Qing identity, and seamless return to the opening pose.

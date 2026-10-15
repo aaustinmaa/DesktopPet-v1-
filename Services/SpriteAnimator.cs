@@ -236,10 +236,24 @@ namespace DesktopPet.Services
         private static readonly string[] ShenQingQuestionFrames =
             BuildFrames("shenqing-question", 1, 16);
         private static readonly string[] ShenQingHitFrames =
-            BuildFrames("shenqing-hit", 1, 16);
+        {
+            "shenqing-hit-01.png",
+            "shenqing-hit-02.png",
+            "shenqing-hit-03.png",
+            "shenqing-hit-04.png",
+            "shenqing-hit-05.png",
+            "shenqing-hit-06.png",
+            "shenqing-hit-07.png",
+            "shenqing-hit-06.png",
+            "shenqing-hit-05.png",
+            "shenqing-hit-04.png",
+            "shenqing-hit-03.png",
+            "shenqing-hit-02.png",
+            "shenqing-hit-16.png"
+        };
         private static readonly int[] ShenQingHitDurations =
         {
-            40, 40, 40, 40, 60, 60, 60, 90, 90, 70, 70, 80, 80, 80, 80, 80
+            60, 60, 60, 60, 90, 150, 80, 80, 80, 60, 60, 60, 80
         };
 
         public PetState CurrentState { get; private set; } = PetState.Idle;
@@ -360,7 +374,7 @@ namespace DesktopPet.Services
                     break;
                 case PetState.Hit:
                     _frames = IsShenQing ? ShenQingHitFrames : HitFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 60 : 75);
                     _frameDurations = IsShenQing ? ShenQingHitDurations : null;
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;

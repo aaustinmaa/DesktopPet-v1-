@@ -42,21 +42,30 @@ struct AnimationTimingTests {
         #expect(!spec.once)
     }
 
-    @Test func hitSquashesAtHammerImpactThenRecoversThroughAllSixteenFrames() throws {
+    @Test func hitRaisesTheHeartBeforeHammerImpactAndClosesEyesOnlyOnce() throws {
         let spec = AnimationSpec.make(.hit, skin: "shenqing")
         let holds = try #require(spec.frameDurations)
-        let times = try #require(spec.keyTimes)
-        let expectedHolds = [0.040, 0.040, 0.040, 0.040, 0.060, 0.060, 0.060, 0.090,
-                             0.090, 0.070, 0.070, 0.080, 0.080, 0.080, 0.080, 0.080]
+        let poses = spec.frames.map { Int($0.split(separator: "-").last!.prefix(2))! }
         #expect(spec.once)
-        #expect(spec.frames == (1...16).map { String(format: "shenqing-hit-%02d.png", $0) })
-        #expect(holds == expectedHolds)
-        #expect(abs(spec.duration - 1.06) < 0.000001)
-        try #require(times.count == 17)
-        // Source frame 9 is the lowest squash pose and begins at the hammer landing.
-        #expect(abs(holds.prefix(8).reduce(0, +) - 0.430) < 0.000001)
-        #expect(abs(times[8] * spec.duration - 0.430) < 0.000001)
-        #expect(abs(times[9] * spec.duration - 0.520) < 0.000001)
+        #expect(spec.duration < 1.2)
+        #expect(holds.count == poses.count)
+        let raised = try #require(poses.firstIndex(of: 5))
+        #expect(holds.prefix(raised).reduce(0, +) <= 0.25)
+        var elapsed = 0.0
+        var closedEpisodes = 0
+        var wasClosed = false
+        for (index, pose) in poses.enumerated() {
+            let closed = (3...7).contains(pose)
+            if closed && !wasClosed { closedEpisodes += 1 }
+            wasClosed = closed
+            if elapsed <= 0.43 && elapsed + holds[index] > 0.43 {
+                #expect((5...7).contains(pose))
+            }
+            elapsed += holds[index]
+        }
+        #expect(closedEpisodes == 1)
+        #expect(!poses.contains { (8...15).contains($0) })
+        #expect(poses.last == 16)
     }
 
     @Test func sleepingKeepsOneStillBasePose() {

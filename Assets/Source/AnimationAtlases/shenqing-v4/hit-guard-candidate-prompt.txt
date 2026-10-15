@@ -1,0 +1,47 @@
+INITIAL GENERATION PROMPT
+
+Use case: identity-preserve
+Asset type: approval-only candidate pixel-art animation sprite sheet for Shen Qing, a desktop companion.
+Primary request: create a cute instinctive heart-shield reaction to a gentle tap. Shen Qing draws his shoulders and elbows INWARD toward the CENTER of his body, narrows both eyes once, and brings the red heart slightly FORWARD and UP as if using it to guard himself. Keep him upright at the SAME HEIGHT. This is an inward protective flinch, NEVER a downward collapse or vertical squash.
+
+Reference roles:
+Image 1 is the exact approved neutral identity. Preserve this character, including facing left, hair silhouette, proportions, crown, colors and flat hem.
+Image 2 is his current wave sheet; use ONLY its slim upright body proportions, consistent pixel density and stable crown/hem placement, not its waving gesture.
+Image 3 is a previous hit sheet; use ONLY the cute squinted eye feeling and close-held heart of its frames 5–7 as pose inspiration. Do NOT reproduce its later winks, repeated blinks or smiling sequence. Replace its overall choreography with the new single protective reaction described here.
+
+Identity: male chibi Shen Qing with long charcoal-gray hair enveloping his tiny robe body, a pale face exposed on the viewer's LEFT and looking slightly left, amber-orange eyes, a cyan/blue/white cross-diamond crown jewel, and a green-and-white hair ornament on the viewer's RIGHT. Sparse chunky light-gray hair highlights, small green/white/black robe, red pixel heart. Cute slender silhouette, large head and tiny hidden body. Match the reference's coarse square pixels and dark outlines, simple flat limited palette, no smooth painting, gradients, blur, glossy eyes, realistic fingers or outer white sticker border.
+
+Layout: one square transparent RGBA sheet with exactly 16 frames in 4 equal columns and 4 equal rows. Read left to right then top to bottom. One character per equal square cell with generous transparent gutters, at least 8% transparent padding on all four sides. No text, captions, grids, labels, shadow or drawn checkerboard. Every sprite has the same scale and pixel density, same horizontal center and same flat planted hem baseline. The entire crown is visible in all cells.
+
+CRITICAL BODY GEOMETRY: the character remains tall and upright with the same crown-top height and same hem-bottom height throughout. The protective recoil is INWARD and HORIZONTAL through shoulders, elbows and hands. Only a tiny 1–2 logical pixel inward tuck is allowed; absolutely no downward squatting, pancake shape, shrinking in height, whole-sprite scaling, jumping, sitting or body widening. Do not lower the head. Keep the crown and outer hair silhouette nearly steady. Hands and shoulders pull toward the center, not away from the body.
+
+CRITICAL FLAT HEM: the bottom is ONE uninterrupted opaque level dark-charcoal hair-and-robe base. The two hair sides connect across the middle. No legs, feet, shoes, toe shapes, green or white protrusions below the base, separated lower appendages, two-lobed bottom or leg gap. Clothing details remain enclosed above the continuous flat dark hem.
+
+Single smooth 16-frame choreography:
+1: exact approved neutral open-eyed pose, hands around the red heart at chest height.
+2: tiny immediate anticipation: eyelids narrow halfway, shoulders and elbows begin drawing inward; heart starts moving slightly toward the face.
+3: both eyes gently squint together into cute small inward black chevrons or narrow slits; elbows tuck closer to chest; heart rises a little and moves forward.
+4: full protective pose reached: narrow shoulder/arm posture, both tiny hands hold the SAME red heart in front of upper chest just below the chin, about 2–3 logical pixels above its neutral position. Head and crown remain at neutral height.
+5–8: hold this cute inward heart-shield posture through the imagined tap, with tiny adjacent-pose refinements in the hands/elbows only; same continuous squint. Heart stays a heart with the same size and red color, no stretching. Keep the torso narrow and upright, hem stable.
+9: very slight release of tension, eyes still in the same gentle squint; hands still protecting with the heart.
+10: shoulders start relaxing outward toward their original position; heart begins easing back toward neutral chest height.
+11: heart halfway back down, eyelids gradually loosen from squint to half-open. No additional blink.
+12: amber eyes open together again, hands and heart nearly neutral.
+13: relaxed neutral posture restored, slight settling of the hands only.
+14–15: gentle final settling to the exact opening pose, eyes stay open.
+16: same as frame 1.
+
+The result should read clearly as: neutral → quick inward flinch and heart shield → brief held squint → smooth relaxed return. There is exactly ONE continuous eye-narrowing episode, no wink, no blinking again later, no smiling-eye cutaway and no unrelated action. No hammer or external object in this sheet because the application displays its hammer separately. No impact star, bruises, tears, pain marks, text, floating heart particles, heart enlargement or new props. This is only an approval candidate and should show the complete action cleanly.
+
+FINAL TARGETED EDIT PROMPT
+
+Use case: identity-preserve
+Asset type: transparent 4x4, 16-frame pixel-art candidate sprite sheet.
+Input image 1 is the EDIT TARGET, the current Shen Qing heart-shield candidate sheet. Input image 2 is the approved neutral identity reference.
+Keep the edit target's complete layout, all sixteen frames, exact character scale, stable crown height, flat hem baseline, gray hair, cyan jewel, viewer-right green hair ornament, left-facing amber-eyed face, red heart, coarse square pixels, transparent background and already-good inward heart-shield action unchanged.
+
+Make ONLY these two small corrections throughout the existing target:
+1. In frames where the heart is raised, especially frames 3–9, the two tall separated green strips below the heart currently look like two pant legs. Replace those lower-front strips with one SHORT, SINGLE CONNECTED green robe-front panel in the upper body, and continuous charcoal-gray robe/hair beneath it, so there is no visible pair of legs. The garment is a single robe mass, never trousers. Preserve the SAME opaque flat horizontal dark hem in every frame. Keep small green and white trim enclosed inside the robe, avoid two vertical leg-like columns or any exposed feet. Do not change hand positions or the height of the red heart.
+2. Frame 10 currently peeks open one eye. Correct frame 10 so BOTH eyes open together evenly to the same half-open amber-eye state. Both eyes should recover in sync. Preserve the single continuous squint held across frames 3–9, then symmetrical half-open eyes in frame 10, and open eyes from frame 11 through 16. No wink, no second blink and no new facial expression.
+
+Do not change any other poses, anatomy, height, width, movement, timing order or pixels unnecessarily. Keep the shoulders and hands pulled inward for the guard, and the heart slightly forward/up toward the chin. Do not squash or collapse the body downwards. Do not add an object, hammer, effects, shadow, white outline, text or background. Transparent RGBA output; exactly the same 4-column x 4-row layout.
