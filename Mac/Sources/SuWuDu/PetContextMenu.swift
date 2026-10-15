@@ -48,7 +48,6 @@ import SwiftUI
         panel.setFrameOrigin(NSPoint(x: min(max(area.minX, point.x), area.maxX - panel.frame.width),
                                      y: min(max(area.minY, point.y - panel.frame.height), area.maxY - panel.frame.height)))
         panels = [panel]; states = [state]
-        NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
             guard let self else { return event }
@@ -74,7 +73,8 @@ import SwiftUI
         let naturalHeight = state.menu.items.reduce(CGFloat(14)) { $0 + ($1.isSeparatorItem ? 11 : 34) }
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         let height = min(naturalHeight, (screen?.visibleFrame.height ?? 800) - 12)
-        let panel = PetMenuPanel(contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.borderless], backing: .buffered, defer: false)
+        // Take keyboard focus for the popup without activating and raising the app's other windows.
+        let panel = PetMenuPanel(contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.title = level == 0 ? "桌宠菜单" : "命令她做动作"
         panel.isOpaque = false; panel.backgroundColor = .clear; panel.hasShadow = true
         panel.isReleasedWhenClosed = false; panel.hidesOnDeactivate = false

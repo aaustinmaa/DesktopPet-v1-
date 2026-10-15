@@ -1,5 +1,26 @@
 # Mac validation record
 
+## Desktop quick menu preserves other windows (2026-10-15)
+
+- The desktop quick menu no longer activates the whole application. Root and
+  submenu panels are created as nonactivating panels, retaining keyboard focus
+  while other application windows remain at their existing stacking positions.
+  Explicit menu commands that open chat/settings still use their existing window
+  activation paths.
+- Two targeted tests passed for nonactivating root/submenu panels, keyboard
+  navigation and action selection, Escape dismissal and other window state.
+- A separate two-process AppKit comparison used only isolated test windows:
+  before the fix, opening the menu activated the owning process and exposed its
+  covered panel; after the fix, root and submenu received keyboard focus while
+  the owning process stayed in the background and the other panel stayed covered.
+  AppKit's `NSApp.isActive` can be true for keyboard event routing even when
+  `NSRunningApplication.current.isActive` remains false; verification uses the
+  process activation state and actual window occlusion.
+- Release compilation with the macOS 26.5 SDK passed. The new executable is in
+  `output/arm64/SuWuDu.app`; strict/deep signature verification passed, retaining
+  existing runtime assets and nested helpers. The running user app was not
+  restarted, and no Windows output, installer or DMG was changed.
+
 ## Shen Qing sleeping ZZZ placement (2026-10-15)
 
 - Applied the approved preview offset to Shen Qing only: 20 pixels left and
