@@ -653,7 +653,8 @@ import SwiftUI
     }
     private func liveSessions() -> [FocusSession] {
         let ids = Set(sessions.map(\.id))
-        return model.data.journal.flatMap(\.sessions).filter { ids.contains($0.id) }
+        return FocusJournalRecords(sessions: model.data.journal.flatMap(\.sessions)).matchable
+            .filter { ids.contains($0.id) }
     }
     private func timeLabel(_ id: String) -> String {
         guard let session = sessions.first(where: { $0.id == id }) else { return "记录已变化" }

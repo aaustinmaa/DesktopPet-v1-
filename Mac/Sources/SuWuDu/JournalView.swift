@@ -98,15 +98,11 @@ enum JournalExport {
     private var dateKey: String { editor.dateKey }
     private var day: JournalDay { editor.day }
     private var tasks: [FocusTask] { model.data.tasks ?? [] }
+    private var records: FocusJournalRecords { FocusJournalRecords(sessions: day.sessions) }
     private var matchingSessions: [FocusSession] {
-        day.sessions.filter { selectable($0) && (selected.isEmpty || selected.contains($0.id)) }
+        records.matchable.filter { selected.isEmpty || selected.contains($0.id) }
     }
-    private var orderedSessions: [FocusSession] {
-        day.sessions.sorted {
-            if $0.startedAt != $1.startedAt { return $0.startedAt < $1.startedAt }
-            return $0.id < $1.id
-        }
-    }
+    private var orderedSessions: [FocusSession] { records.counted }
     private struct AllocationEdit: Identifiable {
         var id = UUID()
         var sessions: [FocusSession]
@@ -166,7 +162,7 @@ enum JournalExport {
                 selected = []; selectionAnchor = nil; expanded = []
                 model.cancelFocusMatch(); model.clearFocusMatch()
             }
-            .onChange(of: day.sessions.map(\.id)) { _, ids in selected.formIntersection(ids) }
+            .onChange(of: records.matchable.map(\.id)) { _, ids in selected.formIntersection(ids) }
             .onChange(of: selected) { _, _ in model.clearFocusMatch() }
             .onChange(of: recordsByTask) { _, _ in selectionAnchor = nil }
             .sheet(isPresented: $showingTargets) { TargetScheduleView(model: model, initialDate: date) }
@@ -254,6 +250,12 @@ enum JournalExport {
                         }
                     }
                     Button("批量设置番茄钟目标") { if editor.save() { showingTargets = true } }
+                    if !records.minutes.isEmpty {
+                        supplementaryRecords("分钟明细", sessions: records.minutes)
+                    }
+                    if !records.excluded.isEmpty {
+                        supplementaryRecords("未计入记录", sessions: records.excluded)
+                    }
                 }.padding(.top, 12)
             }.font(.callout.weight(.semibold))
         }
@@ -263,7 +265,7 @@ enum JournalExport {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("番茄钟记录").font(.title3.bold())
-                    Text("\(day.sessions.count) 条").font(.caption).foregroundStyle(PetTheme.muted)
+                    Text("\(orderedSessions.count) 条").font(.caption).foregroundStyle(PetTheme.muted)
                     Spacer()
                     Button("＋ 补记", action: addSession).help("补记一个番茄钟")
                 }
@@ -273,10 +275,10 @@ enum JournalExport {
                         Text("按任务").tag(true)
                     }.pickerStyle(.segmented).labelsHidden().frame(width: 180)
                     Spacer()
-                    Button("选未关联") { selected = Set(day.sessions.filter { $0.allocations.isEmpty && selectable($0) }.map(\.id)); selectionAnchor = nil }
-                        .disabled(day.sessions.allSatisfy { !$0.allocations.isEmpty || !selectable($0) })
-                    Button("全选") { selected = Set(day.sessions.filter(selectable).map(\.id)); selectionAnchor = nil }
-                        .disabled(day.sessions.allSatisfy { !selectable($0) })
+                    Button("选未关联") { selected = Set(records.matchable.filter { $0.allocations.isEmpty }.map(\.id)); selectionAnchor = nil }
+                        .disabled(records.matchable.allSatisfy { !$0.allocations.isEmpty })
+                    Button("全选") { selected = Set(records.matchable.map(\.id)); selectionAnchor = nil }
+                        .disabled(records.matchable.isEmpty)
                     if model.canUndoFocusAssignments {
                         Button("撤销") { if editor.save(), model.undoFocusAssignments() { status = "已撤销" } }
                             .help("撤销最近一批任务匹配")
@@ -285,10 +287,10 @@ enum JournalExport {
                 if !selected.isEmpty {
                     HStack(spacing: 8) {
                         Text("已选 \(selected.count) 条").font(.caption.weight(.semibold))
-                        Button("追加任务…") { editAllocations(day.sessions.filter { selected.contains($0.id) }, addingTasks: true) }
+                        Button("追加任务…") { editAllocations(orderedSessions.filter { selected.contains($0.id) }, addingTasks: true) }
                             .help("保留各条记录已有的任务，追加后均分用时。")
                         Menu {
-                            Button("重新分配用时…") { editAllocations(day.sessions.filter { selected.contains($0.id) }) }
+                            Button("重新分配用时…") { editAllocations(orderedSessions.filter { selected.contains($0.id) }) }
                             Button("清空任务关联") { assignSelection(nil) }
                         } label: { Image(systemName: "ellipsis") }
                             .menuStyle(.borderlessButton).fixedSize().accessibilityLabel("更多关联操作").help("更多关联操作")
@@ -296,11 +298,11 @@ enum JournalExport {
                         Button("取消选择") { selected = []; selectionAnchor = nil }
                     }
                 }
-                if day.sessions.isEmpty {
+                if orderedSessions.isEmpty {
                     Text("暂无记录").foregroundStyle(PetTheme.muted)
                         .frame(maxWidth: .infinity).padding(.vertical, 18)
                 }
-                if !day.sessions.isEmpty {
+                if !orderedSessions.isEmpty {
                     VStack(spacing: 0) {
                         sessionTableHeader
                         if recordsByTask {
@@ -324,6 +326,39 @@ enum JournalExport {
             }
         }
     }
+    private func supplementaryRecords(_ title: String, sessions: [FocusSession]) -> some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(sessions) { session in
+                    DisclosureGroup(isExpanded: Binding(
+                        get: { expanded.contains(session.id) },
+                        set: { if $0 { expanded.insert(session.id) } else { expanded.remove(session.id) } }
+                    )) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if selectable(session) {
+                                Button { editAllocations([session], countedOnly: false) } label: {
+                                    Text(allocationLabel(session)).frame(maxWidth: .infinity, alignment: .leading)
+                                }.help("分配任务用时")
+                            }
+                            sessionEditor(session)
+                        }.padding(.bottom, 8)
+                    } label: {
+                        HStack(spacing: 10) {
+                            Text(sessionTimeRange(session)).monospacedDigit()
+                            Text("\(session.minutes) 分钟").monospacedDigit()
+                            Text(sessionPreview(session)).foregroundStyle(PetTheme.muted)
+                                .lineLimit(1).truncationMode(.tail)
+                        }.font(.callout)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text(title)
+                Text("\(sessions.count) 条").font(.caption).foregroundStyle(PetTheme.muted)
+            }
+        }
+    }
     private var sessionTableHeader: some View {
         HStack(spacing: 8) {
             Color.clear.frame(width: 20, height: 1)
@@ -333,7 +368,7 @@ enum JournalExport {
                 Text("任务 · 分钟").frame(width: 200, alignment: .leading)
                 Text("来源 · Notes").frame(maxWidth: .infinity, alignment: .leading)
             }
-            Color.clear.frame(width: 20, height: 1)
+            Color.clear.frame(width: 32, height: 1)
         }.font(.system(size: 11, weight: .semibold)).foregroundStyle(PetTheme.muted)
             .padding(.horizontal, 8).frame(height: 25).background(PetTheme.surface)
     }
@@ -378,19 +413,19 @@ enum JournalExport {
                 }.buttonStyle(.plain).disabled(!selectable(session))
                     .accessibilityLabel(allocationLabel(session))
                     .help(allocationLabel(session) + "\n点击分配任务用时")
-                Button { select(session, groupID: groupID) } label: {
-                    Text(sessionPreview(session)).foregroundStyle(PetTheme.muted)
-                        .font(.system(size: 12)).lineLimit(1).truncationMode(.tail)
-                        .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading).contentShape(Rectangle())
-                }.buttonStyle(.plain).disabled(!selectable(session)).help(sessionDetail(session))
                 Button {
                     if expanded.contains(session.id) { expanded.remove(session.id) } else { expanded.insert(session.id) }
                 } label: {
-                    Image(systemName: expanded.contains(session.id) ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .semibold)).frame(width: 20, height: 30)
+                    HStack(spacing: 8) {
+                        Text(sessionPreview(session)).foregroundStyle(PetTheme.muted)
+                            .font(.system(size: 12)).lineLimit(1).truncationMode(.tail)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Image(systemName: expanded.contains(session.id) ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 11, weight: .semibold)).frame(width: 32, height: 30)
+                    }.frame(minHeight: 30).contentShape(Rectangle())
                 }.buttonStyle(.plain)
                     .accessibilityLabel(expanded.contains(session.id) ? "收起番茄钟记录" : "展开番茄钟记录")
-                    .help(expanded.contains(session.id) ? "收起编辑" : "查看完整 Notes、编辑或删除")
+                    .help(sessionDetail(session) + "\n" + (expanded.contains(session.id) ? "收起编辑" : "查看完整 Notes、编辑或删除"))
             }
             .padding(.horizontal, 8)
             if expanded.contains(session.id) { sessionEditor(session).padding(.horizontal, 12).padding(.bottom, 12) }
@@ -426,8 +461,10 @@ enum JournalExport {
                 Text("分钟数").font(.callout)
                 IntegerField(title: "分钟", value: sessionBinding(session, \.minutes), range: 0...1440).frame(width: 70)
                     .help(session.isPartial ? "提前结束的分钟已计入分钟调整；修改时会同步调整。" : "这个番茄钟记录的分钟数。")
-                Toggle("计入完成数量", isOn: sessionBinding(session, \.countsTowardGoal)).disabled(session.isPartial)
-                    .help(session.isPartial ? "提前结束不计作完整番茄。" : session.isMinuteConversion ? "分钟换算只服务每日目标，不重复计算任务投入。" : "关闭后不计入当天完成数量。")
+                if !session.isPartial {
+                    Toggle("计入完成数量", isOn: sessionBinding(session, \.countsTowardGoal))
+                        .help(session.isMinuteConversion ? "分钟换算只服务每日目标，不重复计算任务投入。" : "关闭后不计入当天完成数量。")
+                }
                 Spacer()
                 Button("删除") {
                     var updated = day
@@ -494,17 +531,20 @@ enum JournalExport {
     }
     private func assignSelection(_ taskID: String?) {
         guard !selected.isEmpty, editor.save() else { return }
-        let live = model.data.journalDay(dateKey).sessions.filter { selected.contains($0.id) }
+        let live = FocusJournalRecords(sessions: model.data.journalDay(dateKey).sessions).matchable
+            .filter { selected.contains($0.id) }
         let saved = taskID.map { model.appendFocusSessions(live, taskIDs: [$0]) }
             ?? model.assignFocusSessions(live, to: nil)
         guard saved else { return }
         status = taskID == nil ? "已取消关联 · \(live.count) 条" : "已更新 · \(live.count) 条"
         selected = []; selectionAnchor = nil
     }
-    private func editAllocations(_ sessions: [FocusSession], addingTasks: Bool = false) {
+    private func editAllocations(_ sessions: [FocusSession], addingTasks: Bool = false, countedOnly: Bool = true) {
         guard !sessions.isEmpty, editor.save() else { return }
         let ids = Set(sessions.map(\.id))
-        let live = model.data.journalDay(dateKey).sessions.filter { ids.contains($0.id) && selectable($0) }
+        let savedSessions = model.data.journalDay(dateKey).sessions
+        let candidates = countedOnly ? FocusJournalRecords(sessions: savedSessions).matchable : savedSessions.filter(selectable)
+        let live = candidates.filter { ids.contains($0.id) }
         guard !live.isEmpty else { return }
         let initial = live[0].allocations
         allocationEdit = AllocationEdit(sessions: live,
@@ -595,10 +635,10 @@ struct HelpView: View {
                 Text("鼠标穿透与找回").font(.headline)
                 Text("开启鼠标穿透后，点击会传给后面的应用。按 Control + Option + P，或点击菜单栏爱心图标 → 叫回桌宠。恢复会将桌宠移到鼠标所在的显示器。")
                 Text("专注与记录").font(.headline)
-                Text("完整专注自动记录，提前停止时记录已完成的整分钟。暂停不计时，Mac 睡眠或应用重启后保持暂停。每天 21:00 开始下一记录日，跨界分钟按实际片段分配。记录窗口支持目标、分钟调整、补记、删除、每日 / 单次 Notes、复制及日期范围导出。完成专注后进入休息，休息结束时提醒；重新开始可以提前结束休息。")
+                Text("完整专注自动记录，提前停止只将已完成的整分钟计入分钟调整，不增加完整番茄数；详情在“目标与分钟调整 → 分钟明细”，可分配任务、修改用时与 Notes 或删除。累计分钟达到一轮时长时，仍按原有规则生成计入目标的分钟换算记录。暂停不计时，Mac 睡眠或应用重启后保持暂停。每天 21:00 开始下一记录日，跨界分钟按实际片段分配。记录窗口支持目标、分钟调整、补记、删除、每日 / 单次 Notes、复制及日期范围导出。完成专注后进入休息，休息结束时提醒；重新开始可以提前结束休息。")
                 Text("任务与番茄匹配").font(.headline)
                 Text("从启动面板、菜单栏或桌宠右键打开“任务与专注”。任务统一放在一张清单，支持预计番茄数、截止日期、可选截止时间、说明和手动完成；预计数是投入预算。截止日期按日历判断，与 21:00 记录日分界独立。可粘贴清单预览导入，备忘也能转为任务。")
-                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格一行一条，“来源 · Notes”直接区分自动、手动、提前结束和分钟换算；补记的默认时间是补记当时向前推一轮时长，每条独立计入。点击任务列调整用时；Shift 连选后点“追加任务”，或点击任务卡片的“追加到 N 条”，会保留每条记录原有的任务。新增任务后均分用时，重复添加不改变原分配。更多菜单中的“重新分配用时”用于统一替换所选记录的任务与用时：同长度按每条分钟填写，不同时长按合计分钟填写再按比例分摊；也可明确清空关联。最近一次修改可整批撤销。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
+                Text("当前任务可多选，默认均分本轮分钟，也可直接填写各任务用时。例如 25 分钟中补课 10 分钟、网站 15 分钟，分别计入 0.4、0.6 颗番茄。每轮自动沿用所选分配；进行中切换只影响下一轮，暂停或恢复保留本轮分配。番茄表格只显示计入完成数量的完整记录及分钟换算记录，“来源 · Notes”区分自动、手动和分钟换算；取消计入的记录移到“目标与分钟调整 → 未计入记录”，可在那里恢复。点击 Notes 或箭头展开记录，各处折叠区可点击整条标题行展开；补记的默认时间是补记当时向前推一轮时长，每条独立计入。点击任务列调整用时；全选、批量关联与 AI 匹配只处理表内可关联的记录。Shift 连选后点“追加任务”，或点击任务卡片的“追加到 N 条”，会保留每条记录原有的任务。新增任务后均分用时，重复添加不改变原分配。更多菜单中的“重新分配用时”用于统一替换所选记录的任务与用时：同长度按每条分钟填写，不同时长按合计分钟填写再按比例分摊；也可明确清空关联。最近一次修改可整批撤销。按任务查看、完成历史和导出均包含各任务用时。提前结束仅累计实际分钟，分钟换算记录不重复计算投入。")
                 Text("在备忘中点击“AI 提取”，AI 会提取任务并保留原文出处。“任务 - 数字”或紧接下一行的数字表示预计番茄数；例如“Cs370 - 15, catchup cheat sheet +5”会分成课程任务 15 颗和对应 cheat sheet 5 颗，课程号不计入预算。明确截止日期由 AI 根据本地日期和时区整理，不明确的值留空。检查、修改和勾选后整批导入，原备忘保留。该操作向设置中的服务发送专用指令、当前备忘、日期/时区及固定输出格式；应用检查返回格式、数值和原文出处。离线时可手动转任务或粘贴清单。")
                 Text("任务清单中的“完成历史”保存已完成任务，显示完成时间、说明、原文出处及累计投入。展开可查看关联专注明细、跳转到对应记录日，也可重新打开任务继续执行。旧任务如果没有保存完成时间，会显示时间未记录。")
                 Text("“AI 匹配”和“AI 建议”使用设置中的 ChatGPT、Claude 或 OpenAI API，发送当前范围的记录序号、真实时间、实际分钟、任务及当前分配、单次 Notes。可以说“第一颗补课 10 分钟、网站 15 分钟”“第二颗再加笔记”或“清空第三颗关联”。多个任务未指定用时则均分；AI 返回固定格式的完整分配，未知任务或无法确定的记录会省略。先查看修改前后各任务的分钟数，再应用整批结果；记录有新修改时会阻止覆盖，应用后可撤销。离线“Notes 匹配”只识别明确且唯一的完整任务名。")

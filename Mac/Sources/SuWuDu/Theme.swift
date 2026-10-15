@@ -72,10 +72,36 @@ struct PetHeading: View {
         }
     }
 }
+struct PetDisclosureGroupStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                configuration.isExpanded.toggle()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: configuration.isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(PetTheme.muted)
+                        .frame(width: 12)
+                        .accessibilityHidden(true)
+                    configuration.label.frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(configuration.isExpanded ? "已展开" : "已收起")
+            if configuration.isExpanded {
+                configuration.content.padding(.leading, 20)
+            }
+        }
+    }
+}
 extension View {
     func petPage() -> some View {
         self.foregroundStyle(PetTheme.ink).tint(PetTheme.accent)
             .buttonStyle(PetButtonStyle()).textFieldStyle(.roundedBorder)
+            .disclosureGroupStyle(PetDisclosureGroupStyle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(PetTheme.surface).preferredColorScheme(.light)
     }

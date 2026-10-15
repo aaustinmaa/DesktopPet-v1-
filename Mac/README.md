@@ -130,7 +130,9 @@ The existing journal and timer controls share one panel with a unified task list
 there is no separate today/task-library hierarchy. The panel uses the existing
 celadon theme and shared controls.
 The panel keeps controls, task/session data and relevant states visible; operating
-rules are in hover help and the built-in instructions. Memo source text is expandable.
+rules are in hover help and the built-in instructions. Expandable headings, including
+minute adjustments, task matching, memo sources and archived chats, accept clicks
+across the entire title row and its empty space with a minimum 32-point height.
 
 - Create or edit tasks with optional estimated pomodoros, a date-only or timed
   deadline, notes and a completion flag. Estimates measure a budget, not completion.
@@ -163,10 +165,14 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   with a **每条 … 分钟** footer; mixed-duration batches use combined minutes with
   a **合计 … 分钟** footer and apply the resulting proportions to each record.
   Batch changes remain atomic, reject stale records and support whole-batch undo.
-  Compact table rows show time, minutes, tasks and **来源 · Notes** on one line:
-  **自动**, **手动**, **提前结束** or **分钟换算**, followed by the note. Hover to
-  read the full note or expand one row to edit. Task grouping and history show
-  each task's allocated minutes without counting the whole record for every task.
+  The compact table contains only pomodoros counted toward the daily goal,
+  including units converted from minute adjustments. Rows show time, minutes,
+  tasks and **来源 · Notes** on one line: **自动**, **手动** or **分钟换算**,
+  followed by the note. Click anywhere in the Notes/arrow area to expand a row;
+  the row stays 30 points high. Hover to read the full note. Task grouping and
+  history show each task's allocated minutes without counting the whole record
+  for every task. All/select-unassigned, Shift selection, batch actions and AI/local
+  matching operate only on counted, non-conversion pomodoros in this table.
 - The task list's **完成历史** view retains completed tasks, their completion time,
   estimated/actual effort, notes and source excerpt. Expand a task to inspect its
   associated sessions and jump to a record day. Older completed tasks with no
@@ -179,8 +185,13 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   preserve existing associations. Offline mode does not run a natural-language parser.
 - Task effort uses the stored proportion: a 10/15 split of one 25-minute completed
   pomodoro contributes 0.4/0.6 completed pomodoros and 10/15 minutes. Interrupted
-  runs contribute only their allocated actual minutes. Minute conversion moves
-  adjusted minutes into daily goal counts without counting task effort again.
+  runs contribute only their allocated actual minutes. Their records appear under
+  **目标与分钟调整 → 分钟明细**, where task allocations, minutes and notes remain
+  editable and records can be deleted. They do not appear in the pomodoro table
+  or count as completed pomodoros. Ordinary records excluded from the goal appear
+  under **未计入记录**, where they can be edited, deleted or restored to the count.
+  Minute conversion moves adjusted minutes into daily goal counts without counting
+  task effort again. Task history and exports retain the interrupted-run details.
   Manual sessions can still be added and assigned directly. Each manual addition
   creates a separate record, ending at the time of entry by default; overlapping
   times are not automatically deduplicated.

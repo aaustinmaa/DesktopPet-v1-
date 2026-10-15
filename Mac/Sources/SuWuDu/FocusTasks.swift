@@ -171,6 +171,22 @@ extension JournalDay {
     }
 }
 
+struct FocusJournalRecords {
+    let counted: [FocusSession]
+    let minutes: [FocusSession]
+    let excluded: [FocusSession]
+    var matchable: [FocusSession] { counted.filter { !$0.isMinuteConversion } }
+
+    init(sessions: [FocusSession]) {
+        let ordered = sessions.sorted {
+            $0.startedAt == $1.startedAt ? $0.id < $1.id : $0.startedAt < $1.startedAt
+        }
+        counted = ordered.filter { !$0.isPartial && $0.countsTowardGoal }
+        minutes = ordered.filter(\.isPartial)
+        excluded = ordered.filter { !$0.isPartial && !$0.countsTowardGoal }
+    }
+}
+
 struct FocusAssignmentChange: Equatable {
     var sessionID: String
     var targetAllocations: [FocusTaskAllocation]

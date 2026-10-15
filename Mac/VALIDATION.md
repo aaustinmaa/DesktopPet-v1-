@@ -1,5 +1,27 @@
 # Mac validation record
 
+## Minute details and disclosure hit targets (2026-10-15)
+
+- The pomodoro table now shows counted, non-partial records, including converted
+  units. Early-ended work remains in **目标与分钟调整 → 分钟明细**; excluded
+  ordinary records remain editable/restorable in **未计入记录**. Existing data,
+  task effort, export details and minute-conversion accounting are retained.
+- Table selection, grouping and batch/AI matching use the same visible scope;
+  conversions cannot be matched. Saved records are rechecked before matching or
+  batch assignment, while individual minute details still allow task allocation.
+- Two new isolated regression tests passed: 10 + 15 interrupted minutes produce
+  one converted unit while preserving 25 task minutes once; editing, saving,
+  reloading, excluding/restoring and deleting records preserve the correct scopes,
+  totals and exported detail. Earlier functional suites were not rerun.
+- Shared disclosure headings now have full-width 32-point hit targets, including
+  trailing whitespace. A temporary native AppKit harness passed nine mouse-event
+  clicks across three label sizes (title open, trailing-space close/open). The
+  expanded render was inspected, and the harness was removed. Compact record
+  rows keep their 30-point height and expand through the combined Notes/arrow area.
+- Release compilation with the macOS 26.5 SDK and strict/deep app signature
+  verification passed. `output/arm64/SuWuDu.app` was refreshed without restarting
+  the running app or changing user data. Windows and installers were not changed.
+
 ## Visible recording sources (2026-10-15)
 
 - Compact rows now show **自动 / 手动 / 提前结束 / 分钟换算** in the existing
