@@ -20,6 +20,29 @@ struct CompanionReply {
 
 @MainActor final class AIService {
     let codex = CodexClient()
+    let claude: ClaudeClient
+
+    init(claude: ClaudeClient? = nil) { self.claude = claude ?? ClaudeClient() }
+
+    static let companionSchema: [String: Any] = [
+        "type": "object", "additionalProperties": false,
+        "properties": [
+            "reply": ["type": "string"],
+            "emotion": ["type": "string", "enum": ["idle", "happy", "working", "question", "success", "error", "sleeping", "reminder", "waving", "heart"]],
+            "action": ["type": "string", "enum": ["none", "bounce", "wave", "heart"]]
+        ], "required": ["reply", "emotion", "action"]
+    ]
+    private static func structuredCompanionReply(_ raw: String) throws -> CompanionReply {
+        guard let object = try? JSONSerialization.jsonObject(with: Data(raw.utf8)) as? [String: Any],
+              Set(object.keys) == ["reply", "emotion", "action"],
+              let reply = object["reply"] as? String, !reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let emotion = object["emotion"] as? String,
+              ["idle", "happy", "working", "question", "success", "error", "sleeping", "reminder", "waving", "heart"].contains(emotion),
+              let action = object["action"] as? String, ["none", "bounce", "wave", "heart"].contains(action) else {
+            throw AppError.message("Claude 聊天回复格式无效，请重试。")
+        }
+        return CompanionReply.parse(raw)
+    }
     static func instructions(_ name: String) -> String {
         "You are \(name), a warm pixel-art desktop companion. Reply in the user's language, concisely and naturally. " +
         "Never execute commands, inspect files, browse, or call tools. Local memory is private context. " +
@@ -35,6 +58,13 @@ struct CompanionReply {
         let prompt = "[本地聊天与记忆]\n\(context)\n[当前消息]\n\(text)"
         if settings.provider == "codex" {
             return CompanionReply.parse(try await codex.reply(prompt, settings: settings, screenshot: screenshot))
+        }
+        if settings.provider == "claude" {
+            return try Self.structuredCompanionReply(await claude.structuredReply(prompt,
+                instructions: Self.instructions(settings.petName), schema: Self.companionSchema, screenshot: screenshot))
+        }
+        guard settings.provider == "openai" else {
+            throw AppError.message("当前 AI 连接方式无效，请在设置中重新选择。")
         }
         let key = try Keychain.read()
         guard !key.isEmpty else { throw AppError.message("请在设置中填写 OpenAI API key。") }
@@ -66,13 +96,16 @@ struct CompanionReply {
     func matchFocusTasks(_ snapshot: FocusMatchRequest, settings: Settings) async throws -> [FocusMatchProposal] {
         try Task.checkCancellation()
         guard settings.provider != "offline" else {
-            throw AppError.message("一句话整理需要 AI：请在设置中连接 ChatGPT 或 OpenAI API。本机关键词建议可离线使用。")
+            throw AppError.message("一句话整理需要 AI：请在设置中连接 ChatGPT、Claude 订阅或 OpenAI API。本机关键词建议可离线使用。")
         }
         let prompt = try FocusTaskMatching.prompt(snapshot)
         let schema = FocusTaskMatching.schema(for: snapshot)
         let raw: String
         if settings.provider == "codex" {
             raw = try await codex.structuredReply(prompt, settings: settings,
+                instructions: FocusTaskMatching.instructions, schema: schema)
+        } else if settings.provider == "claude" {
+            raw = try await claude.structuredReply(prompt,
                 instructions: FocusTaskMatching.instructions, schema: schema)
         } else if settings.provider == "openai" {
             let key = try Keychain.read()
@@ -116,12 +149,15 @@ struct CompanionReply {
     func extractMemoTasks(_ snapshot: FocusMemoExtractionRequest, settings: Settings) async throws -> [FocusMemoTaskProposal] {
         try Task.checkCancellation()
         guard settings.provider != "offline" else {
-            throw AppError.message("备忘录自动整理需要 AI：请在设置中连接 ChatGPT 或 OpenAI API。也可以继续手动转为任务。")
+            throw AppError.message("备忘录自动整理需要 AI：请在设置中连接 ChatGPT、Claude 订阅或 OpenAI API。也可以继续手动转为任务。")
         }
         let prompt = try FocusMemoExtraction.prompt(snapshot)
         let raw: String
         if settings.provider == "codex" {
             raw = try await codex.structuredReply(prompt, settings: settings,
+                instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema)
+        } else if settings.provider == "claude" {
+            raw = try await claude.structuredReply(prompt,
                 instructions: FocusMemoExtraction.instructions, schema: FocusMemoExtraction.schema)
         } else if settings.provider == "openai" {
             let key = try Keychain.read()

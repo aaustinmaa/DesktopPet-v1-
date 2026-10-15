@@ -186,10 +186,12 @@ import UniformTypeIdentifiers
         PetCard("AI 与记忆") {
             Picker("聊天方式", selection: binding(\.provider)) {
                 Text("ChatGPT 登录").tag("codex")
+                Text("Claude（订阅）").tag("claude")
                 Text("OpenAI API").tag("openai")
                 Text("离线陪伴").tag("offline")
             }.pickerStyle(.segmented).disabled(model.busy)
             if draft.value.provider == "codex" { CodexSettingsView(model: model, client: model.ai.codex, settings: $draft.value) }
+            if draft.value.provider == "claude" { ClaudeSettingsView(model: model, client: model.ai.claude) }
             if draft.value.provider == "openai" {
                 SecureField("新的 API key（留空保持不变，点击保存后生效）", text: $key)
                 HStack {

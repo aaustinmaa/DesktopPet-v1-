@@ -47,7 +47,7 @@ struct Settings: Codable, Equatable {
         microMax = min(120, max(microMin, microMax))
         microSeconds = min(300, max(1, microSeconds))
         if !["suwudu", "shenqing"].contains(skin) { skin = "suwudu" }
-        if !["codex", "openai", "offline"].contains(provider) { provider = "offline" }
+        if !["codex", "claude", "openai", "offline"].contains(provider) { provider = "offline" }
         if windowX?.isFinite == false { windowX = nil }
         if windowY?.isFinite == false { windowY = nil }
     }

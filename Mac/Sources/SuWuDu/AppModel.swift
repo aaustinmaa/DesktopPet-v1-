@@ -364,6 +364,7 @@ import Combine
         if memoExtractionBusy { cancelMemoTaskExtraction(); return }
         replyTask?.cancel()
         ai.codex.shutdown()
+        ai.claude.shutdown()
     }
     func send(_ text: String, threadID: String) async {
         guard !busy else { return }

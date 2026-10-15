@@ -9,11 +9,13 @@ if [[ "$(uname -s)" != Darwin ]]; then
 fi
 ARCH="$(uname -m)"
 WITH_CODEX=1
+WITH_CLAUDE=1
 MAKE_DMG=0
 SDK_PATH="${SDKROOT:-}"
 for arg in "$@"; do
     case "$arg" in
         --without-codex) WITH_CODEX=0 ;;
+        --without-claude) WITH_CLAUDE=0 ;;
         --dmg) MAKE_DMG=1 ;;
         --arch=arm64) ARCH=arm64 ;;
         --arch=x86_64) ARCH=x86_64 ;;
@@ -31,6 +33,9 @@ if [[ -n "$SDK_PATH" ]]; then
 fi
 if [[ "$WITH_CODEX" == 1 ]]; then
     python3 scripts/fetch-runtime.py --arch "$ARCH"
+fi
+if [[ "$WITH_CLAUDE" == 1 ]]; then
+    python3 scripts/fetch-claude-runtime.py --arch "$ARCH"
 fi
 TEST_ARGS=("${SWIFT_ARGS[@]}" --disable-xctest)
 # CLT ships Swift Testing outside the framework paths inferred by SwiftPM.
@@ -74,6 +79,11 @@ if [[ "$WITH_CODEX" == 1 ]]; then
     cp "runtime/$ARCH/codex" "runtime/$ARCH/codex-code-mode-host" "$APP/Contents/Helpers/Codex/"
     cp "runtime/$ARCH/runtime-manifest.json" "$APP/Contents/Resources/codex-runtime-manifest.json"
 fi
+if [[ "$WITH_CLAUDE" == 1 ]]; then
+    mkdir -p "$APP/Contents/Helpers/Claude"
+    cp "runtime/claude/$ARCH/claude" "$APP/Contents/Helpers/Claude/"
+    cp "runtime/claude/$ARCH/runtime-manifest.json" "$APP/Contents/Resources/claude-runtime-manifest.json"
+fi
 ICONSET="$MAC_ROOT/output/$ARCH/AppIcon.iconset"
 mkdir -p "$ICONSET"
 # Full-bleed jade artwork keeps the macOS icon from becoming a small inset badge.
@@ -93,10 +103,11 @@ fi
 IDENTITY="${SIGNING_IDENTITY:--}"
 SIGN_ARGS=(--force --sign "$IDENTITY")
 if [[ "$IDENTITY" != - ]]; then SIGN_ARGS+=(--options runtime --timestamp); fi
-# Sign nested Mach-O files and bundles inside-out, including Codex and Sparkle helpers.
+# Sign nested Mach-O files and bundles inside-out, retaining Claude's vendor signature.
 while IFS= read -r -d '' executable; do
     # Signing the main executable signs its enclosing app before the helpers are ready.
     if [[ "$executable" == "$APP/Contents/MacOS/SuWuDu" ]]; then continue; fi
+    if [[ "$executable" == "$APP/Contents/Helpers/Claude/claude" ]]; then continue; fi
     if file -b "$executable" | grep -q 'Mach-O'; then codesign "${SIGN_ARGS[@]}" "$executable"; fi
 done < <(find "$APP/Contents" -type f -print0)
 while IFS= read -r -d '' bundle; do
@@ -104,6 +115,9 @@ while IFS= read -r -d '' bundle; do
 done < <(find "$APP/Contents" -depth -type d \( -name '*.xpc' -o -name '*.app' -o -name '*.framework' \) -print0)
 codesign "${SIGN_ARGS[@]}" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
+if [[ "$WITH_CLAUDE" == 1 ]]; then
+    python3 scripts/fetch-claude-runtime.py --arch "$ARCH" --verify-only "$APP/Contents/Helpers/Claude/claude"
+fi
 if [[ -n "${NOTARY_PROFILE:-}" ]]; then
     if [[ "$IDENTITY" == - ]]; then echo "Notarization requires SIGNING_IDENTITY (Developer ID Application)." >&2; exit 1; fi
     ZIP="$MAC_ROOT/output/$ARCH/SuWuDu-notarize.zip"

@@ -4,6 +4,38 @@ The native Mac source implementation is in `Mac/`. No Windows source, Windows
 development output, or Windows installer was modified. The user explicitly chose
 to continue Mac compilation and runtime work on their MacBook.
 
+## Claude subscription integration — 2026-10-14
+
+Mac settings now offer **Claude（订阅）** with official browser login, status,
+refresh, disconnect and cancellation. Chat (including screen attachments), memo
+extraction and pomodoro matching all route through `AIService.claude`.
+`ClaudeClient.swift` launches only the bundled, unmodified official Claude Code
+2.1.300; no Claude Desktop dependency or custom OAuth/token proxy is used.
+Credentials remain owned by Claude Code, using an app-specific `Claude/`
+configuration and `Claude/Workspace/` under the application data directory.
+
+Every inference checks `auth status --json` for Claude subscription authentication.
+Environment allowlisting excludes API keys, OAuth token overrides and cloud
+provider overrides; user/project settings, tools, MCP, hooks/plugins, automatic
+file mentions and session persistence are disabled for requests. The system
+instructions and strict output schemas are passed separately from stdin prompt /
+image data. Only successful structured results are accepted; existing memo and
+matching validators and preview/apply/undo remain in use. Timeout/cancel kills
+owned child processes. No login/quota/error path changes provider or falls back
+to API billing. Claude account-level usage credits remain the user's setting;
+settings link to the official usage page, and docs explain that boundary.
+
+The build defaults to bundling both Codex and Claude. `fetch-claude-runtime.py`
+pins official hashes, sizes and Anthropic signing identity, keeps verified cache,
+and verifies the original Claude bytes again after outer-app signing. Do not
+re-sign or patch the Claude executable. `--without-claude` explicitly omits it.
+Windows remains unchanged/pending. This task updates the Mac development app,
+not DMGs or installers. The arm64 development build passed 159 tests in 25 suites,
+production compilation, strict app signing verification and preservation of the
+Claude vendor signature. The 19 targeted Swift tests, 11 Python runtime/build
+tests and connected/disconnected native renders passed. See the current entry in
+`VALIDATION.md` for the limits and remaining live-account verification.
+
 ## Batch task association appends by default — 2026-10-14
 
 The task-card batch shortcut and the selected-record action now append tasks.

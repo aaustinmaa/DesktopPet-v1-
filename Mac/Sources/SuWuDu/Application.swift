@@ -116,6 +116,7 @@ import Sparkle
         journalEditor?.save()
         model.pause()
         model.ai.codex.shutdown()
+        model.ai.claude.shutdown()
         ScreenCapture.cleanup()
         for observer in workspaceObservers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
     }

@@ -34,9 +34,10 @@ choose Options → Keep in Dock. Closing a control window leaves the pet running
 use Quit to exit the app.
 
 The installed application does not need Xcode, Python, or a separately installed
-Codex CLI. Full builds bundle a pinned native Codex runtime. A deliberately smaller
-build is available using `bash scripts/build.sh --without-codex`; its ChatGPT login
-mode reports the missing component, while offline and API modes remain available.
+Codex or Claude CLI, or either vendor’s desktop app. Full builds bundle pinned
+native Codex and unmodified official Claude Code runtimes. `--without-codex` and
+`--without-claude` omit the corresponding component; selecting that provider then
+reports the missing component. There is no automatic provider or billing fallback.
 
 `--arch=arm64` and `--arch=x86_64` select separate architecture builds. Build and
 test each on a matching Mac (Intel tests on an Apple Silicon host require Rosetta).
@@ -56,6 +57,52 @@ The script uses SwiftPM's native build engine and supplies the CLT Swift Testing
 framework path; the resulting application does not depend on that test framework.
 Cached Codex binaries copied from Windows have their executable permissions
 restored after checksum verification.
+
+## Claude subscription on Mac
+
+In **设置 → AI 与记忆**, select **Claude（订阅）**, click **连接我的 Claude**,
+complete the official browser authorization, then save settings. Chat (including
+optional screen attachments), memo extraction and pomodoro matching share this
+connection. Refresh/disconnect and cancellation are available in the same panel.
+Each user signs in with their own supported Claude plan. Claude Desktop and a
+separately installed CLI are not required; the app uses its bundled official
+Claude Code, with the vendor signature and binary bytes preserved.
+
+Every inference checks the CLI's account status and requires Claude subscription
+authentication. The child process receives an explicit environment allowlist,
+not inherited API keys, OAuth-token overrides or cloud-provider settings. It uses
+an app-specific configuration and isolated workspace, excludes user/project
+settings, and disables tools, MCP, plugins/hooks and session persistence for these
+requests. The app never copies tokens out of another app, supplies an API key to
+Claude, or falls back to OpenAI/API mode after a login, quota or inference error.
+OpenAI API remains a separate, explicitly selected provider.
+
+**Billing boundary:** the subscription's limits and any *usage credits / extra
+usage* enabled in the user's Claude account still apply. This integration cannot
+turn off that account setting. **订阅用量** opens
+[Claude usage settings](https://claude.ai/settings/usage), where users can disable
+extra paid usage. “No API fallback” does not promise unlimited usage or override
+an already enabled Claude overage setting.
+
+Claude receives the same dedicated instructions and fixed JSON schemas as the
+other providers. The app accepts only a successful structured result, validates
+memo/matching data with the existing local validators, then shows the existing
+editable preview. Failed, interrupted or malformed output never imports tasks or
+changes records. Chat uses a schema for `reply`, `emotion` and `action`. Model
+selection follows the official CLI's default for the signed-in plan.
+
+The pinned runtime is **Claude Code 2.1.300**, fetched from Anthropic's official
+release host with SHA-256 and Developer ID verification by
+`scripts/fetch-claude-runtime.py`. It is cached under ignored
+`runtime/claude/<arch>/` and bundled at `Contents/Helpers/Claude/claude`.
+Builds preserve its original vendor signature, including when signing the outer
+app. `--without-claude` is available for builds that intentionally omit it.
+
+Official references: [subscription support](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan),
+[CLI authentication](https://code.claude.com/docs/en/authentication),
+[CLI reference](https://code.claude.com/docs/en/cli-reference), and
+[unmodified CLI integrations](https://code.claude.com/docs/en/legal-and-compliance).
+Windows Claude integration is pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
 
 ## Tasks and focus
 
@@ -104,7 +151,7 @@ rules are in hover help and the built-in instructions. Memo source text is expan
   estimated/actual effort, notes and source excerpt. Expand a task to inspect its
   associated sessions and jump to a record day. Older completed tasks with no
   stored completion time show it as unknown. Reopen a task to continue working.
-- **AI 匹配** and **AI 建议** use the configured ChatGPT/Codex or
+- **AI 匹配** and **AI 建议** use the configured ChatGPT/Codex, Claude subscription or
   OpenAI API provider. **Notes 匹配** runs locally and requires a unique, explicit
   full task name in the note. Review old/new task minutes and reasons before
   applying. AI returns a fixed allocation contract described below; the application
@@ -125,14 +172,14 @@ timestamps, chronological ordinals, actual minutes, current allocations, session
 Notes and timezone to the selected provider. Memo extraction sends the memo
 being extracted plus local date/timezone context. Neither operation sends chat
 history or screen images, and neither modifies Google Docs. Both use the configured
-ChatGPT/Codex or OpenAI API provider; memo extraction requires AI connectivity.
+ChatGPT/Codex, Claude subscription or OpenAI API provider; memo extraction requires AI connectivity.
 Tasks, memos and associations are persisted in `app-state.json`; old files remain
 readable, and a legacy single-task association means 100% of that record.
 The Windows implementation is still pending; see [WINDOWS_PARITY.md](WINDOWS_PARITY.md).
 
 ### Matching AI contract
 
-Both ChatGPT/Codex and OpenAI API receive dedicated matching instructions and a
+ChatGPT/Codex, Claude subscription and OpenAI API receive dedicated matching instructions and a
 strict JSON Schema. Every response uses this structure, regardless of how the
 user describes the work:
 
@@ -165,8 +212,8 @@ existing backup recovery path.
 ### Memo AI contract
 
 `AIService.extractMemoTasks` sends dedicated fixed instructions, the current memo,
-the local reference date and timezone, and a strict JSON Schema through either
-ChatGPT/Codex or OpenAI API. Input notation does not change the output structure:
+the local reference date and timezone, and a strict JSON Schema through
+ChatGPT/Codex, Claude subscription or OpenAI API. Input notation does not change the output structure:
 the response is always `{"tasks": [...]}`, and every task has exactly six required
 keys:
 
@@ -218,7 +265,8 @@ open output/arm64/SuWuDu.app
   journal changes are committed in the same atomic JSON document.
 - Daily targets, minute adjustments, manual sessions, session deletion, daily and
   session Notes, daily clipboard copy, and date-range Markdown export.
-- ChatGPT login via Codex app-server, dynamic model/effort discovery, API-key mode,
+- ChatGPT login via Codex app-server, dynamic model/effort discovery, Claude
+  subscription login through official Claude Code, explicit OpenAI API-key mode,
   offline replies, conversations, archives, bounded local context and 50 facts.
 - Enter-to-send / Shift–Enter newline, per-message copy, screen attachment toggle,
   multi-display screenshot composition excluding the chat window, and temporary
@@ -237,6 +285,8 @@ Application data is stored in:
   app-state.json.backup    previous successful state
   before-import-*.json     explicit Windows import backups
   Codex/                  app-specific Codex state
+  Claude/                 app-specific official Claude Code configuration
+    Workspace/            isolated Claude request working directory
   CompanionWorkspace/     isolated chat working directory
   ScreenCaptures/         temporary screenshot attachments
   command.json            optional external one-shot command
@@ -244,7 +294,10 @@ Application data is stored in:
 
 API keys use macOS Keychain. Codex is configured to use its keyring credential
 store, with its own `CODEX_HOME`; it does not reuse the developer's CLI home.
-The app does not sync data to Windows, iCloud, or ChatGPT Memory.
+Claude Code handles its own login and credential storage using the app-specific
+`CLAUDE_CONFIG_DIR` above, including its macOS credential-store behavior. SuWuDu
+does not read, copy or store Claude tokens in `app-state.json`. The app does not
+sync data to Windows, iCloud, or ChatGPT Memory.
 
 Enable system notifications with **Settings → Focus → Allow notifications**.
 Screen capture requests macOS Screen Recording permission on first use. If macOS
@@ -287,7 +340,15 @@ archive path/symlink handling and executable permission restoration for a cache
 copied from Windows. Neither suite submits real AI requests. For Command Line
 Tools, use the build script above to include the required test framework paths.
 
-**Current append-association validation (2026-10-14):** All 7 targeted append tests
+**Current Claude subscription validation (2026-10-14):** 19 targeted Swift tests
+and 11 runtime/build Python tests passed. Native renders checked disconnected and
+connected settings. The development build passed all **159 tests in 25 suites**,
+production compilation and strict signature verification, producing
+`output/arm64/SuWuDu.app`; the bundled Claude 2.1.300 bytes and original Anthropic
+signature were reverified. Real browser login and live requests still need a
+user account; no such requests were submitted. See [`VALIDATION.md`](VALIDATION.md).
+
+**Previous append-association validation (2026-10-14):** All 7 targeted append tests
 passed. Native renders checked the append sheet and task-card shortcuts. The
 development build passed 140 tests in 23 suites, production compilation and strict
 signature verification, producing `output/arm64/SuWuDu.app`. Prior records below
@@ -340,7 +401,9 @@ repository. Publish signed app archives and a valid appcast before enabling the
 feed. These values are intentionally absent from local builds, where “Check for
 Updates” is disabled. Bump the Mac Info.plist version/build for each release.
 
-The runtime fetcher pins Codex 0.144.4 and SHA-256 hashes for both Darwin
+The Codex runtime fetcher pins Codex 0.144.4 and SHA-256 hashes for both Darwin
 architectures, checks official release metadata, downloads and verifies both
 required binaries, and caches them under ignored `Mac/runtime/`. Sparkle 2.10.0
-is pinned in Package.swift. License notices are included in the application.
+is pinned in Package.swift. Claude Code uses the separate pinned fetcher described
+above; its original signature is preserved. License notices and official service
+terms links are included in the application.

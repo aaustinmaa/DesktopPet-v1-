@@ -1,5 +1,44 @@
 # Mac validation record
 
+## Claude subscription integration (2026-10-14)
+
+- Mac settings provide official Claude browser login, status, refresh, disconnect
+  and cancellation. Chat, optional screen images, memo extraction and pomodoro
+  matching route through the same Claude client. Built-in instructions and both
+  READMEs document connection and the billing boundary; Windows remains pending.
+- **19 targeted permanent Swift tests passed**: 12 client/process tests and 7
+  provider integration tests. They cover official subscription login arguments,
+  clean environments, account-method/provider rejection, auth rechecking, input
+  images, fixed instructions/schemas, invalid structured output, local memo and
+  matching validation, quota failures without fallback, settings compatibility,
+  bounded process output, timeout, cancellation and private-error redaction.
+- **11 targeted Python tests passed** (8 runtime, 3 build). Runtime tests cover
+  pinned manifest/hash checks, verified cache, failed-download preservation and
+  a version floor supporting disabled file mentions. Build tests cover preserving
+  the previous app on failure and retaining Claude's original signature/bytes.
+- Official **Claude Code 2.1.300 arm64** was downloaded from Anthropic and checked
+  against its pinned SHA-256 and Developer ID signature (`Q6L2SF6YDW`). Isolated
+  actual CLI checks confirmed version, supported arguments, subscription login
+  help and not-signed-in status. No real login, credentials or inference was used.
+  The x86_64 manifest hash is pinned; that binary was not executed on this Mac.
+- Native renders of the actual Claude settings component verified disconnected
+  and connected states at the settings panel's 620-point width, with the shared
+  Pet theme. The isolated host did not expose a usable Connect button through its
+  accessibility/native-button tree, so pending/cancel UI interaction is not claimed
+  as verified. Its client cancellation is covered by tests and the view lifecycle
+  was reviewed in source. The temporary render harness was removed.
+- The Mac development build passed **159 tests in 25 suites**, production
+  compilation and strict/deep app signature verification. The post-signing check
+  reconfirmed the original Claude SHA-256 and Anthropic identity. Output:
+  `output/arm64/SuWuDu.app`. No live user app was restarted by this task.
+- Live-account acceptance remains: complete browser authorization, check one chat
+  (and optional screen attachment), extract a memo, preview matching changes, and
+  try login cancellation/quota errors. Tests above use isolated fake protocol
+  responses; they do not establish live model semantic accuracy or account access.
+  The app never falls back to API credentials. Claude account-level usage credits
+  / extra usage remain controlled by the user's Claude settings.
+- This change does not build or inspect DMGs or Windows installers.
+
 ## Batch association appends existing task sets (2026-10-14)
 
 - Both the task-card shortcut and the main selected-record action append tasks.

@@ -7,6 +7,18 @@ Pinned build: 0.144.4. The Mac runtime is fetched from official Darwin release
 assets and verified using GitHub's published SHA-256 digests. See the included
 OPENAI-CODEX-LICENSE.txt. runtime-manifest.json records hashes before app signing.
 
+Anthropic Claude Code
+Copyright Anthropic PBC. Distributed as the unmodified official native runtime.
+Pinned build: 2.1.300. Official release manifest and macOS executable:
+https://downloads.claude.ai/claude-code-releases/2.1.300/manifest.json
+SHA-256 and the Anthropic Developer ID signature (Q6L2SF6YDW) are verified;
+the bundled executable retains its original signature and bytes.
+Use is subject to the applicable Anthropic account and service terms:
+https://code.claude.com/docs/en/legal-and-compliance
+https://www.anthropic.com/legal/consumer-terms
+https://www.anthropic.com/legal/commercial-terms
+claude-runtime-manifest.json records the pinned source and binary digest.
+
 Sparkle
 Source: https://github.com/sparkle-project/Sparkle
 Copyright Sparkle contributors. Licensed under the MIT license.
