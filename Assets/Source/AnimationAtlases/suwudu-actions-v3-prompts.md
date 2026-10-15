@@ -2,7 +2,7 @@
 
 Mode: built-in `image_gen`, transparent RGBA output. The user selected the two 4 × 4 sheets from the second generation round. The later 4 × 2 reminder experiment was rejected because it exposed distinct legs/feet; it is not used or stored in the project. Preserve the long-hair silhouette hiding the lower body in future revisions.
 
-The wave still uses the selected `wave-v3-source.png`. The original reminder described below is preserved in `Assets/Archive/AnimationAtlases/suwudu-reminder-before-wave-match`; its active replacement follows the wave's narrower silhouette and palette, with its prompt in `reminder-wave-match-prompts.md`. Active originals remain unmodified imagegen output. Their normalized runtime atlases are `wave-v3.png` and `reminder-v3.png` (1448 × 1448, 4 × 4 cells of 362 × 362).
+The original wave described below is preserved in `Assets/Archive/AnimationAtlases/suwudu-wave-before-cute`; the active wave adds expressive acting, with its prompt in `wave-cute-prompts.md`. The original reminder described below is preserved in `Assets/Archive/AnimationAtlases/suwudu-reminder-before-wave-match`; its active replacement follows the prior wave's narrower silhouette and palette, with its prompt in `reminder-wave-match-prompts.md`. Active originals remain unmodified imagegen output. Their normalized runtime atlases are `wave-v3.png` and `reminder-v3.png` (1448 × 1448, 4 × 4 cells of 362 × 362).
 
 ## Generation prompts
 
@@ -64,8 +64,8 @@ Transparent alpha background. No text, labels, grid lines, shadow, blur, gradien
 
 ## Registration and playback
 
-Run `node Scripts/BuildSuWuDuActionAtlases.mjs` from the repository with `sharp` installed, or set `SHARP_MODULE` to an existing sharp package path. This rebuilds only these two actions. It retains source RGBA, uses nearest-neighbor sampling, applies one scale to each sheet, and aligns the crown rather than centering on a moving hand or bell. It makes no masks, no new leg cutouts, and no painted changes.
+Run `node Scripts/BuildSuWuDuActionAtlases.mjs` from the repository with `sharp` installed, or set `SHARP_MODULE` to an existing sharp package path. Append `wave-v3` or `reminder-v3` to rebuild only that action. It retains source RGBA, uses nearest-neighbor sampling and applies one scale to each sheet. Wave registration anchors the lower hair hem to preserve head motion; reminder registration anchors the crown. It makes no masks, no new leg cutouts, and no painted changes.
 
-`sourcePoseSequence` and crop/placement coordinates are recorded in `suwudu-actions-v3-registration.json`. Waving reuses its rise in reverse for a smooth return, and the reminder ends on its opening pose. Both final atlases have 16 frames; Windows and Mac use 100 ms for waving and 90 ms for reminders. The existing PowerShell `ExtractAnimationAtlases.ps1` also slices the normalized atlases with the fixed-grid extractor, without resizing or recentering them.
+`sourcePoseSequence` and crop/placement coordinates are recorded in `suwudu-actions-v3-registration.json`. Waving plays its full expression sequence, and both actions end on their opening pose. Both final atlases have 16 frames; Windows and Mac use 100 ms for waving and 90 ms for reminders. The existing PowerShell `ExtractAnimationAtlases.ps1` also slices the normalized atlases with the fixed-grid extractor, without resizing or recentering them.
 
 Open `suwudu-actions-v3-preview.html` for playback, frame stepping, speed controls, and light/dark/checker backgrounds. Prior v2 frames and source atlases are retained under `Assets/Archive/Sprites/suwudu-actions-v2` and `Assets/Archive/AnimationAtlases/suwudu-actions-v2`.

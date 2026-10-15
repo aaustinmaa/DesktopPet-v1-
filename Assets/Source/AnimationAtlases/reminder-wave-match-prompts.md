@@ -1,6 +1,6 @@
 # Reminder palette and silhouette match
 
-Mode: built-in `image_gen`, transparent RGBA. The sole image reference and edit target was the approved `wave-v3-source.png`. Only the reminder animation was regenerated; the wave artwork and playback remain unchanged.
+Mode: built-in `image_gen`, transparent RGBA. The sole image reference and edit target was the approved wave source, now preserved at `Assets/Archive/AnimationAtlases/suwudu-wave-before-cute/wave-v3-source.png`. This reminder revision regenerated only the reminder animation.
 
 The revised source is `reminder-v3-source.png`; the normalized 4 × 4 runtime atlas is `reminder-v3.png`. The old broader reminder source/atlas and 16 runtime frames are preserved under `Assets/Archive/AnimationAtlases/suwudu-reminder-before-wave-match` and `Assets/Archive/Sprites/suwudu-reminder-before-wave-match`.
 

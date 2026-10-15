@@ -84,6 +84,9 @@ all twelve states. The imagegen prompts are saved alongside it in
 The approved `wave-v3-source.png` and `reminder-v3-source.png` are both 4-by-4
 imagegen sheets. Preserve their long-hair silhouette covering the lower body;
 the later eight-pose reminder experiment with exposed legs was rejected.
+The current wave adds a head dip, wink, smiling eyes and two small wrist waves.
+Its acting prompt is in `Source/AnimationAtlases/wave-cute-prompts.md`; open
+`Source/AnimationAtlases/wave-v3-preview.gif` for a looping preview.
 The current reminder was redrawn directly from the approved wave sheet to match
 its narrow silhouette and neutral-gray/green palette. Its prompt is recorded in
 `Source/AnimationAtlases/reminder-wave-match-prompts.md`; the previous broader
@@ -91,9 +94,10 @@ reminder is preserved in the `suwudu-reminder-before-wave-match` archive folders
 
 Run `node Scripts/BuildSuWuDuActionAtlases.mjs` with Node and `sharp` available
 to rebuild only these two animations. `SHARP_MODULE` can point to an existing
-sharp installation. Append `reminder-v3` to rebuild only the reminder frames and
-its registration entry without rewriting the wave. The script preserves generated RGBA and applies one
-nearest-neighbor scale per sheet, registering the crown instead of moving props.
+sharp installation. Append `wave-v3` or `reminder-v3` to rebuild only that action
+and its registration entry. The script preserves generated RGBA and applies one
+nearest-neighbor scale per sheet. Wave registration fixes the lower hair hem to
+preserve the head acting; reminder registration fixes the crown.
 It emits 16 fixed 362-by-362 frames and a 1448-by-1448 atlas per action.
 Windows and Mac play waving at 100 ms per frame and reminders at 90 ms.
 The PowerShell extractor also slices the final atlases without rescaling.

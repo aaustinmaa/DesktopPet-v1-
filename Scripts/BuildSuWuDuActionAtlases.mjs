@@ -13,9 +13,10 @@ const cellSize = 362;
 const definitions = [
   {
     name: 'wave-v3', rows: 4, interval: 100,
-    // Reuse the reviewed rise in reverse to settle; repeat the same wave poses.
-    // This also avoids the generated last row, whose feet touch the image edge.
-    sequence: [0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 3, 2, 1, 0],
+    // Plant the lower hair hem so nodding and head tilts survive registration.
+    registration: 'hem', targetAnchor: { x: 163, y: 337 },
+    // Keep the new expression/acting sequence, then close on the opening pose.
+    sequence: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0],
   },
   {
     name: 'reminder-v3', rows: 4, interval: 90,
@@ -93,6 +94,7 @@ for (const definition of selectedDefinitions) {
   const poses = new Map();
   const registration = [];
   const measurements = [];
+  const targetAnchor = definition.targetAnchor ?? { x: 180, y: 44 };
   for (const index of new Set(definition.sequence)) {
     const column = index % 4;
     const left = definition.columnEdges?.[column] ?? Math.round(column * info.width / 4);
@@ -101,26 +103,46 @@ for (const definition of selectedDefinitions) {
     const top = Math.max(0, bandTop - 3);
     const bottom = Math.min(info.height - 1, bandBottom + 3);
     const body = bounds(data, info.width, left, right, top, bottom, (r, g, b, a) => a >= 192);
-    const crown = bounds(data, info.width, left, right, bandTop,
-      Math.floor(bandTop + (bandBottom - bandTop + 1) * 0.24),
-      (r, g, b, a, x) => a >= 192 && g > 120 && b < 100 && g > r * 0.7
-        && x > left + (right - left) * 0.25 && x < left + (right - left) * 0.8);
+    let anchorX, anchorY;
+    if (definition.registration === 'hem') {
+      const centers = [];
+      const hemTop = Math.floor(body.y1 - (body.y1 - body.y0) * 0.2);
+      for (let y = hemTop; y <= body.y1; y++) {
+        let first = right, last = -1, count = 0;
+        for (let x = left; x < right; x++) {
+          if (data[(y * info.width + x) * 4 + 3] < 192) continue;
+          first = Math.min(first, x); last = x; count++;
+        }
+        if (count >= 8) centers.push((first + last) / 2);
+      }
+      if (!centers.length) throw new Error(`${source}: missing lower hair hem`);
+      centers.sort((a, b) => a - b);
+      anchorX = centers[Math.floor(centers.length / 2)];
+      anchorY = body.y1;
+    } else {
+      const crown = bounds(data, info.width, left, right, bandTop,
+        Math.floor(bandTop + (bandBottom - bandTop + 1) * 0.24),
+        (r, g, b, a, x) => a >= 192 && g > 120 && b < 100 && g > r * 0.7
+          && x > left + (right - left) * 0.25 && x < left + (right - left) * 0.8);
+      anchorX = (crown.x0 + crown.x1) / 2;
+      anchorY = crown.y0;
+    }
     const cropLeft = Math.max(left, body.x0 - 3);
     const cropTop = Math.max(top, body.y0 - 3);
     const cropWidth = Math.min(right - 1, body.x1 + 3) - cropLeft + 1;
     const cropHeight = Math.min(bottom, body.y1 + 3) - cropTop + 1;
-    const crownX = (crown.x0 + crown.x1) / 2;
     // Reserve an eight-pixel margin for the full bell swing. Apply the most
     // restrictive fit to the entire animation, never individual frames.
-    scale = Math.min(scale, 172 / (crownX - cropLeft),
-      174 / (cropLeft + cropWidth - crownX),
-      36 / (crown.y0 - cropTop), 310 / (cropTop + cropHeight - crown.y0));
-    measurements.push({ index, crown, cropLeft, cropTop, cropWidth, cropHeight });
+    scale = Math.min(scale, (targetAnchor.x - 8) / (anchorX - cropLeft),
+      (cellSize - targetAnchor.x - 8) / (cropLeft + cropWidth - anchorX),
+      (targetAnchor.y - 8) / (anchorY - cropTop),
+      (cellSize - targetAnchor.y - 8) / (cropTop + cropHeight - anchorY));
+    measurements.push({ index, anchorX, anchorY, cropLeft, cropTop, cropWidth, cropHeight });
   }
-  for (const { index, crown, cropLeft, cropTop, cropWidth, cropHeight } of measurements) {
+  for (const { index, anchorX, anchorY, cropLeft, cropTop, cropWidth, cropHeight } of measurements) {
     const width = Math.round(cropWidth * scale), height = Math.round(cropHeight * scale);
-    const x = Math.round(180 - ((crown.x0 + crown.x1) / 2 - cropLeft) * width / cropWidth);
-    const y = Math.round(44 - (crown.y0 - cropTop) * height / cropHeight);
+    const x = Math.round(targetAnchor.x - (anchorX - cropLeft) * width / cropWidth);
+    const y = Math.round(targetAnchor.y - (anchorY - cropTop) * height / cropHeight);
     if (x < 0 || y < 0 || x + width > cellSize || y + height > cellSize) {
       throw new Error(`${definition.name} pose ${index + 1}: artwork exceeds fixed cell (${x}, ${y}, ${width}, ${height})`);
     }
@@ -144,8 +166,16 @@ for (const definition of selectedDefinitions) {
   }
   await sharp(atlas, { raw: { width: cellSize * 4, height: cellSize * 4, channels: 4 } })
     .png().toFile(path.join(atlasDir, `${definition.name}.png`));
+  if (definition.registration === 'hem') {
+    const preview = Buffer.concat(definition.sequence.map(pose => poses.get(pose)));
+    await sharp(preview, { raw: { width: cellSize, height: cellSize * definition.sequence.length,
+      channels: 4, pageHeight: cellSize } })
+      .gif({ delay: definition.sequence.map(() => definition.interval), loop: 0, dither: 0 })
+      .toFile(path.join(atlasDir, `${definition.name}-preview.gif`));
+  }
   const animation = { name: definition.name, intervalMs: definition.interval,
     sourceGrid: [4, definition.rows], sourcePoseSequence: definition.sequence.map(i => i + 1),
+    ...(definition.registration ? { registrationMode: definition.registration, targetAnchor } : {}),
     scale, registration };
   const existingIndex = manifest.animations.findIndex(entry => entry.name === definition.name);
   if (existingIndex >= 0) manifest.animations[existingIndex] = animation;
