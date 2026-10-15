@@ -35,8 +35,8 @@ import AppKit
                 settings.claudeModel = value.isEmpty ? nil : value
                 settings.claudeEffort = nil
             })) {
-                Text("自动选择").tag("")
-                ForEach(client.models.filter { !$0.id.isEmpty }) { Text($0.name).tag($0.id) }
+                Text(client.models.first(where: { $0.id.isEmpty })?.pickerLabel ?? "自动选择").tag("")
+                ForEach(client.models.filter { !$0.id.isEmpty }) { Text($0.pickerLabel).tag($0.id) }
                 if !selectedModel.isEmpty && !client.models.contains(where: { $0.id == selectedModel }) {
                     Text("\(selectedModel)（当前不可用）").tag(selectedModel).disabled(true)
                 }

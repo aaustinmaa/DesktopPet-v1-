@@ -97,7 +97,11 @@ without a user turn or model inference. Only effort values supported by the
 selected model are shown (`low`, `medium`, `high`, `xhigh`, `max`); `ultracode` is
 not offered. Changing the model resets effort to its default. The independent
 `claudeModel` / `claudeEffort` settings are shared by chat, memo extraction and
-pomodoro matching after saving.
+pomodoro matching after saving. Model labels also show the official full
+`resolvedModel` ID, including the current resolved model for **自动选择**.
+When that metadata is absent, the original label is retained without guessing a
+version. Saved selections still use the official original `value` / alias;
+displaying the resolved ID does not pin a model version.
 
 Saved selections missing from the current catalog remain visible as unavailable
 and are validated before sending; failures never silently replace the selected

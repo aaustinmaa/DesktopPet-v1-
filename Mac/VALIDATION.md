@@ -1,5 +1,17 @@
 # Mac validation record
 
+## Claude resolved model labels (2026-10-15)
+
+- Model picker labels now include the official `resolvedModel` ID, including
+  the automatic/default choice. Missing metadata keeps the existing name;
+  selection IDs and inference behavior are unchanged.
+- An isolated, signed-out initialize-only metadata request confirmed that the
+  bundled CLI supplies full IDs for default, Opus, Sonnet and Haiku. No user
+  credentials or inference were used. Release compilation with the macOS 26.5
+  SDK passed, and `output/arm64/SuWuDu.app` was refreshed and signature-verified.
+- This display-only change did not rerun the earlier functional test suites,
+  restart the user's app, or update installers or Windows outputs.
+
 ## Claude model and effort selection (2026-10-14)
 
 - Claude settings now match ChatGPT's **模型** / **推理强度** picker layout and

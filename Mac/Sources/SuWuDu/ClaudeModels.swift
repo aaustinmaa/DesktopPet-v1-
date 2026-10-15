@@ -4,7 +4,14 @@ import CoreFoundation
 struct ClaudeModel: Identifiable, Equatable, Sendable {
     let id: String
     let name: String
+    let resolvedModel: String?
     let efforts: [String]
+
+    var pickerLabel: String {
+        let title = id.isEmpty ? "自动选择" : name
+        guard let resolvedModel, !title.localizedCaseInsensitiveContains(resolvedModel) else { return title }
+        return "\(title)（\(resolvedModel)）"
+    }
 
     static let effortLevels = ["low", "medium", "high", "xhigh", "max"]
 
@@ -60,7 +67,7 @@ struct ClaudeModel: Identifiable, Equatable, Sendable {
                   !identities.contains(where: { $0.contains("fable") || $0.contains("[1m]") }),
                   value.lowercased() != "best" || resolved != nil else { continue }
 
-            models.append(Self(id: id, name: id.isEmpty ? "默认" : displayName,
+            models.append(Self(id: id, name: id.isEmpty ? "默认" : displayName, resolvedModel: resolved,
                 efforts: supportsEffort ? effortLevels.filter(supported.contains) : []))
         }
         guard !models.isEmpty else { throw invalid }
