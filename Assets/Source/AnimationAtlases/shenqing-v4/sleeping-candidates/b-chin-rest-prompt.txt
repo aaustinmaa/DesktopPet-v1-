@@ -1,0 +1,60 @@
+Mode: built-in imagegen; transparent_background: true for all three calls.
+Deliverable: b-chin-rest.png, sleeping pose candidate only; not implemented.
+
+CALL 1 — initial candidate
+References:
+1. Assets/Sprites/sleeping-base.png (SuWuDu compact sleeping pose)
+2. Assets/Source/AnimationAtlases/shenqing-v4/identity-reference.png (Shen Qing identity)
+Output: /Users/aaust/.codex/generated_images/01a1407c-127d-72f0-91ce-361fd044f65f/exec-c326e311-b044-42b5-b279-a9354e21b89e.png
+
+Use case: identity-preserve
+Asset type: one alternate sleeping-pose pixel-art sprite for Shen Qing, candidate B: chin resting on stacked hands.
+
+Input roles: Image 1 is SuWuDu's compact sleeping sprite, used ONLY for the cozy compact posture, coarse pixel style and restrained visual language. Do not copy its identity, green/yellow crown, facing direction or Z symbols. Image 2 is the exact approved Shen Qing identity, colors, hair and decorations. Preserve Shen Qing and keep him facing LEFT.
+
+Draw a SINGLE transparent-background sprite, not a sheet, showing Shen Qing dozing with his chin resting on TWO SMALL HANDS STACKED TOGETHER just below the face. The forearms stay close against the chest and support the face at a comfortable height. Closed eyes are simple short black pixel strokes, peaceful and unstrained. The face and chin sit noticeably ABOVE the lower hem rather than lying against the ground. Chest, back and long hair gather into a compact, softly rounded upright bundle with visible vertical height. This is a sleepy chin-in-hands pose, not a person lying flat, sprawling sideways, melting onto the floor or stretching out.
+
+Silhouette: near-square or slightly taller than wide, approximately 1.0–1.1 height-to-width for the character including crown. Narrow and gathered, with hair hugged close to the body. The back is softly rounded, the crown stays above the head, and the hands are directly below the chin. Hair ends are SHORT, ROUND and BLUNT within the compact outline; no sharp flicked-up tips, long trailing strands, horizontal tails or spikes. One uninterrupted opaque flat dark charcoal-gray hem forms the lower edge. No visible legs, feet, toes, shoes, split base or leg gap.
+
+Exact Shen Qing identity from Image 2: male chibi; charcoal-gray long hair with sparse chunky light-gray highlights; small blue/cyan/white cross-diamond crown jewel; green-and-white side ornament on viewer's RIGHT; pale small face exposed toward viewer's LEFT; simple closed eyes with no lashes; gray/black robe with enclosed green and white accents. Keep the same limited palette, face shape, head/body proportions and coarse square pixel size. A SMALL RED HEART remains visible low on the front of the chest, below the stacked hands. Do not enlarge the heart or make it a pillow.
+
+The pose must visibly read as sleeping with the chin supported by stacked hands. Keep the gentle face unobstructed, both small hands readable beneath the chin and the body collected underneath. No raised elbow jutting outward, no new props, no bed, blanket, pillow or furniture.
+
+Crisp coarse pixel art, flat colors, blocky stair-step edges, black outline without a white sticker border. No smooth illustration, glossy shading, gradients, blur or thin detailed line art. True transparent RGBA background. Center the entire character with comfortable transparent padding on all sides, no clipping, no floor or shadow. Do NOT draw Z, ZZZ, letters, words, text, symbols, captions, particles or decorative effects; sleep symbols are added separately by the application later.
+
+CALL 2 — continuous lower hem refinement
+References:
+1. Output of call 1
+2. Assets/Source/AnimationAtlases/shenqing-v4/identity-reference.png
+Output: /Users/aaust/.codex/generated_images/01a1407c-127d-72f0-91ce-361fd044f65f/exec-b8edef6a-e310-4ba1-a352-1670536e77e3.png
+
+Use case: identity-preserve
+Asset type: alternate sleeping-pose pixel-art sprite for Shen Qing, candidate B: chin resting on stacked hands.
+
+INPUT ROLES: Image 1 is the candidate sprite to refine and is the pose target. Keep its face direction, raised chin, two stacked supporting hands, compact upright body, small low red heart and sleeping expression. Image 2 is the approved Shen Qing identity and exact charcoal-gray/blue/green palette.
+
+Make ONE TARGETED CORRECTION to Image 1: join the lower gray hair and robe into a SINGLE UNBROKEN STRAIGHT FLAT DARK CHARCOAL HEM. Currently the left and right hair ends look like separate dangling lobes. Merge their lower edge with the central robe base, giving one level horizontal bottom with a continuous dark opaque strip across the center. All red/green/white accents stay enclosed ABOVE this hem. No separated feet-like lobes, toes, shoes, legs, holes, gaps, tips sticking downward or curls sticking sideways. Hair ends should be short, blunt and hugged into the compact silhouette. Do not broaden the character sideways.
+
+KEEP THE POSE: Shen Qing faces LEFT and sleeps with his chin resting on two small hands stacked directly underneath it. The hands and forearms stay gathered against the chest, supporting the face above the lower edge. The face must not lie on the floor. Keep the chest/back/hair as a tall, compact, rounded bundle, near-square or slightly taller than wide. Do not flatten or stretch him into a horizontal lying pose. Keep the crown above the head and the blue/green ornaments unchanged.
+
+KEEP THE IDENTITY: male chibi with long charcoal-gray hair, sparse chunky pale-gray highlights, small blue/cyan/white cross-diamond crown jewel, green-white side ornament on viewer's RIGHT, small pale face turned toward viewer's LEFT, simple closed black eye strokes without eyelashes, gray-black robe with enclosed green-white accents, and a SMALL red pixel heart low on the chest below the stacked hands. No new costume, hair redesign or props. Keep the exact coarse square-pixel style, flat palette and black outline from the references, without a white sticker border.
+
+OUTPUT: one single finished sprite, not a sprite sheet. True transparent RGBA background with comfortable transparent padding around the entire character. No cropping, floor, ground shadow, pillow, bed, blanket, furniture or extra objects. Absolutely no Z, ZZZ, letters, text, labels, speech bubbles, particles or decorations. No smoothing, blur, gradients, glossy details, thin illustration lines or antialiased vector look. Preserve all correct features of Image 1 and change only the disconnected-looking lower hem into the continuous flat covered base.
+
+CALL 3 — remove bottom green protrusions, shorten heart
+Reference: output of call 2
+Selected output: /Users/aaust/.codex/generated_images/01a1407c-127d-72f0-91ce-361fd044f65f/exec-1f6fea0c-66aa-49d5-b1c6-118b79bc7c7d.png
+
+Use case: identity-preserve
+Asset type: Shen Qing sleeping candidate B, one transparent pixel-art sprite.
+
+Image 1 is the exact candidate pose to preserve. Make only a small cleanup at its VERY BOTTOM CENTER. Keep the face, raised chin, two stacked hands, body posture, crown, side ornament, hair shape above the bottom and all colors unchanged.
+
+At present the red heart tip and TWO BRIGHT GREEN SQUARES protrude below the long dark-gray bottom line. This falsely resembles two little feet. REMOVE BOTH OF THOSE LOW GREEN SQUARES completely. Replace their pixels with dark charcoal-gray robe. Shorten the low red heart tip slightly so the entire heart fits ABOVE the gray bottom hem. The heart should remain small, bright red and recognizable on the low front of the chest, but its lowest red pixel must end at least ONE COARSE PIXEL BLOCK ABOVE the final bottom edge.
+
+Fill the entire bottom-center gap beneath the heart with solid charcoal gray, joined seamlessly to the left and right gray hair edges. The final lower edge must be ONE STRAIGHT, UNBROKEN, OPAQUE HORIZONTAL DARK-GRAY LINE from the left hem to the right hem, with no green squares, red points, transparent cutouts, legs, feet, shoes, toes, hanging lobes or protrusions below it. This is a flat robe hem hiding the lower body, not a pair of feet. Keep the bottom width the same; do not extend the character sideways or add a separate platform.
+
+Preserve the compact high sleeping pose exactly: male Shen Qing facing LEFT, both eyes peacefully closed, chin visibly supported above the ground by two small stacked hands; forearms gathered against the chest; hair and torso form a near-square or slightly tall compact bundle. Blue/cyan/white cross-diamond crown, green-white side ornament on viewer's RIGHT, pale face on viewer's LEFT, charcoal-gray hair with chunky pale-gray highlights, gray-black robe with green-white accents enclosed ABOVE the hem. No recumbent or flattened pose.
+
+Output only one single sprite with true transparent RGBA background and comfortable padding. Keep the coarse square pixel style, flat limited colors and black outline. No text, Z, ZZZ, symbols, particles, shadows, bed, pillow, furniture, extra props, smooth rendering, gradients or blur. Everything except the small bottom-center correction must remain unchanged.
+

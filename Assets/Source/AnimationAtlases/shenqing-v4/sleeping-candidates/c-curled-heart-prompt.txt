@@ -1,0 +1,45 @@
+INITIAL GENERATION PROMPT
+
+Use case: identity-preserve
+Asset type: approval-only SINGLE pixel-art sleeping sprite, variant C "curled up hugging a heart", for the desktop companion Shen Qing. Not a sprite sheet.
+
+Reference image 1 is SuWuDu sleeping. Use its chunky coarse pixel art, compact raised sleeping silhouette and peaceful closed eyes as pose-quality guidance only. Do not copy its right-facing identity, yellow-green crown, green eyes, side hair decoration, hand positions, or floating Z letters.
+Reference image 2 is the approved Shen Qing identity. It is authoritative for his pale face, blue/cyan/white cross-diamond jewel, charcoal-gray hair with sparse light-gray block highlights, green-and-white side ornament on viewer's RIGHT, green/white/black robe, red heart, dark outlines, and coarse square pixel density. Shen Qing faces LEFT.
+
+Draw one clearly sleeping Shen Qing curled into a compact slightly upright rounded bundle. His body is curled inward, back and hair softly arched, head gently leaning and nestling toward his LEFT and DOWN onto the inward-curled shoulder / upper-arm area. Give the head a clear gentle leftward sleeping lean, not an awake straight sitting pose. Both eyes are peacefully CLOSED as simple small black pixel lines. Face looks down-left, calm and asleep. His head and cheek remain visibly lifted above the base, never touching the ground. The face should sit roughly in the middle-to-lower-middle of the silhouette, with visible robe and folded arms underneath.
+
+Both arms stay closely folded against the chest, gently embracing the familiar SMALL RED PIXEL HEART. Hands wrap around the heart at chest level. The cheek rests toward the tucked shoulder; DO NOT prop the chin on two palms, and do not put hands flat on the ground. This is a curled-heart sleeping pose, not a prone forward face-down pose and not a chin-in-hands pose. No awake eyes, standing posture, active heart lifting or sitting bolt upright.
+
+Shape and proportions are crucial: the complete opaque silhouette should be slightly TALLER than it is wide, approximately height:width 1.05:1. A compact raised rounded mound with real head/back height, NOT a wide flattened horizontal sleeping figure, not sprawled, not collapsed and not pancake-flat. Keep it cute and slim enough to belong to the identity reference. The hair wraps close around his curled body. Hair ends must be SHORT, ROUNDED, BLUNT and tucked close to the body, with no pointed tapering tails or long extensions. Preserve recognizable gray hair, the blue crown jewel at the upper head, and the right-side green ornament without enlarging them.
+
+CRITICAL LOWER CONTOUR: a continuous opaque dark-charcoal hair-and-robe hem with a short level flat base. No feet, toes, shoes, legs, dangling green or white blocks, two separated lower appendages, leg gap, or two-lobed feet. All green/white costume accents are small and enclosed above the dark base. The red heart stays hugged in the arms and never lies separately on the ground.
+
+Style: faithful large crisp square pixels, sparse flat palette, clean dark outline. No smooth painted curves, gradients, blur, realistic anatomy, detailed fingers, glossy eyes, soft airbrush, outer white sticker border or shadows. Keep the single sprite centered with at least 12% empty transparent margin around all sides; crown and full base visible. True transparent RGBA background. No text, ZZZ letters, sleeping glyphs, other floating effects, background, pillow, bed, blanket, furniture or extra props. One character only.
+
+LOWER HEM REFINEMENT PROMPT
+
+Use case: precise-object-edit
+Input image 1 is the sleeping Shen Qing variant C to edit. Input image 2 is the approved Shen Qing identity reference.
+Preserve the already-good sleeping pose of image 1: head and face clearly leaning LEFT and gently DOWN, closed sleepy eyes, cheek lifted off the ground, shoulders curled inward, both small hands hugging the red heart against the chest, rounded arched gray hair/back, blue crown jewel, viewer-right green hair ornament, exact coarse blocky pixel style and palette. Keep this a compact upright curled-heart sleeping bundle, NOT lying horizontally. Preserve the face, heart, crown, and upper hair.
+
+Correct ONLY the lower outline and lower costume so it reads as a legless flat-based desktop sprite:
+- Join the two lower hair sides across the entire bottom into ONE unbroken opaque dark-charcoal rounded robe/hair mass, ending in a short level flat horizontal base.
+- Remove the distinct left and right foot-like or leg-like green/white bits at the very bottom. The two pale shapes immediately beside the red heart are HANDS and must remain at heart level, clearly above the base; they must not resemble feet.
+- Shorten and tuck the low hair ends tightly around the body. Use blunt rounded block ends, no pointed trailing locks, narrow dangling tails, transparent gap between lower lobes, separate legs or shoes.
+- Under the hands and red heart, show only the continuous charcoal-gray robe/hair base with at most one small connected green costume accent INSIDE it. No paired trouser strips or appendages.
+- Keep the overall bundle round and substantial in height, a compact oval whose height is only a little greater than its width, about 1.05 to 1.12 times its width. Avoid making the sprite a tall straight sitting figure or a flattened wide pancake. The head continues leaning left into the shoulder, and the face stays well above the base.
+
+One single character, transparent RGBA background, generous transparent margin. No white sticker border, text, ZZZ, sleeping glyphs, ground, shadow, pillow, bed, blanket or new props. Do not change the identity or introduce open eyes.
+
+FINAL COMPACTNESS REFINEMENT PROMPT
+
+Use case: precise-object-edit
+Edit ONLY the compactness of the existing sleeping Shen Qing sprite in input image 1, using input image 2 for the correct small embedded blue jewel proportions. Preserve the curled-heart sleeping pose, leftward/downward closed-eye head lean, face, hands embracing the red heart, green ornament on viewer's right, connected flat dark lower hem and coarse square pixel style.
+
+The image currently reads too tall mainly because the blue jewel projects too far above a tall hair dome. Make the whole silhouette rounder and more compact WITHOUT turning it into a flattened horizontal sleeping pose:
+1. Reduce the blue crown jewel to the approved reference's normal proportion (around one quarter of the character's opaque width), and nest its LOWER HALF into the upper gray hair, like a hair ornament embedded against the head rather than floating on a stalk above it.
+2. Shorten the tall upper hair dome modestly by rounding the head/back into an inward curled sleeping arc. The cheek still leans LEFT into the shoulder and stays lifted above the bottom. Keep the same character width, face size, closed eyes, heart and arms.
+3. The entire opaque silhouette INCLUDING the blue jewel should be about 1.05 to 1.10 times as tall as it is wide: a compact almost-round sleeping bundle with clear height. Do not merely stretch or scale the existing bitmap. Redraw the few affected upper hair and jewel pixels to preserve the same chunky square pixel size.
+4. Keep the continuous flat dark base and short blunt tucked hair ends. No trailing hair point may extend below the level base. No feet, legs or lower gaps.
+
+Do not change the pose into sitting awake or lying flat. No ZZZ, text, pillow, bed, background, white outline, shadow or other props. Preserve true alpha transparency and generous transparent margin. Single sprite only.

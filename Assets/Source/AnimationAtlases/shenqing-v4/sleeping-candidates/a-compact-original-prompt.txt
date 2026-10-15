@@ -1,0 +1,25 @@
+Built-in imagegen. Preview-only sleeping proposal A; not implemented.
+
+Initial generation
+Use case: identity-preserve
+Asset type: transparent pixel-art desktop-pet sleeping pose proposal A. ONE sprite, NOT a sprite sheet.
+Input image 1: SuWuDu's actual approved sleeping pose. This is the PRIMARY pose and silhouette reference.
+Input image 2: Shen Qing's identity reference. This supplies blue crown, gray hair, green side ornament, cream face, red heart and clothing colors.
+Primary request: create a Shen Qing version of the EXACT compact sleep posture in input 1, with the entire pose mirrored LEFT-RIGHT so the face looks LEFT. Preserve the original pose's HEIGHT and compactness. This character is a tucked-up sleepy little mound, not a person lying horizontally flat.
+Important silhouette: match input 1's tall compact rounded gray-hair mound and high rounded back. The total character height should be about 90–100 percent of its total width, nearly square. Face rests gently against the close-together hands, with the forehead tilted forward and the chin supported, while the back of the head and upper body remain high. The face is tilted diagonally toward the LEFT, not horizontally flattened along the floor. Elbows remain tucked close under the face; no arms stretching far forward. The body remains gathered in the middle rather than spreading low and wide. A red heart sits low beside the tucked arms.
+Identity: Shen Qing small vivid BLUE crown on top, GREEN side ornament on the viewer's RIGHT, medium neutral GRAY hair, cream face and hands, green clothing, red heart. Use the same chunky clean retro pixel-art style, black stepped outline and restricted pixel palette as the two references. Eyes peacefully closed.
+Hair: rounded stair-step outer contour, a short blunt rounded end tucked snugly against the RIGHT side of the body. No pointed hair spike, no long trailing tail, no triangular wedge, no visible legs or feet. Continuous flat dark lower silhouette.
+Composition: a single full character centered in a transparent square with even margins; keep nearly-square character proportions, no excessive empty space forced above the head, no clipping.
+Do NOT copy the green/yellow crown or side ornament from SuWuDu: replace them with Shen Qing's blue crown and green side ornament. Do not show two characters. Do NOT draw Z letters, ZZZ, labels, lettering, glow, pillows, beds, props, shadow or background. ZZZ will be added later in the application, after the user chooses a pose.
+This is only a selection proposal. The most important change relative to a flattened sleeping mascot is a higher compact back/head and tucked arms, matching the tall sleeping silhouette of the primary reference.
+
+Targeted refinement (final output)
+Use case: precise-object-edit.
+Input 1 is the sleeping pose candidate to correct; input 2 is Shen Qing's exact identity reference.
+Keep input 1's tall compact mirrored sleep pose, peacefully closed eyes, face toward LEFT, cheek resting on close-together hands, gray-hair mound raised above the ground. Do not flatten or widen the body.
+Make these precise identity corrections:
+1. DELETE the detached long gray pointed hook/antenna rising behind the crown on the upper RIGHT. Fill that entire unwanted hook with transparency. The upper head has only ONE compact rounded stair-step hair dome and the small BLUE crown. No separate ponytail, spike, hook, ahoge, or detached gray appendage.
+2. Replace the oversized green-and-white flower-like ornament on the RIGHT with the SAME simple small GREEN side ornament from input 2: green outline with narrow white vertical inner stripes, attached close to the hair. It is not a flower or medallion.
+3. Keep the blue crown small and faithful to input 2, roughly one fifth of the head width.
+Preserve the rest of the existing sleeping pose and colors, chunky retro pixel-art, black outline, short blunt hair ends, flat planted underside, no visible feet or legs. True transparent background. One sprite only. No ZZZ, letters, labels, pillows, bed, extra props or shadows.
+This must remain a compact, tall, tucked sleeping mound, with height about equal to width, not a flattened horizontal sleeping figure.
