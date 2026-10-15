@@ -9402,7 +9402,7 @@
         2300
       ],
       "source": "Assets/Source/AnimationAtlases/shenqing-v4/sleeping-base-source.png",
-      "sourceSha256": "04cb18bd792c28188a8eaa2ef13c0af58d4aba7966e721b7356e8a8b94f62069",
+      "sourceSha256": "f6d4da825d73b454b1f183b860815bbaea96371f9e2bc398f10a2241b11eca8d",
       "sourceSize": [
         1254,
         1254
@@ -9432,25 +9432,25 @@
         "height": 252
       },
       "crop": {
-        "left": 102,
-        "top": 398,
-        "width": 942,
-        "height": 709
+        "left": 186,
+        "top": 261,
+        "width": 904,
+        "height": 763
       },
       "crown": {
-        "x0": 388,
-        "y0": 433,
-        "x1": 620,
-        "y1": 630,
-        "count": 21200
+        "x0": 445,
+        "y0": 299,
+        "x1": 670,
+        "y1": 466,
+        "count": 19061
       },
       "targetCrownHeight": 53,
-      "scale": 0.2676767676767677,
+      "scale": 0.31547619047619047,
       "destination": {
-        "width": 252,
-        "height": 190,
+        "width": 285,
+        "height": 241,
         "left": 19,
-        "top": 120
+        "top": 69
       }
     },
     {

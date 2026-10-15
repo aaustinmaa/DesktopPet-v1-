@@ -70,8 +70,13 @@ Sleeping instead uses the single 362-by-362 `sleeping.png`, copied to
 `sleeping-z-{small,medium,large}.png` layers and their ten-second choreography.
 The layers' positions and horizontal movement are mirrored for Shen Qing's
 left-facing pose; the Z glyph images themselves remain unflipped.
-The replacement sleeping base has shorter, rounded hair with blunt ends,
-preserving the still sleeping pose and the separate Z layers.
+The approved sleeping base uses the first image from the balanced prone pose
+generation: Shen Qing faces left, rests on small folded hands and has a red heart
+on the left. The original generated image is retained unchanged as
+`sleeping-base-source.png`; export only crops, scales with nearest-neighbor and
+aligns it to the mirrored SuWuDu sleeping footprint. The separate Z layers retain
+their existing choreography. Open `Source/AnimationAtlases/shenqing-v4/sleeping-preview.html`
+to view this active sleeping animation on its own.
 
 Run `node Scripts/BuildShenQingV4Atlases.mjs` with Node and `sharp` available.
 `SHARP_MODULE` may point to an existing sharp installation. The script preserves
