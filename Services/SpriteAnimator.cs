@@ -24,6 +24,7 @@ namespace DesktopPet.Services
         private readonly Dictionary<string, BitmapImage> _cache = new Dictionary<string, BitmapImage>();
         private string[] _frames = IdleFrames;
         private int _frameIndex;
+        private int[] _frameDurations;
         private bool _loopFrames = true;
         private bool _returnToBaseWhenFinished;
         private bool _returnToBaseAtLoopEnd;
@@ -216,6 +217,11 @@ namespace DesktopPet.Services
 
         private static readonly string[] ShenQingIdleFrames =
             BuildFrames("shenqing-idle", 1, 16);
+        private static readonly int[] ShenQingIdleDurations =
+        {
+            16000, 320, 320, 320, 320, 320, 80, 80,
+            320, 320, 320, 320, 320, 320, 320, 320
+        };
         private static readonly string[] ShenQingBlinkFrames =
             BuildFrames("shenqing-blink", 1, 16);
         private static readonly string[] ShenQingHappyFrames =
@@ -225,7 +231,28 @@ namespace DesktopPet.Services
         private static readonly string[] ShenQingHeartFrames =
             BuildFrames("shenqing-heart", 1, 16);
         private static readonly string[] ShenQingWorkingFrames =
-            BuildFrames("shenqing-working", 1, 16);
+        {
+            "shenqing-working-01.png",
+            "shenqing-working-02.png",
+            "shenqing-working-03.png",
+            "shenqing-working-04.png",
+            "shenqing-working-05.png",
+            "shenqing-working-06.png",
+            "shenqing-working-07.png",
+            "shenqing-working-08.png",
+            "shenqing-working-09.png",
+            "shenqing-working-10.png",
+            "shenqing-working-11.png",
+            "shenqing-working-12.png",
+            "shenqing-working-13.png",
+            "shenqing-working-14.png",
+            "shenqing-working-16.png"
+        };
+        private static readonly int[] ShenQingWorkingDurations =
+        {
+            18000, 900, 900, 80, 80, 900, 900, 900,
+            900, 900, 900, 900, 900, 900, 900
+        };
         private static readonly string[] ShenQingSuccessFrames =
             BuildFrames("shenqing-success", 1, 16);
         private static readonly string[] ShenQingErrorFrames =
@@ -298,6 +325,7 @@ namespace DesktopPet.Services
             _loopFrames = true;
             _returnToBaseWhenFinished = false;
             _returnToBaseAtLoopEnd = false;
+            _frameDurations = null;
             StopSleepZzzAnimation();
 
             switch (state)
@@ -313,61 +341,64 @@ namespace DesktopPet.Services
                     _frames = IsShenQing
                         ? ShenQingHappyFrames
                         : new[] { "happy.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 300 : 150);
                     break;
                 case PetState.Working:
                     _frames = IsShenQing ? ShenQingWorkingFrames : WorkingFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 100 : 50);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 900 : 50);
+                    _frameDurations = IsShenQing ? ShenQingWorkingDurations : null;
                     break;
                 case PetState.Question:
                     _frames = IsShenQing
                         ? ShenQingQuestionFrames
                         : new[] { "question.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 350 : 150);
                     break;
                 case PetState.Success:
                     _frames = IsShenQing ? ShenQingSuccessFrames : SuccessFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(95);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 250 : 95);
                     break;
                 case PetState.Error:
                     _frames = IsShenQing ? ShenQingErrorFrames : ErrorFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(125);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 300 : 125);
                     break;
                 case PetState.Sleeping:
                     _frames = IsShenQing
                         ? ShenQingSleepingFrames
                         : new[] { "sleeping-base.png" };
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 250 : 150);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 700 : 150);
                     break;
                 case PetState.Reminder:
                     _frames = IsShenQing ? ShenQingReminderFrames : ReminderFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(90);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 260 : 90);
                     break;
                 case PetState.Waving:
                     _frames = IsShenQing ? ShenQingWaveFrames : WaveFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(100);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 250 : 100);
                     break;
                 case PetState.HeartPulse:
                     _frames = IsShenQing ? ShenQingHeartFrames : HeartFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(115);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 280 : 115);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 case PetState.Hit:
                     _frames = IsShenQing ? ShenQingHitFrames : HitFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(75);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 180 : 75);
                     _loopFrames = false;
                     _returnToBaseWhenFinished = true;
                     revertAfter = null;
                     break;
                 default:
                     _frames = IsShenQing ? ShenQingIdleFrames : IdleFrames;
-                    _frameTimer.Interval = TimeSpan.FromMilliseconds(170);
+                    _frameTimer.Interval = TimeSpan.FromMilliseconds(IsShenQing ? 320 : 170);
+                    _frameDurations = IsShenQing ? ShenQingIdleDurations : null;
                     break;
             }
 
             ShowFrame(_frames[0]);
+            ApplyCurrentFrameDuration();
             if (state == PetState.Sleeping && !IsShenQing)
                 StartSleepZzzAnimation();
             if (_frames.Length > 1)
@@ -404,6 +435,14 @@ namespace DesktopPet.Services
                 }
             }
             ShowFrame(_frames[_frameIndex]);
+            ApplyCurrentFrameDuration();
+        }
+
+        private void ApplyCurrentFrameDuration()
+        {
+            if (_frameDurations != null)
+                _frameTimer.Interval = TimeSpan.FromMilliseconds(
+                    _frameDurations[_frameIndex]);
         }
 
         private void RestoreBaseState()

@@ -76,6 +76,13 @@ in `Archive/Sprites/shenqing-before-v4` before replacement.
 
 Open `Source/AnimationAtlases/shenqing-v4/preview.html` to play or step through
 all twelve animations. Each action also has a looping `{action}-preview.gif`.
+Shen Qing now spends most of each idle/work cycle holding an open-eyed pose:
+idle lasts 20.32 seconds and working lasts 28.96 seconds. Closed-eye frames stay
+brief, and working skips pose 15's additional blink. The standalone blink keeps
+its original 80 ms frame timing; automatic idle gestures occur every 60–120 seconds.
+Other actions use slower playback without changing the artwork.
+Run `node Scripts/BuildShenQingV4Atlases.mjs --timing-only` to refresh GIFs,
+the preview and timing metadata from existing sprites without rewriting any PNGs.
 The built-in imagegen source images and exact prompts are saved as
 `{action}-source.png` and `{action}-prompt.txt`; `prompt-base.txt` records the
 shared identity and flat-base constraints. `registration.json` records the

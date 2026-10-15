@@ -82,6 +82,11 @@ final class PetPanel: NSPanel {
             animation.values = images
             animation.calculationMode = .discrete
             animation.duration = Double(images.count) * spec.interval
+            if let keyTimes = spec.keyTimes, images.count == spec.frames.count, let last = images.last {
+                animation.values = images + [last]
+                animation.keyTimes = keyTimes.map { NSNumber(value: $0) }
+                animation.duration = spec.duration
+            }
             animation.repeatCount = spec.once ? 1 : .infinity
             sprite.add(animation, forKey: "frames")
             if spec.once {

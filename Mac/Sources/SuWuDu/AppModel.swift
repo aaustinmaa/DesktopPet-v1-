@@ -57,7 +57,7 @@ import Combine
         data = loaded
         hydrationAt = Date().addingTimeInterval(Double(data.settings.hydrationMinutes * 60))
         scheduleWander()
-        gestureAt = Date().addingTimeInterval(Double.random(in: 12...28))
+        scheduleGesture()
     }
     func start() {
         lastUptime = ProcessInfo.processInfo.systemUptime
@@ -72,17 +72,23 @@ import Combine
         catch { self.error = "保存失败：\(error.localizedDescription)"; return false }
     }
     func previewAppearance(skin: String, scale: Double) {
+        let previousSkin = displayedSkin
         appearancePreview = (skin, scale)
+        if displayedSkin != previousSkin { scheduleGesture() }
         onAppearanceChanged?()
     }
     func endAppearancePreview() {
         guard appearancePreview != nil else { return }
+        let previousSkin = displayedSkin
         appearancePreview = nil
+        if displayedSkin != previousSkin { scheduleGesture() }
         onAppearanceChanged?()
     }
     @discardableResult func changeSettings(_ change: (inout Settings) -> Void) -> Bool {
+        let previousSkin = displayedSkin
         change(&data.settings)
         data.settings.normalize()
+        if displayedSkin != previousSkin { scheduleGesture() }
         hydrationAt = Date().addingTimeInterval(Double(data.settings.hydrationMinutes * 60))
         scheduleWander()
         if !data.settings.microbreaks { data.focus?.nextMicro = nil; data.focus?.microRemaining = nil }
@@ -109,7 +115,7 @@ import Combine
     func animate(_ value: PetState, seconds: Double = 3) {
         state = value
         let spec = AnimationSpec.make(value, skin: displayedSkin)
-        let cycle = Double(spec.frames.count) * spec.interval
+        let cycle = spec.duration
         let duration = spec.once ? cycle : spec.frames.count > 1 ? ceil(seconds / cycle) * cycle : seconds
         temporaryUntil = Date().addingTimeInterval(duration)
         onStateChanged?(value)
@@ -224,6 +230,10 @@ import Combine
     private func scheduleWander() {
         wanderAt = Date().addingTimeInterval(Double.random(in: Double(data.settings.wanderMin)...Double(data.settings.wanderMax)))
     }
+    private func scheduleGesture(now: Date = Date()) {
+        let interval: ClosedRange<Double> = displayedSkin == "shenqing" ? 60...120 : 12...28
+        gestureAt = now.addingTimeInterval(Double.random(in: interval))
+    }
     private func advanceFocus() {
         let uptime = ProcessInfo.processInfo.systemUptime
         let now = Date()
@@ -288,7 +298,7 @@ import Combine
             if data.settings.wander && state == .idle && data.focus == nil { onWander?() }
         }
         if now >= gestureAt {
-            gestureAt = now.addingTimeInterval(Double.random(in: 12...28))
+            scheduleGesture(now: now)
             if state == .idle { animate([PetState.blink, .waving, .heart].randomElement()!) }
         }
         saveTicks += 1

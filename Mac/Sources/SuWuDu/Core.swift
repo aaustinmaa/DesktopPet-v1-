@@ -328,6 +328,18 @@ struct AnimationSpec {
     var frames: [String]
     var interval: Double
     var once = false
+    var frameDurations: [Double]? = nil
+    var duration: Double { frameDurations?.reduce(0, +) ?? Double(frames.count) * interval }
+    // The extra endpoint lets a discrete animation hold its final frame for its full duration.
+    var keyTimes: [Double]? {
+        guard let frameDurations else { return nil }
+        let total = duration
+        var elapsed = 0.0
+        return [0] + frameDurations.map { hold in
+            elapsed += hold
+            return elapsed / total
+        }
+    }
     static func sequence(_ prefix: String, _ count: Int) -> [String] {
         (1...count).map { String(format: "%@-%02d.png", prefix, $0) }
     }
@@ -337,24 +349,40 @@ struct AnimationSpec {
             sequence(shen ? "shenqing-" + shenName : mac, shen ? shenCount : count)
         }
         switch state {
-        case .idle: return .init(frames: frames("idle-open-close-v5", 16, "idle", 16), interval: 0.170)
+        case .idle:
+            if shen {
+                var holds = Array(repeating: 0.320, count: 16)
+                holds[0] = 16
+                holds[6] = 0.080
+                holds[7] = 0.080
+                return .init(frames: sequence("shenqing-idle", 16), interval: 0.320, frameDurations: holds)
+            }
+            return .init(frames: frames("idle-open-close-v5", 16, "idle", 16), interval: 0.170)
         case .blink: return .init(frames: frames("blink-v2", 8, "blink", 16), interval: shen ? 0.080 : 0.165, once: true)
-        case .happy: return .init(frames: shen ? sequence("shenqing-happy", 16) : ["happy.png"], interval: 0.15)
-        case .question: return .init(frames: shen ? sequence("shenqing-question", 16) : ["question.png"], interval: 0.15)
+        case .happy: return .init(frames: shen ? sequence("shenqing-happy", 16) : ["happy.png"], interval: shen ? 0.300 : 0.15)
+        case .question: return .init(frames: shen ? sequence("shenqing-question", 16) : ["question.png"], interval: shen ? 0.350 : 0.15)
         case .working:
             var list = frames("working-float-v3", 16, "working", 16)
-            if !shen { list += sequence("working-float-v3", 15).dropFirst().reversed() }
-            return .init(frames: list, interval: shen ? 0.100 : 0.05)
-        case .success: return .init(frames: frames("success-v2", 16, "success", 16), interval: 0.095)
-        case .error: return .init(frames: frames("error-v4", 16, "error", 16), interval: 0.125)
-        case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 16) : ["sleeping-base.png"], interval: shen ? 0.250 : 0.15)
-        case .reminder: return .init(frames: frames("reminder-v3", 16, "reminder", 16), interval: 0.09)
-        case .waving: return .init(frames: frames("wave-v3", 16, "wave", 16), interval: 0.100)
+            if shen {
+                list.remove(at: 14) // Avoid the second half-blink in each work cycle.
+                var holds = Array(repeating: 0.900, count: list.count)
+                holds[0] = 18
+                holds[3] = 0.080
+                holds[4] = 0.080
+                return .init(frames: list, interval: 0.900, frameDurations: holds)
+            }
+            list += sequence("working-float-v3", 15).dropFirst().reversed()
+            return .init(frames: list, interval: 0.05)
+        case .success: return .init(frames: frames("success-v2", 16, "success", 16), interval: shen ? 0.250 : 0.095)
+        case .error: return .init(frames: frames("error-v4", 16, "error", 16), interval: shen ? 0.300 : 0.125)
+        case .sleeping: return .init(frames: shen ? sequence("shenqing-sleeping", 16) : ["sleeping-base.png"], interval: shen ? 0.700 : 0.15)
+        case .reminder: return .init(frames: frames("reminder-v3", 16, "reminder", 16), interval: shen ? 0.260 : 0.09)
+        case .waving: return .init(frames: frames("wave-v3", 16, "wave", 16), interval: shen ? 0.250 : 0.100)
         case .heart:
             var list = frames("heart-lift-v3", 8, "heart", 16)
             if !shen { list += sequence("heart-lift-v3", 7).reversed() }
-            return .init(frames: list, interval: 0.115, once: true)
-        case .hit: return .init(frames: frames("idle-hit-v1", 16, "hit", 16), interval: 0.075, once: true)
+            return .init(frames: list, interval: shen ? 0.280 : 0.115, once: true)
+        case .hit: return .init(frames: frames("idle-hit-v1", 16, "hit", 16), interval: shen ? 0.180 : 0.075, once: true)
         }
     }
 }

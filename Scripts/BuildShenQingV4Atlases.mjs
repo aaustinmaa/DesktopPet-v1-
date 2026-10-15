@@ -1,6 +1,7 @@
 // Mechanically register imagegen's Shen Qing v4 artwork; never repaint pixels.
-// Usage: SHARP_MODULE=/path/to/sharp node Scripts/BuildShenQingV4Atlases.mjs [--check] [idle ...]
+// Usage: SHARP_MODULE=/path/to/sharp node Scripts/BuildShenQingV4Atlases.mjs [--check] [--timing-only] [idle ...]
 // With no action names all twelve sheets are preflighted before any output changes.
+// --timing-only reads existing runtime PNGs and writes only GIFs, preview and timing metadata.
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -18,27 +19,73 @@ const margin = 8;
 const targetHeight = 304;
 const targetAnchor = { x: 170, y: 337 };
 const definitions = [
-  { name: 'idle', label: '待机', interval: 170 },
+  { name: 'idle', label: '待机', interval: 320, holds: { 1: 16000, 7: 80, 8: 80 } },
   { name: 'blink', label: '眨眼', interval: 80 },
-  { name: 'happy', label: '开心', interval: 150 },
-  { name: 'wave', label: '挥手', interval: 100 },
-  { name: 'heart', label: '举心', interval: 115 },
-  { name: 'working', label: '工作', interval: 100 },
-  { name: 'success', label: '成功', interval: 95 },
-  { name: 'error', label: '出错', interval: 125 },
-  { name: 'sleeping', label: '睡眠', interval: 250 },
-  { name: 'reminder', label: '摇铃提醒', interval: 90 },
-  { name: 'hit', label: '点击反应', interval: 75 },
-  { name: 'question', label: '疑问', interval: 150 },
+  { name: 'happy', label: '开心', interval: 300 },
+  { name: 'wave', label: '挥手', interval: 250 },
+  { name: 'heart', label: '举心', interval: 280 },
+  { name: 'working', label: '工作', interval: 900, holds: { 1: 18000, 4: 80, 5: 80 },
+    sequence: [...Array.from({ length: 14 }, (_, index) => index + 1), 16] },
+  { name: 'success', label: '成功', interval: 250 },
+  { name: 'error', label: '出错', interval: 300 },
+  { name: 'sleeping', label: '睡眠', interval: 700 },
+  { name: 'reminder', label: '摇铃提醒', interval: 260 },
+  { name: 'hit', label: '点击反应', interval: 180 },
+  { name: 'question', label: '疑问', interval: 350 },
 ];
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
-const names = args.filter(arg => arg !== '--check');
+const timingOnly = args.includes('--timing-only');
+const names = args.filter(arg => arg !== '--check' && arg !== '--timing-only');
 if (names.some(name => !definitions.some(definition => definition.name === name))) {
-  throw new Error(`Usage: node Scripts/BuildShenQingV4Atlases.mjs [--check] [${definitions.map(d => d.name).join(' ')}]`);
+  throw new Error(`Usage: node Scripts/BuildShenQingV4Atlases.mjs [--check] [--timing-only] [${definitions.map(d => d.name).join(' ')}]`);
 }
 const selected = names.length ? definitions.filter(d => names.includes(d.name)) : definitions;
 const sharp = require(process.env.SHARP_MODULE || 'sharp');
+
+function timingFor(definition) {
+  const playbackFrameSequence = definition.sequence ?? Array.from({ length: 16 }, (_, index) => index + 1);
+  const frameDurationsMs = playbackFrameSequence.map(frame => definition.holds?.[frame] ?? definition.interval);
+  return { intervalMs: definition.interval, playbackFrameSequence, frameDurationsMs,
+    totalDurationMs: frameDurationsMs.reduce((sum, duration) => sum + duration, 0) };
+}
+
+async function encodePreviewGif(definition, runtimeFrames) {
+  const timing = timingFor(definition);
+  const gifFrameSequence = [...timing.playbackFrameSequence];
+  const gifFrameDurationsMs = [...timing.frameDurationsMs];
+  // Frame 16 is the exact opening pose. Combine its loop-seam hold with frame 1
+  // rather than dropping that time or asking the GIF encoder to guess the seam.
+  if (!runtimeFrames[gifFrameSequence[0] - 1].equals(runtimeFrames[gifFrameSequence.at(-1) - 1])) {
+    throw new Error(`${definition.name}: closing runtime frame must equal the opening frame`);
+  }
+  gifFrameSequence.pop();
+  gifFrameDurationsMs[0] += gifFrameDurationsMs.pop();
+  const gif = await sharp(Buffer.concat(gifFrameSequence.map(frame => runtimeFrames[frame - 1])), {
+    raw: { width: cellSize, height: cellSize * gifFrameSequence.length, channels: 4, pageHeight: cellSize },
+  }).gif({ delay: gifFrameDurationsMs, loop: 0, dither: 0 }).toBuffer();
+  const encoded = await sharp(gif, { animated: true }).metadata();
+  const encodedDelays = encoded.delay ?? [];
+  if (encodedDelays.length !== gifFrameDurationsMs.length
+    || encodedDelays.some((duration, index) => duration !== gifFrameDurationsMs[index])) {
+    throw new Error(`${definition.name}: encoded GIF frame delays differ from the requested timing`);
+  }
+  return { gif, timing: { ...timing, gifFrameSequence, gifFrameDurationsMs } };
+}
+
+async function preflightTiming(definition, existingManifest) {
+  if (!existingManifest) throw new Error(`${definition.name}: --timing-only needs an existing registration entry`);
+  const frames = await Promise.all(Array.from({ length: 16 }, async (_, index) => {
+    const filename = path.join(spriteDir, `shenqing-${definition.name}-${String(index + 1).padStart(2, '0')}.png`);
+    const { data, info } = await sharp(await fs.readFile(filename)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    if (info.width !== cellSize || info.height !== cellSize || info.channels !== 4) {
+      throw new Error(`${filename}: expected an existing 362x362 RGBA runtime frame`);
+    }
+    return data;
+  }));
+  const { gif, timing } = await encodePreviewGif(definition, frames);
+  return { definition, gif, manifest: { ...existingManifest, ...timing } };
+}
 
 function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -279,11 +326,9 @@ async function preflight(definition) {
     copyPixels(frame, cellSize, cellSize, atlas, cellSize * 4, (index % 4) * cellSize, Math.floor(index / 4) * cellSize);
   }
   const atlasPng = await sharp(atlas, { raw: { width: cellSize * 4, height: cellSize * 4, channels: 4 } }).png().toBuffer();
-  const gif = await sharp(Buffer.concat(outputFrames), {
-    raw: { width: cellSize, height: cellSize * 16, channels: 4, pageHeight: cellSize },
-  }).gif({ delay: sequence.map(() => definition.interval), loop: 0, dither: 0 }).toBuffer();
+  const { gif, timing } = await encodePreviewGif(definition, outputFrames);
   return { definition, framePngs, atlasPng, gif, manifest: {
-    name: definition.name, intervalMs: definition.interval,
+    name: definition.name, ...timing,
     source: path.relative(root, sourcePath), sourceSha256: createHash('sha256').update(source).digest('hex'),
     sourceSize: [metadata.width, metadata.height], sourceGrid: [4, 4],
     cellEdges: { rowEdges, columnEdgesByRow, gutterAlphaTolerance: 1, searchRadius: 24 },
@@ -318,26 +363,33 @@ async function archivePrevious() {
 }
 
 function previewHtml(animations) {
-  const available = new Set(animations.map(animation => animation.name));
-  const cards = definitions.map(definition => available.has(definition.name)
-    ? `<article data-action="${definition.name}" data-interval="${definition.interval}">
+  const available = new Map(animations.map(animation => [animation.name, animation]));
+  const cards = definitions.map(definition => {
+    const animation = available.get(definition.name);
+    if (!animation) return `<article><h2>${definition.label}</h2><p>尚未导出</p></article>`;
+    const sequence = animation.playbackFrameSequence ?? Array.from({ length: 16 }, (_, index) => index + 1);
+    const durations = animation.frameDurationsMs ?? sequence.map(() => animation.intervalMs);
+    const seconds = durations.reduce((sum, duration) => sum + duration, 0) / 1000;
+    const note = definition.name === 'idle' ? ' · 首帧安静停留 16 秒'
+      : definition.name === 'working' ? ' · 首帧安静停留 18 秒' : '';
+    return `<article data-action="${definition.name}" data-sequence="${sequence.join(',')}" data-durations="${durations.join(',')}">
       <h2>${definition.label}</h2><div class="stage"><div class="sprite" role="img" aria-label="沈青${definition.label}" style="background-image:url('${definition.name}.png')"></div></div>
       <p class="counter">1 / 16</p><div class="controls"><button data-step="-1">上一帧</button><button data-step="1">下一帧</button></div>
-      <p><a href="${definition.name}.png">Sprite sheet</a> · <a href="${definition.name}-preview.gif">GIF</a> · ${definition.interval} ms / 帧</p></article>`
-    : `<article><h2>${definition.label}</h2><p>尚未导出</p></article>`).join('\n');
+      <p><a href="${definition.name}.png">Sprite sheet</a> · <a href="${definition.name}-preview.gif">GIF</a> · ${seconds} 秒 / 轮${note}</p></article>`;
+  }).join('\n');
   return `<!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>沈青 · 动画预览</title><style>
 *{box-sizing:border-box}body{margin:0;padding:28px;background:#f4f1e9;color:#252722;font:15px system-ui,sans-serif}h1{font-size:26px;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}header{max-width:1100px;margin:0 auto 24px}header p{line-height:1.6}button{border:1px solid #b5bcb0;border-radius:7px;background:white;padding:7px 12px;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #568b68;outline-offset:2px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1400px;margin:auto}article{padding:18px;background:#fffdf7;border:1px solid #d8ddcf;border-radius:12px;text-align:center}.stage{width:242px;max-width:100%;aspect-ratio:1;margin:auto;background-color:#e6e6df;background-image:linear-gradient(45deg,#f7f7f1 25%,transparent 25%),linear-gradient(-45deg,#f7f7f1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f7f7f1 75%),linear-gradient(-45deg,transparent 75%,#f7f7f1 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}.sprite{width:100%;height:100%;background-size:400% 400%;background-repeat:no-repeat;image-rendering:pixelated}.counter{font-variant-numeric:tabular-nums;margin:8px}.controls{display:flex;justify-content:center;gap:8px}article p:last-child{font-size:12px;color:#596354}a{color:#2e6544}
-</style><header><h1>沈青 · 12 套动画</h1><p>每套 16 帧。这里将所有动作循环展示，便于比较轮廓与表情；暂停后可逐帧查看。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
+</style><header><h1>沈青 · 12 套动画</h1><p>这里按桌宠的逐帧节奏循环展示动作，待机与工作会先安静停留。暂停后可手动查看每套全部 16 帧。</p><p>独立「眨眼」卡片仅演示眨眼动作本身的速度；实际桌宠自动小动作间隔为 60–120 秒。</p><button id="toggle" type="button">暂停全部</button></header><main>${cards}</main>
 <script>
-const cards=Array.from(document.querySelectorAll('[data-action]')).map(element=>({element,index:0,elapsed:0,interval:Number(element.dataset.interval)}));
+const cards=Array.from(document.querySelectorAll('[data-action]')).map(element=>({element,index:0,cursor:0,elapsed:0,sequence:element.dataset.sequence.split(',').map(value=>Number(value)-1),durations:element.dataset.durations.split(',').map(Number)}));
 const toggle=document.getElementById('toggle');let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 function draw(card){card.element.querySelector('.sprite').style.backgroundPosition=(card.index%4/3*100)+'% '+(Math.floor(card.index/4)/3*100)+'%';card.element.querySelector('.counter').textContent=(card.index+1)+' / 16'}
-function setPlaying(value){playing=value;toggle.textContent=value?'暂停全部':'播放全部';toggle.setAttribute('aria-pressed',String(value))}
+function setPlaying(value){if(value){for(const card of cards){if(card.sequence[card.cursor]!==card.index){let cursor=card.sequence.indexOf(card.index);if(cursor<0)cursor=card.sequence.findIndex(frame=>frame>card.index);card.cursor=cursor<0?0:cursor;card.index=card.sequence[card.cursor];card.elapsed=0;draw(card)}}}playing=value;toggle.textContent=value?'暂停全部':'播放全部';toggle.setAttribute('aria-pressed',String(value))}
 toggle.addEventListener('click',()=>setPlaying(!playing));
 for(const card of cards){draw(card);card.element.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{setPlaying(false);card.index=(card.index+Number(button.dataset.step)+16)%16;card.elapsed=0;draw(card)}))}
-setPlaying(playing);let previous=performance.now();function tick(now){const delta=Math.min(now-previous,250);previous=now;if(playing){for(const card of cards){card.elapsed+=delta;if(card.elapsed>=card.interval){const steps=Math.floor(card.elapsed/card.interval);card.elapsed%=card.interval;card.index=(card.index+steps)%16;draw(card)}}}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+setPlaying(playing);let previous=performance.now();function tick(now){const delta=Math.min(now-previous,250);previous=now;if(playing){for(const card of cards){card.elapsed+=delta;let changed=false;while(card.elapsed>=card.durations[card.cursor]){card.elapsed-=card.durations[card.cursor];card.cursor=(card.cursor+1)%card.sequence.length;card.index=card.sequence[card.cursor];changed=true}if(changed)draw(card)}}requestAnimationFrame(tick)}requestAnimationFrame(tick);
 </script></html>\n`;
 }
 
@@ -351,9 +403,13 @@ try {
 // All decoding, registration, fit checks and PNG/GIF encoding precede mutations.
 const prepared = [];
 for (const definition of selected) {
-  const result = await preflight(definition);
+  const result = timingOnly
+    ? await preflightTiming(definition, previousManifest.animations.find(animation => animation.name === definition.name))
+    : await preflight(definition);
   prepared.push(result);
-  console.log(`Preflight ${definition.name}: 16 frames; scale ${result.manifest.scale.toFixed(5)}; crown-to-hem ${result.manifest.normalizedMedianCrownToHemHeight.toFixed(1)}px`);
+  console.log(timingOnly
+    ? `Timing ${definition.name}: ${result.manifest.playbackFrameSequence.length} playback frames; ${result.manifest.totalDurationMs}ms; GIF delays verified`
+    : `Preflight ${definition.name}: 16 frames; scale ${result.manifest.scale.toFixed(5)}; crown-to-hem ${result.manifest.normalizedMedianCrownToHemHeight.toFixed(1)}px`);
 }
 if (checkOnly) {
   console.log(`Validated ${prepared.length} sheets; no files changed.`);
@@ -361,17 +417,23 @@ if (checkOnly) {
   const byName = new Map(previousManifest.animations.map(animation => [animation.name, animation]));
   for (const result of prepared) byName.set(result.definition.name, result.manifest);
   const animations = definitions.filter(definition => byName.has(definition.name)).map(definition => byName.get(definition.name));
-  const manifest = { version: 4, cellSize, columns: 4, rows: 4, targetAnchor, animations };
-  await archivePrevious();
-  await fs.mkdir(spriteDir, { recursive: true });
+  const manifest = timingOnly ? { ...previousManifest, animations }
+    : { version: 4, cellSize, columns: 4, rows: 4, targetAnchor, animations };
+  if (!timingOnly) {
+    await archivePrevious();
+    await fs.mkdir(spriteDir, { recursive: true });
+  }
   for (const result of prepared) {
     const name = result.definition.name;
-    for (const [index, png] of result.framePngs.entries()) {
-      await fs.writeFile(path.join(spriteDir, `shenqing-${name}-${String(index + 1).padStart(2, '0')}.png`), png);
+    if (!timingOnly) {
+      for (const [index, png] of result.framePngs.entries()) {
+        await fs.writeFile(path.join(spriteDir, `shenqing-${name}-${String(index + 1).padStart(2, '0')}.png`), png);
+      }
+      await fs.writeFile(path.join(atlasDir, `${name}.png`), result.atlasPng);
     }
-    await fs.writeFile(path.join(atlasDir, `${name}.png`), result.atlasPng);
     await fs.writeFile(path.join(atlasDir, `${name}-preview.gif`), result.gif);
-    console.log(`${name}: 16 RGBA frames at 362x362; atlas at 1448x1448`);
+    console.log(timingOnly ? `${name}: updated GIF timing; PNG artwork unchanged`
+      : `${name}: 16 RGBA frames at 362x362; atlas at 1448x1448`);
   }
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
   await fs.writeFile(path.join(atlasDir, 'preview.html'), previewHtml(animations));

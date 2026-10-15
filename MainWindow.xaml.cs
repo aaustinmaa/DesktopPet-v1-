@@ -345,8 +345,10 @@ namespace DesktopPet
         private void ScheduleNextSpecialAction()
         {
             _specialActionTimer.Stop();
-            _specialActionTimer.Interval =
-                TimeSpan.FromSeconds(_random.Next(20, 31));
+            _specialActionTimer.Interval = TimeSpan.FromSeconds(
+                string.Equals(_settings.PetSkin, "shenqing", StringComparison.Ordinal)
+                    ? _random.Next(60, 121)
+                    : _random.Next(20, 31));
             _specialActionTimer.Start();
         }
 
@@ -1776,9 +1778,12 @@ namespace DesktopPet
 
             if (dialogResult == true)
             {
+                var previousSkin = _settings.PetSkin;
                 _settings = dialog.ResultSettings;
                 _settingsService.Save(_settings);
                 ApplySettings();
+                if (!string.Equals(previousSkin, _settings.PetSkin, StringComparison.Ordinal))
+                    ScheduleNextSpecialAction();
                 KeepOnScreen();
                 ShowBubble("设置保存好了。", 3);
                 _wanderController?.ResumeAfterUserInteraction(false);
